@@ -22,11 +22,14 @@ void main() {
   final tasks = valueStateProvider<Map<String, TaskModel>>({});
   final events = valueStateProvider<Map<String, CalendarEventModel>>({});
   late ProviderContainer container;
+  // Arguments of every route pushed, to tell instant pushes apart.
+  final pushedArgs = <Object?>[];
 
   setUp(() {
     clicks = StreamController<Uri?>.broadcast();
     initialReads = 0;
     HomeWidgetLaunchHandler.initialLaunchHandled = false;
+    pushedArgs.clear();
   });
 
   tearDown(() => clicks.close());
@@ -34,7 +37,13 @@ void main() {
   // Detail routes render a marker instead of the real editors, so the test
   // only checks which kind of editor AppNav was asked to open.
   Route<dynamic> fakeRoute(RouteSettings s) {
-    final label = switch (s.arguments) {
+    pushedArgs.add(s.arguments);
+    // A cold start pushes without the transition: same target, wrapped.
+    final args = switch (s.arguments) {
+      InstantRouteArgs(:final arguments) => arguments,
+      final other => other,
+    };
+    final label = switch (args) {
       NoteRouteArgs(:final note) when note.title.isNotEmpty =>
         'note ${note.title}',
       TaskModel(:final title) when title.isNotEmpty => '${s.name} $title',
@@ -87,6 +96,15 @@ void main() {
     await pump(tester, initial: HomeWidgetAction.newTask.uri);
 
     expect(find.text('new task'), findsOneWidget);
+  });
+
+  testWidgets('only a cold start opens without the transition', (tester) async {
+    await pump(tester, initial: HomeWidgetAction.newNote.uri);
+    expect(pushedArgs.single, isA<InstantRouteArgs>());
+
+    clicks.add(HomeWidgetAction.newTask.uri);
+    await tester.pumpAndSettle();
+    expect(pushedArgs.last, isA<TaskModel>());
   });
 
   testWidgets('a tap while running opens the matching editor', (tester) async {

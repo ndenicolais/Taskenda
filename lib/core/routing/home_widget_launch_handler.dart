@@ -30,6 +30,9 @@ import 'home_widget_action.dart';
 /// Wraps the signed-in home, so it sits under `MaterialApp`'s navigator. A
 /// cold start from a widget is read once per process: the launch intent
 /// stays on the activity, and this widget is rebuilt on every sign-in.
+/// What a cold start opens is pushed without its transition: it would
+/// otherwise run while the first data is still loading and stutter, and the
+/// app looks like it opened right there.
 /// Android only; on web it just returns [child].
 class HomeWidgetLaunchHandler extends ConsumerStatefulWidget {
   const HomeWidgetLaunchHandler({
@@ -78,7 +81,7 @@ class _HomeWidgetLaunchHandlerState
         final uri =
             await (widget.initialUri ??
                 HomeWidget.initiallyLaunchedFromHomeWidget)();
-        _handle(uri);
+        _handle(uri, animate: false);
       });
     }
   }
@@ -90,67 +93,80 @@ class _HomeWidgetLaunchHandlerState
     super.dispose();
   }
 
-  void _handle(Uri? uri) {
+  /// [animate] false on a cold start (see the class docs).
+  void _handle(Uri? uri, {bool animate = true}) {
     if (!mounted) return;
     if (HomeWidgetOpenItem.parse(uri) case final item?) {
-      _openItem(item);
+      _openItem(item, animate);
       return;
     }
     if (HomeWidgetSection.parse(uri) case final section?) {
-      _openSection(section);
+      _openSection(section, animate);
       return;
     }
     final action = HomeWidgetAction.parse(uri);
     if (action == null) return;
     switch (action) {
       case HomeWidgetAction.newNote:
-        AppNav.openNote(context, NoteModel(type: NoteType.note));
+        AppNav.openNote(
+          context,
+          NoteModel(type: NoteType.note),
+          animate: animate,
+        );
       case HomeWidgetAction.newTask:
-        AppNav.openTask(context, TaskModel());
+        AppNav.openTask(context, TaskModel(), animate: animate);
       case HomeWidgetAction.newEvent:
         final now = DateTime.now();
         AppNav.openEvent(
           context,
           CalendarEventModel(startTime: now, endTime: now),
+          animate: animate,
         );
     }
   }
 
-  void _openSection(HomeWidgetSection section) {
+  void _openSection(HomeWidgetSection section, bool animate) {
     _stopWaiting();
-    final navigator = Navigator.of(context)..popUntil((r) => r.isFirst);
-    switch (section) {
-      case HomeWidgetSection.notes:
-        break; // The home itself.
-      case HomeWidgetSection.tasks:
-        navigator.pushNamed(AppRoutes.tasks);
-      case HomeWidgetSection.calendar:
-        navigator.pushNamed(AppRoutes.calendar);
-    }
+    final route = switch (section) {
+      HomeWidgetSection.notes => null, // The home itself.
+      HomeWidgetSection.tasks => AppRoutes.tasks,
+      HomeWidgetSection.calendar => AppRoutes.calendar,
+    };
+    // Back to the section if it is already open (e.g. it is the start
+    // section), instead of popping it and building it again.
+    var reached = false;
+    Navigator.of(context).popUntil((r) {
+      if (route != null && r.settings.name == route) reached = true;
+      return reached || r.isFirst;
+    });
+    if (route == null || reached) return;
+    Navigator.of(
+      context,
+    ).pushNamed(route, arguments: animate ? null : AppRouter.noTransition);
   }
 
   /// Opens the tapped row's item. On a cold start the lists may still be
   /// loading, so a missing item is waited for (up to [_loadTimeout]).
-  void _openItem(HomeWidgetOpenItem item) {
+  void _openItem(HomeWidgetOpenItem item, bool animate) {
     _stopWaiting();
     switch (item.kind) {
       case HomeWidgetItemKind.note:
         _openWhenLoaded(
           notesByIdProvider,
           item.id,
-          (note) => AppNav.openNote(context, note),
+          (note) => AppNav.openNote(context, note, animate: animate),
         );
       case HomeWidgetItemKind.task:
         _openWhenLoaded(
           tasksByIdProvider,
           item.id,
-          (task) => AppNav.viewTask(context, task),
+          (task) => AppNav.viewTask(context, task, animate: animate),
         );
       case HomeWidgetItemKind.event:
         _openWhenLoaded(
           eventsByIdProvider,
           item.id,
-          (event) => AppNav.viewEvent(context, event),
+          (event) => AppNav.viewEvent(context, event, animate: animate),
         );
     }
   }

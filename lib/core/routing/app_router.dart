@@ -100,16 +100,23 @@ abstract final class AppRouter {
   static const noTransition = Object();
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    var animateIn = !identical(settings.arguments, noTransition);
+    if (settings.arguments case InstantRouteArgs(:final arguments)) {
+      settings = RouteSettings(name: settings.name, arguments: arguments);
+      animateIn = false;
+    }
     final builder = _builderFor(settings);
     if (builder == null) return null;
     if (sectionRoutes.contains(settings.name)) {
       return FadeThroughPageRoute(
         builder: builder,
         settings: settings,
-        animateIn: !identical(settings.arguments, noTransition),
+        animateIn: animateIn,
       );
     }
-    return MaterialPageRoute(builder: builder, settings: settings);
+    return animateIn
+        ? MaterialPageRoute(builder: builder, settings: settings)
+        : _InstantMaterialPageRoute(builder: builder, settings: settings);
   }
 
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
@@ -158,6 +165,28 @@ abstract final class AppRouter {
       _ => null,
     };
   }
+}
+
+/// Arguments of a route pushed without its incoming transition (going back
+/// still animates): what the app opens on a cold start from a home screen
+/// widget, so the page appears as if the app had opened there instead of
+/// animating while the first data is still loading.
+class InstantRouteArgs {
+  const InstantRouteArgs(this.arguments);
+
+  /// The route's own arguments.
+  final Object? arguments;
+}
+
+/// [MaterialPageRoute] with an instant push and the usual pop.
+class _InstantMaterialPageRoute<T> extends MaterialPageRoute<T> {
+  _InstantMaterialPageRoute({required super.builder, super.settings});
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 300);
 }
 
 /// Material "fade through": a solid background first fades in over the old
@@ -211,30 +240,52 @@ class FadeThroughPageRoute<T> extends PageRouteBuilder<T> {
 }
 
 /// Typed navigation helpers, so call sites can't pass the wrong arguments.
+/// `animate: false` pushes without the incoming transition
+/// ([InstantRouteArgs]).
 abstract final class AppNav {
+  static Future<void> _push(
+    BuildContext context,
+    String route,
+    Object arguments,
+    bool animate,
+  ) => Navigator.pushNamed(
+    context,
+    route,
+    arguments: animate ? arguments : InstantRouteArgs(arguments),
+  );
+
   static Future<void> openNote(
     BuildContext context,
     NoteModel note, {
     bool autoOpenRecorder = false,
-  }) => Navigator.pushNamed(
+    bool animate = true,
+  }) => _push(
     context,
     AppRoutes.note,
-    arguments: NoteRouteArgs(note, autoOpenRecorder: autoOpenRecorder),
+    NoteRouteArgs(note, autoOpenRecorder: autoOpenRecorder),
+    animate,
   );
 
   /// Opens the task editor (new tasks, or the pencil of [viewTask]).
-  static Future<void> openTask(BuildContext context, TaskModel task) =>
-      Navigator.pushNamed(context, AppRoutes.task, arguments: task);
+  static Future<void> openTask(
+    BuildContext context,
+    TaskModel task, {
+    bool animate = true,
+  }) => _push(context, AppRoutes.task, task, animate);
 
   /// Opens the event editor (new events, or the pencil of [viewEvent]).
   static Future<void> openEvent(
     BuildContext context,
-    CalendarEventModel event,
-  ) => Navigator.pushNamed(context, AppRoutes.event, arguments: event);
+    CalendarEventModel event, {
+    bool animate = true,
+  }) => _push(context, AppRoutes.event, event, animate);
 
   /// Opens a saved task in read-only view, with a pencil to edit it.
-  static Future<void> viewTask(BuildContext context, TaskModel task) =>
-      Navigator.pushNamed(context, AppRoutes.taskDetails, arguments: task);
+  static Future<void> viewTask(
+    BuildContext context,
+    TaskModel task, {
+    bool animate = true,
+  }) => _push(context, AppRoutes.taskDetails, task, animate);
 
   /// Opens a saved event in read-only view, with a pencil to edit it.
   /// [occurrence] is the day it was opened from in the calendar.
@@ -242,10 +293,12 @@ abstract final class AppNav {
     BuildContext context,
     CalendarEventModel event, {
     DateTime? occurrence,
-  }) => Navigator.pushNamed(
+    bool animate = true,
+  }) => _push(
     context,
     AppRoutes.eventDetails,
-    arguments: EventDetailsArgs(event, occurrence: occurrence),
+    EventDetailsArgs(event, occurrence: occurrence),
+    animate,
   );
 
   /// Opens an entry shown in the calendar in read-only view: the task's for
