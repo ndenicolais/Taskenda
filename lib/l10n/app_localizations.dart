@@ -824,6 +824,18 @@ abstract class AppLocalizations {
   /// **'Crea la prima nota'**
   String get homeCreateFirst;
 
+  /// No description provided for @homePinnedSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Fissate'**
+  String get homePinnedSection;
+
+  /// No description provided for @homeOthersSection.
+  ///
+  /// In it, this message translates to:
+  /// **'Altre'**
+  String get homeOthersSection;
+
   /// No description provided for @homeFabTask.
   ///
   /// In it, this message translates to:
@@ -907,12 +919,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Promemoria impostato'**
   String get noteReminderSetLabel;
-
-  /// No description provided for @notePinnedLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Nota fissata'**
-  String get notePinnedLabel;
 
   /// No description provided for @taskPinnedLabel.
   ///
@@ -1705,6 +1711,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Orario notifica'**
   String get tasksNotificationTimeLabel;
+
+  /// No description provided for @tasksRecurringLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Task ricorrente'**
+  String get tasksRecurringLabel;
 
   /// No description provided for @calendarSearchHint.
   ///

@@ -19,18 +19,23 @@ import '../../theme/app_radius.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/note_card.dart';
 import 'home_layout_utils.dart';
+import 'note_section_header.dart';
 
 /// Masonry grid of the notes in [noteIds], with drag & drop reordering.
 /// Each card watches its own note (`noteByIdProvider`), so editing one note
-/// rebuilds only its card while [noteIds] stays the same.
+/// rebuilds only its card while [noteIds] stays the same. The first
+/// [pinnedCount] notes are the pinned ones, laid out in their own group under
+/// a header.
 class ReorderableGridView extends StatefulWidget {
   const ReorderableGridView({
     super.key,
     required this.noteIds,
+    this.pinnedCount = 0,
     required this.onReorder,
   });
 
   final List<String> noteIds;
+  final int pinnedCount;
   final void Function(int from, int to) onReorder;
 
   @override
@@ -57,6 +62,7 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
         final itemWidth =
             (constraints.maxWidth - pad * 2 - spacing * (cols - 1)) / cols;
         final count = widget.noteIds.length;
+        final pinned = widget.pinnedCount;
         return ScrollConfiguration(
           behavior: ScrollConfiguration.of(ctx).copyWith(
             dragDevices: {PointerDeviceKind.touch, PointerDeviceKind.mouse},
@@ -64,9 +70,6 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-              // Masonry: independent lazy columns, each card at its natural
-              // height. Note i goes to column i % cols, so reading order and
-              // the global indices used by drag & drop stay row-major.
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(
                   pad - spacing / 2,
@@ -74,30 +77,30 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
                   pad - spacing / 2,
                   80,
                 ),
-                sliver: SliverCrossAxisGroup(
+                sliver: SliverMainAxisGroup(
                   slivers: [
-                    for (int col = 0; col < cols; col++)
-                      SliverCrossAxisExpanded(
-                        flex: 1,
-                        sliver: SliverPadding(
-                          padding: const EdgeInsets.symmetric(
+                    if (pinned > 0) ...[
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
                             horizontal: spacing / 2,
                           ),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (_, row) => Padding(
-                                padding: const EdgeInsets.only(bottom: spacing),
-                                child: _buildItem(
-                                  ctx,
-                                  row * cols + col,
-                                  itemWidth,
-                                ),
-                              ),
-                              childCount: masonryColumnLength(count, cols, col),
-                            ),
-                          ),
+                          child: NoteSectionHeader.pinned(),
                         ),
                       ),
+                      _masonry(ctx, 0, pinned, cols, itemWidth),
+                      if (count > pinned)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: spacing / 2,
+                            ),
+                            child: NoteSectionHeader.others(),
+                          ),
+                        ),
+                    ],
+                    if (count > pinned)
+                      _masonry(ctx, pinned, count - pinned, cols, itemWidth),
                   ],
                 ),
               ),
@@ -105,6 +108,40 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
           ),
         );
       },
+    );
+  }
+
+  /// Masonry of the [length] notes from global index [start]: independent
+  /// lazy columns, each card at its natural height. Note start + k goes to
+  /// column k % cols, so reading order and the global indices used by drag &
+  /// drop stay row-major.
+  Widget _masonry(
+    BuildContext ctx,
+    int start,
+    int length,
+    int cols,
+    double itemWidth,
+  ) {
+    const double spacing = AppSpacing.sm;
+    return SliverCrossAxisGroup(
+      slivers: [
+        for (int col = 0; col < cols; col++)
+          SliverCrossAxisExpanded(
+            flex: 1,
+            sliver: SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: spacing / 2),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (_, row) => Padding(
+                    padding: const EdgeInsets.only(bottom: spacing),
+                    child: _buildItem(ctx, start + row * cols + col, itemWidth),
+                  ),
+                  childCount: masonryColumnLength(length, cols, col),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -189,10 +226,10 @@ class _ReorderableGridViewState extends State<ReorderableGridView> {
           quickActionsOnLongPress: false,
           // Screen-reader alternative to drag & drop, same indices.
           extraSemanticsActions: {
-            if (i > 0)
+            if (i > 0 && i != widget.pinnedCount)
               CustomSemanticsAction(label: ctx.l10n.commonMoveEarlier):
                   () => widget.onReorder(i, i - 1),
-            if (i < widget.noteIds.length - 1)
+            if (i < widget.noteIds.length - 1 && i != widget.pinnedCount - 1)
               CustomSemanticsAction(label: ctx.l10n.commonMoveLater):
                   () => widget.onReorder(i, i + 1),
           },

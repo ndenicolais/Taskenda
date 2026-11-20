@@ -216,22 +216,13 @@ class NoteCard extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
-              // Clips the amber top edge to the rounded corners.
-              clipBehavior: Clip.antiAlias,
-              child: Container(
-                // Amber accent: notes are told apart from tasks and events
-                // at a glance.
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: AppColors.secondary, width: 3),
-                  ),
-                ),
+              child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (note.isPinned || note.reminder != null || note.isShared)
+                    if (note.reminder != null || note.isShared)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -253,18 +244,6 @@ class NoteCard extends ConsumerWidget {
                               size: 14,
                               color: s.fontColor?.withAlpha(153),
                               semanticLabel: l10n.noteReminderSetLabel,
-                            ),
-                          if (note.isPinned)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: AppSpacing.xs,
-                              ),
-                              child: Icon(
-                                Icons.push_pin,
-                                size: 14,
-                                color: s.fontColor?.withAlpha(153),
-                                semanticLabel: l10n.notePinnedLabel,
-                              ),
                             ),
                         ],
                       ),

@@ -169,6 +169,12 @@ final filteredNoteIdsProvider = Provider<IdList>((ref) {
   return IdList(ref.watch(filteredNotesProvider).map((n) => n.id));
 });
 
+/// How many of [filteredNotesProvider] are pinned: they come first, under
+/// their own header on the Home screen.
+final pinnedNoteCountProvider = Provider<int>((ref) {
+  return ref.watch(filteredNotesProvider).where((n) => n.isPinned).length;
+});
+
 final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
   final tasks = ref.watch(activeTasksProvider);
   final query = ref.watch(taskSearchQueryProvider).toLowerCase();

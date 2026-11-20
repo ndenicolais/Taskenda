@@ -391,6 +391,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get homeCreateFirst => 'Crea la prima nota';
 
   @override
+  String get homePinnedSection => 'Fissate';
+
+  @override
+  String get homeOthersSection => 'Altre';
+
+  @override
   String get homeFabTask => 'Task';
 
   @override
@@ -431,9 +437,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get noteReminderSetLabel => 'Promemoria impostato';
-
-  @override
-  String get notePinnedLabel => 'Nota fissata';
 
   @override
   String get taskPinnedLabel => 'Task fissato';
@@ -858,6 +861,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get tasksNotificationTimeLabel => 'Orario notifica';
+
+  @override
+  String get tasksRecurringLabel => 'Task ricorrente';
 
   @override
   String get calendarSearchHint => 'Cerca eventi...';

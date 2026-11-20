@@ -176,12 +176,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onAction: () => _openEditor(NoteType.note),
       );
     }
+    final pinnedCount = ref.watch(pinnedNoteCountProvider);
     return layout == HomeLayout.grid
         ? ReorderableGridView(
           noteIds: noteIds.ids,
+          pinnedCount: pinnedCount,
           onReorder: (from, to) => _reorder(from, from < to ? to + 1 : to),
         )
-        : ReorderableListViewWidget(noteIds: noteIds.ids, onReorder: _reorder);
+        : ReorderableListViewWidget(
+          noteIds: noteIds.ids,
+          pinnedCount: pinnedCount,
+          onReorder: _reorder,
+        );
   }
 
   void _reorder(int oldIndex, int newIndex) {

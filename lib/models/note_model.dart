@@ -59,6 +59,10 @@ class NoteStyle {
   final bool? titleIsBold;
   final bool? titleIsItalic;
 
+  /// Style of a newly created note: 18 title, 14 body. Older notes keep the
+  /// sizes they were saved with.
+  static const NoteStyle newNote = NoteStyle(fontSize: 14, titleFontSize: 18);
+
   const NoteStyle({
     this.fontFamily = 'Inter',
     this.fontSize = 16.0,
@@ -204,7 +208,7 @@ class NoteModel with Shareable<NoteModel> {
     this.sortIndex,
     this.sharing = Sharing.none,
   }) : id = id ?? const Uuid().v4(),
-       style = style ?? const NoteStyle(),
+       style = style ?? NoteStyle.newNote,
        checklistItems = checklistItems ?? [],
        audioNotes = audioNotes ?? [],
        linkedNoteIds = linkedNoteIds ?? [],
