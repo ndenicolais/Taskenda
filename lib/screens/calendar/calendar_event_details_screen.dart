@@ -1,0 +1,291 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+//
+// Commercial use, including publishing or monetizing on any app store,
+// requires explicit written permission from the copyright holder.
+//
+// Author: Nicola De Nicolais
+// Contact: ndn21dev@gmail.com
+// GitHub: https://github.com/ndenicolais
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import '../../core/routing/app_router.dart';
+import '../../l10n/l10n.dart';
+import '../../models/calendar_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/calendar_provider.dart';
+import '../../providers/settings/ui_provider.dart';
+import '../../theme/app_font_sizes.dart';
+import '../../theme/app_spacing.dart';
+import '../../utils/event_alerts.dart';
+import '../../utils/link_utils.dart';
+import '../../utils/recurrence.dart';
+import 'calendar_event_delete.dart';
+import 'event_alert_picker.dart';
+import 'recurrence_picker.dart';
+import '../../widgets/shared/app_dialogs.dart';
+import '../../widgets/shared/collaborators_section.dart';
+import '../../widgets/shared/collaborators_sheet.dart';
+import '../../widgets/shared/detail_row.dart';
+import '../../widgets/shared/error_feedback.dart';
+import 'calendar_event_style.dart';
+import 'calendar_event_tile.dart';
+
+/// Read-only view of a saved event, opened by tapping it (like Google
+/// Calendar): the pencil opens [CalendarEventEditorScreen]. Follows the
+/// event in [calendarProvider], so edits show up on return and the screen
+/// closes once the event is trashed.
+class CalendarEventDetailsScreen extends ConsumerStatefulWidget {
+  const CalendarEventDetailsScreen({
+    super.key,
+    required this.event,
+    this.occurrence,
+  });
+  final CalendarEventModel event;
+
+  /// The day it was opened from in the calendar: shown instead of the
+  /// series start, and the one "this event only" deletes.
+  final DateTime? occurrence;
+
+  @override
+  ConsumerState<CalendarEventDetailsScreen> createState() =>
+      _CalendarEventDetailsScreenState();
+}
+
+class _CalendarEventDetailsScreenState
+    extends ConsumerState<CalendarEventDetailsScreen> {
+  bool _closing = false;
+
+  /// The event as in [events], or null once it is gone (deleted, or a
+  /// shared event the user left or was removed from).
+  CalendarEventModel? _current(List<CalendarEventModel> events) {
+    for (final e in events) {
+      if (e.id == widget.event.id) return e;
+    }
+    return null;
+  }
+
+  void _showCollaborators(CalendarEventModel event) => showCollaboratorsSheet(
+    context,
+    kind: ShareKind.event,
+    itemId: event.id,
+    onLeft: _close,
+  );
+
+  void _close() {
+    if (_closing) return;
+    _closing = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.maybePop(context);
+    });
+  }
+
+  Future<void> _delete(CalendarEventModel event) async {
+    final day = widget.occurrence;
+    if (day != null && event.recurrence != RecurrenceType.none) {
+      final scope = await showRecurringEventDeleteDialog(context);
+      if (scope == null || !mounted) return;
+      if (scope == EventDeleteScope.thisOccurrence) {
+        final notifier = ref.read(calendarProvider.notifier);
+        notifyWithUndo(
+          notifier.excludeOccurrence(event.id, day),
+          context,
+          message: context.l10n.calendarOccurrenceDeleted,
+          onUndo: () => notifier.restoreEvent(event),
+        );
+        _close();
+        return;
+      }
+      _trash(event);
+      return;
+    }
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: context.l10n.calendarDeleteEvent,
+      message: context.l10n.calendarDeleteEventConfirm,
+      confirmLabel: context.l10n.commonDelete,
+      destructive: true,
+    );
+    if (!confirmed || !mounted) return;
+    _trash(event);
+  }
+
+  void _trash(CalendarEventModel event) {
+    final notifier = ref.read(calendarProvider.notifier);
+    notifyWithUndo(
+      notifier.softDelete(event.id),
+      context,
+      message: context.l10n.calendarEventTrashed,
+      onUndo: () => notifier.restoreFromTrash(event.id),
+    );
+    _close();
+  }
+
+  /// Searches [location] in the maps app (Google Maps handles the link, the
+  /// browser otherwise).
+  Future<void> _openLocation(String location) async {
+    final uri = Uri.https('www.google.com', '/maps/search/', {
+      'api': '1',
+      'query': location,
+    });
+    final opened = await openExternalLink(uri.toString());
+    if (!opened && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.commonLinkOpenFailed)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final current = _current(ref.watch(calendarProvider));
+    if (current == null || current.deletedAt != null) _close();
+    final event = current ?? widget.event;
+    final members = event.membersExcept(ref.watch(currentUidProvider));
+
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = calendarItemStyle(event, cs);
+    final alertAt = DateFormat('HH:mm').format(
+      occurrenceTime(
+        event,
+        event.startTime,
+        allDayMinutes: ref.watch(defaultAlertTimeProvider),
+      ),
+    );
+    // Day-before alerts exist for all-day events only.
+    final dayBeforeAt = DateFormat('HH:mm').format(
+      occurrenceTime(
+        event,
+        event.startTime,
+        allDayMinutes: ref.watch(dayBeforeAlertTimeProvider),
+      ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.calendarEventTitle),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add_alt_1_outlined),
+            tooltip: l10n.shareCollaboratorsTitle,
+            onPressed: () => _showCollaborators(event),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: l10n.commonEdit,
+            onPressed: () => AppNav.openEvent(context, event),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: l10n.calendarDeleteEvent,
+            onPressed: () => _delete(event),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                margin: const EdgeInsets.only(top: 7, right: AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: style.accent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  event.title.isEmpty ? l10n.commonUntitled : event.title,
+                  style: TextStyle(
+                    fontSize: AppFontSizes.headline,
+                    fontWeight: FontWeight.bold,
+                    color: event.title.isEmpty ? cs.onSurfaceVariant : null,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          if (event.isBirthday || event.isNameDay)
+            DetailRow(
+              icon: style.icon ?? Icons.event,
+              iconColor: style.accent,
+              child: Text(
+                event.isBirthday ? l10n.calendarBirthday : l10n.calendarNameDay,
+              ),
+            ),
+          DetailRow(
+            icon: Icons.calendar_today_outlined,
+            subtitle: formatEventTimeRange(l10n, event),
+            child: Text(
+              DateFormat(
+                'EEEE d MMMM yyyy',
+              ).format(widget.occurrence ?? event.startTime),
+            ),
+          ),
+          if (event.location.isNotEmpty)
+            InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => _openLocation(event.location),
+              child: DetailRow(
+                icon: Icons.location_on_outlined,
+                subtitle: l10n.calendarLocationOpenMaps,
+                child: Text(event.location),
+              ),
+            ),
+          if (event.recurrence != RecurrenceType.none)
+            DetailRow(
+              icon: Icons.repeat,
+              child: Text(describeRecurrence(l10n, event)),
+            ),
+          if (event.notifiesDayBefore)
+            DetailRow(
+              icon: Icons.notifications_outlined,
+              subtitle: l10n.calendarAlertAt(dayBeforeAt),
+              child: Text(l10n.calendarAlertDayBefore),
+            ),
+          if (!event.isAllDay && event.notifiesSameDay)
+            DetailRow(
+              icon: Icons.notifications_active_outlined,
+              child: Text(eventAlertLabel(l10n, event.alertMinutesBefore)),
+            ),
+          if (event.isAllDay && event.notifiesSameDay)
+            DetailRow(
+              icon: Icons.notifications_active_outlined,
+              subtitle: l10n.calendarAlertAt(alertAt),
+              child: Text(l10n.calendarAlertSameDay),
+            ),
+          if (event.description.isNotEmpty)
+            DetailRow(
+              icon: Icons.notes,
+              child: SelectableText(event.description),
+            ),
+          if (members.isNotEmpty)
+            CollaboratorsSection(
+              members: members,
+              onTap: () => _showCollaborators(event),
+            ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            l10n.commonLastModified(
+              DateFormat('dd MMM, HH:mm').format(event.updatedAt),
+            ),
+            style: TextStyle(
+              fontSize: AppFontSizes.sm,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

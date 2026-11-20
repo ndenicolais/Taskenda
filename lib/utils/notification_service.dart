@@ -1,0 +1,322 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest_all.dart' as tz_data;
+import '../core/routing/notification_target.dart';
+import '../l10n/l10n.dart';
+import '../models/calendar_model.dart';
+import '../models/note_model.dart';
+import '../models/task_model.dart';
+import 'event_alerts.dart';
+import 'markdown_text.dart';
+import 'recurrence.dart';
+
+class NotificationService {
+  NotificationService._();
+  static final NotificationService instance = NotificationService._();
+
+  final _plugin = FlutterLocalNotificationsPlugin();
+
+  /// Target of the last tapped reminder, waiting to be opened by
+  /// `NotificationLaunchHandler` (which resets it to `null` once handled).
+  /// Set both when the app was launched by the tap and when it was already
+  /// running.
+  final ValueNotifier<NotificationTarget?> pendingTarget = ValueNotifier(null);
+
+  static const _channelId = 'taskenda_reminders';
+
+  Future<void> init() async {
+    tz_data.initializeTimeZones();
+    final localTz = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(localTz.identifier));
+
+    const androidSettings = AndroidInitializationSettings(
+      '@drawable/ic_notification',
+    );
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    const settings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
+    await _plugin.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (r) => _onTapped(r.payload),
+    );
+    await _createSharedChannel();
+
+    // App started (cold) by tapping a notification.
+    final launch = await _plugin.getNotificationAppLaunchDetails();
+    if (launch?.didNotificationLaunchApp ?? false) {
+      _onTapped(launch!.notificationResponse?.payload);
+    }
+  }
+
+  void _onTapped(String? payload) {
+    final target = NotificationTarget.parse(payload);
+    if (target != null) pendingTarget.value = target;
+  }
+
+  Future<bool> requestPermissions() async {
+    final android =
+        _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+    return await android?.requestNotificationsPermission() ?? false;
+  }
+
+  Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledAt,
+    required NotificationTarget target,
+    bool askPermission = true,
+  }) async {
+    final tzDate = tz.TZDateTime.from(scheduledAt, tz.local);
+    if (tzDate.isBefore(tz.TZDateTime.now(tz.local))) return;
+
+    // Asked here, when the user sets a reminder, rather than at startup:
+    // Android shows the dialog only if the permission is not granted yet.
+    // The resync after sign-in passes false, so no dialog pops up on its own.
+    if (askPermission) await requestPermissions();
+
+    // The channel name is updated by Android on every schedule, so it
+    // follows the current language.
+    final l10n = currentL10n();
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tzDate,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channelId,
+          l10n.notificationChannelName,
+          channelDescription: l10n.notificationChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@drawable/ic_notification',
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: target.encode(),
+    );
+  }
+
+  /// Schedules the reminder of [note] at [NoteModel.reminder] (no-op if it is
+  /// null or in the past).
+  Future<void> scheduleNoteReminder(
+    NoteModel note, {
+    bool askPermission = true,
+  }) async {
+    final reminder = note.reminder;
+    if (reminder == null) return;
+    final l10n = currentL10n();
+    final content = markdownToPlainText(note.content);
+    await scheduleNotification(
+      id: idForNote(note.id),
+      title:
+          note.title.isEmpty
+              ? l10n.editorReminderNotificationTitle
+              : note.title,
+      body:
+          content.isEmpty
+              ? l10n.editorReminderNotificationBody
+              : _preview(content),
+      scheduledAt: reminder,
+      target: NotificationTarget.note(note.id),
+      askPermission: askPermission,
+    );
+  }
+
+  /// Schedules the notification of [task] at its due time (no-op if the due
+  /// date has no time, or it is in the past).
+  Future<void> scheduleTaskReminder(
+    TaskModel task, {
+    bool askPermission = true,
+  }) async {
+    if (!task.hasDueTime) return;
+    final l10n = currentL10n();
+    await scheduleNotification(
+      id: idForTask(task.id),
+      title:
+          task.title.isEmpty
+              ? l10n.taskEditorReminderNotificationTitle
+              : task.title,
+      body:
+          task.description.isEmpty
+              ? l10n.taskEditorReminderNotificationBody
+              : _preview(task.description),
+      scheduledAt: task.dueDate!,
+      target: NotificationTarget.task(task.id),
+      askPermission: askPermission,
+    );
+  }
+
+  /// Replaces the scheduled alerts of [event] with its [upcomingEventAlerts]
+  /// (at the start time for a timed event, on the chosen days for an all-day
+  /// one; none if it is archived or trashed). Each alert gets its own
+  /// notification id; all-day events alert at [allDayMinutes] (minutes after
+  /// midnight, the Settings value), their day-before alerts at
+  /// [dayBeforeMinutes] (the same time when null).
+  ///
+  /// [pendingIds] are the ids already scheduled (see [pendingIds]): batch
+  /// callers read them once and pass them in, an empty set right after
+  /// [cancelAllNotifications]. Each plugin call runs on the Android main
+  /// thread, so one cancel per possible alert id, for hundreds of events,
+  /// froze the UI (and the keyboard) for tens of seconds at every start.
+  Future<void> scheduleEventAlerts(
+    CalendarEventModel event, {
+    required int allDayMinutes,
+    int? dayBeforeMinutes,
+    bool askPermission = true,
+    Set<int>? pendingIds,
+  }) async {
+    if (kIsWeb) return;
+    await cancelEventAlerts(event.id, pendingIds: pendingIds);
+    final alerts = upcomingEventAlerts(
+      event,
+      DateTime.now(),
+      allDayMinutes: allDayMinutes,
+      dayBeforeMinutes: dayBeforeMinutes,
+    );
+    if (alerts.isEmpty) return;
+    final l10n = currentL10n();
+    final title =
+        event.title.isEmpty
+            ? l10n.calendarReminderNotificationTitle
+            : event.title;
+    for (var i = 0; i < alerts.length; i++) {
+      final alert = alerts[i];
+      final when =
+          event.isAllDay
+              ? l10n.calendarAllDay
+              : '${alert.occurrence.hour.toString().padLeft(2, '0')}:'
+                  '${alert.occurrence.minute.toString().padLeft(2, '0')}';
+      await scheduleNotification(
+        id: idForEventAlert(event.id, i),
+        title: title,
+        // "Domani" also for a timed alert set a day (or hours) ahead.
+        body:
+            calendarDaysBetween(alert.at, alert.occurrence) >= 1
+                ? l10n.calendarAlertBodyTomorrow(when)
+                : l10n.calendarAlertBodyToday(when),
+        scheduledAt: alert.at,
+        target: NotificationTarget.event(event.id),
+        // Ask once, on the first alert, not for each of them.
+        askPermission: askPermission && i == 0,
+      );
+    }
+  }
+
+  /// Cancels the scheduled day-before / same-day alerts of the event
+  /// [eventId]: only the ids among [pendingIds] (read from the plugin when
+  /// null), not every possible one.
+  Future<void> cancelEventAlerts(String eventId, {Set<int>? pendingIds}) async {
+    if (kIsWeb) return;
+    final pending = pendingIds ?? await this.pendingIds();
+    for (var i = 0; i < maxEventAlerts; i++) {
+      final id = idForEventAlert(eventId, i);
+      if (pending.contains(id)) await _plugin.cancel(id);
+    }
+  }
+
+  /// Ids of the notifications currently scheduled on this device.
+  Future<Set<int>> pendingIds() async {
+    if (kIsWeb) return const {};
+    final requests = await _plugin.pendingNotificationRequests();
+    return {for (final r in requests) r.id};
+  }
+
+  /// Channel of the "shared with you" notifications. Also the default
+  /// channel of the push messages (AndroidManifest), so it is created at
+  /// [init], before any push arrives.
+  static const sharedChannelId = 'taskenda_shared_notes';
+
+  Future<void> _createSharedChannel() async {
+    final l10n = currentL10n();
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(
+          AndroidNotificationChannel(
+            sharedChannelId,
+            l10n.shareNotificationChannelName,
+            description: l10n.shareNotificationChannelDescription,
+            importance: Importance.high,
+          ),
+        );
+  }
+
+  /// Shows a "shared with you" push received while the app is in the
+  /// foreground (Android shows it by itself only in the background).
+  /// Tapping it opens [target].
+  Future<void> showShared({
+    required String title,
+    required String body,
+    NotificationTarget? target,
+  }) async {
+    if (kIsWeb) return;
+    final l10n = currentL10n();
+    await _plugin.show(
+      idForShared(target?.id ?? '$title$body'),
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          sharedChannelId,
+          l10n.shareNotificationChannelName,
+          channelDescription: l10n.shareNotificationChannelDescription,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@drawable/ic_notification',
+        ),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      payload: target?.encode(),
+    );
+  }
+
+  static String _preview(String text) =>
+      text.substring(0, text.length > 80 ? 80 : text.length);
+
+  Future<void> cancelNotification(int id) async {
+    await _plugin.cancel(id);
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _plugin.cancelAll();
+  }
+
+  /// Unique int ID derived from a note UUID.
+  static int idForNote(String noteId) => noteId.hashCode.abs() % 100000;
+
+  /// Unique int ID derived from a task UUID (offset to avoid collisions).
+  static int idForTask(String taskId) =>
+      (taskId.hashCode.abs() % 100000) + 100000;
+
+  /// Alerts per event: one day-before and one same-day per occurrence.
+  static const maxEventAlerts = maxAlertOccurrences * 2;
+
+  /// Id of the [index]-th alert of a calendar event, in its own range above
+  /// the note and task ones.
+  static int idForEventAlert(String eventId, int index) =>
+      1000000 + (eventId.hashCode.abs() % 100000) * maxEventAlerts + index;
+
+  /// Id of a "shared with you" notification, above the event alerts.
+  static int idForShared(String itemId) =>
+      3000000 + itemId.hashCode.abs() % 100000;
+}

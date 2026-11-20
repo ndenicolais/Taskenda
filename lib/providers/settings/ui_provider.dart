@@ -1,0 +1,359 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+//
+// Commercial use, including publishing or monetizing on any app store,
+// requires explicit written permission from the copyright holder.
+//
+// Author: Nicola De Nicolais
+// Contact: ndn21dev@gmail.com
+// GitHub: https://github.com/ndenicolais
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core_providers.dart';
+import '../labels_provider.dart';
+import '../notes_provider.dart';
+import '../tasks_provider.dart';
+import '../../models/note_model.dart';
+import '../../models/task_model.dart';
+import '../../utils/event_alerts.dart';
+
+/// Base for a Notifier whose enum value is persisted to SharedPreferences by
+/// *name* rather than index, so a future reordering or removal of enum
+/// values can't make a stored preference point at the wrong value (or throw
+/// a RangeError). Every change goes through [set], which also saves it, so a
+/// new setting can't forget to save itself.
+abstract class PersistedEnumNotifier<T extends Enum> extends Notifier<T> {
+  PersistedEnumNotifier(this._key, this._values, this._defaultValue);
+
+  final String _key;
+  final List<T> _values;
+  final T _defaultValue;
+
+  @override
+  T build() {
+    final name = ref.watch(sharedPreferencesProvider).getString(_key);
+    for (final v in _values) {
+      if (v.name == name) return v;
+    }
+    // Missing or stale value (e.g. saved by a since-removed enum entry) —
+    // keep the default instead of throwing.
+    return _defaultValue;
+  }
+
+  void set(T value) {
+    state = value;
+    ref.read(sharedPreferencesProvider).setString(_key, value.name);
+  }
+}
+
+// --- Home Layout ---
+
+enum HomeLayout { grid, list }
+
+const _kLayoutKey = 'home_layout_v2';
+
+class HomeLayoutNotifier extends PersistedEnumNotifier<HomeLayout> {
+  HomeLayoutNotifier() : super(_kLayoutKey, HomeLayout.values, HomeLayout.grid);
+
+  void toggle() =>
+      set(state == HomeLayout.grid ? HomeLayout.list : HomeLayout.grid);
+}
+
+final homeLayoutProvider = NotifierProvider<HomeLayoutNotifier, HomeLayout>(
+  HomeLayoutNotifier.new,
+);
+
+// --- Start Section ---
+
+/// The section shown when the app opens. Notes is the root screen, so the
+/// other choices are opened on top of it at launch.
+enum StartSection { calendar, tasks, notes }
+
+const _kStartSectionKey = 'start_section';
+
+class StartSectionNotifier extends PersistedEnumNotifier<StartSection> {
+  StartSectionNotifier()
+    : super(_kStartSectionKey, StartSection.values, StartSection.notes);
+}
+
+final startSectionProvider =
+    NotifierProvider<StartSectionNotifier, StartSection>(
+      StartSectionNotifier.new,
+    );
+
+// --- Sort Order ---
+
+enum SortOrder {
+  custom,
+  createdNewest,
+  createdOldest,
+  modifiedNewest,
+  modifiedOldest,
+}
+
+const _kSortKey = 'sort_order_v2';
+
+class SortOrderNotifier extends PersistedEnumNotifier<SortOrder> {
+  SortOrderNotifier()
+    : super(_kSortKey, SortOrder.values, SortOrder.createdNewest);
+}
+
+final sortOrderProvider = NotifierProvider<SortOrderNotifier, SortOrder>(
+  SortOrderNotifier.new,
+);
+
+// --- Task Sort Order ---
+
+const _kTaskSortKey = 'task_sort_order_v2';
+
+class TaskSortOrderNotifier extends PersistedEnumNotifier<SortOrder> {
+  TaskSortOrderNotifier()
+    : super(_kTaskSortKey, SortOrder.values, SortOrder.createdNewest);
+}
+
+final taskSortOrderProvider =
+    NotifierProvider<TaskSortOrderNotifier, SortOrder>(
+      TaskSortOrderNotifier.new,
+    );
+
+// --- Search & Filters ---
+
+final searchQueryProvider = valueStateProvider<String>('');
+final taskSearchQueryProvider = valueStateProvider<String>('');
+
+final filteredNotesProvider = Provider<List<NoteModel>>((ref) {
+  final notes = ref.watch(activeNotesProvider);
+  final query = ref.watch(searchQueryProvider).toLowerCase();
+  final sort = ref.watch(sortOrderProvider);
+
+  var filtered = notes;
+  if (query.isNotEmpty) {
+    filtered =
+        filtered.where((n) {
+          return n.title.toLowerCase().contains(query) ||
+              n.content.toLowerCase().contains(query);
+        }).toList();
+  }
+
+  switch (sort) {
+    case SortOrder.createdNewest:
+      filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      break;
+    case SortOrder.createdOldest:
+      filtered.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      break;
+    case SortOrder.modifiedNewest:
+      filtered.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+      break;
+    case SortOrder.modifiedOldest:
+      filtered.sort((a, b) => a.updatedAt.compareTo(b.updatedAt));
+      break;
+    case SortOrder.custom:
+      filtered.sort(compareCustomOrder);
+      break;
+  }
+
+  // Pinned notes always come first, each group keeping the chosen order.
+  // With the custom order, dragging a note across the boundary only moves
+  // it to the edge of its own group.
+  return [
+    ...filtered.where((n) => n.isPinned),
+    ...filtered.where((n) => !n.isPinned),
+  ];
+});
+
+/// Ids of [filteredNotesProvider], in display order: the Home screen watches
+/// this, so editing a note's content (without changing which notes match or
+/// their order) only rebuilds that note's card.
+final filteredNoteIdsProvider = Provider<IdList>((ref) {
+  return IdList(ref.watch(filteredNotesProvider).map((n) => n.id));
+});
+
+final filteredTasksProvider = Provider<List<TaskModel>>((ref) {
+  final tasks = ref.watch(activeTasksProvider);
+  final query = ref.watch(taskSearchQueryProvider).toLowerCase();
+
+  if (query.isEmpty) return tasks;
+  return tasks.where((t) {
+    return t.title.toLowerCase().contains(query) ||
+        t.description.toLowerCase().contains(query);
+  }).toList();
+});
+
+/// Every label name, sorted: the ones in [labelsProvider] plus any found
+/// only on notes.
+final allTagsProvider = Provider<List<String>>((ref) {
+  final notes = ref.watch(notesProvider);
+  final labels = ref.watch(labelsProvider);
+  final tags = <String>{};
+  for (final n in notes) {
+    tags.addAll(n.tags);
+  }
+  tags.addAll(labels.map((l) => l.name));
+  return tags.toList()..sort();
+});
+
+/// Number of notes (archived ones included, trashed ones excluded) using
+/// each label.
+final tagNoteCountsProvider = Provider<Map<String, int>>((ref) {
+  final counts = <String, int>{};
+  for (final n in ref.watch(notesProvider)) {
+    if (n.deletedAt != null) continue;
+    for (final t in n.tags) {
+      counts[t] = (counts[t] ?? 0) + 1;
+    }
+  }
+  return counts;
+});
+
+/// Notes not in the trash with label [tag], archived ones last.
+final notesWithTagProvider = Provider.autoDispose
+    .family<List<NoteModel>, String>((ref, tag) {
+      final active = ref.watch(activeNotesProvider);
+      final archived = ref.watch(archivedNotesProvider);
+      return [
+        ...active.where((n) => n.tags.contains(tag)),
+        ...archived.where((n) => n.tags.contains(tag)),
+      ];
+    });
+
+// --- Notes FAB ---
+
+const _kNotesFabMenuKey = 'notes_fab_menu';
+
+/// Whether the "+" button of the notes section opens the speed-dial menu
+/// (note, checklist, task, audio, template) or creates a note directly.
+final notesFabMenuProvider = NotifierProvider<BoolSettingNotifier, bool>(
+  () => BoolSettingNotifier(_kNotesFabMenuKey, true),
+);
+
+// --- Task Settings ---
+
+const _kShowCompletedTasksKey = 'show_completed_tasks';
+const _kGroupTasksByPriorityKey = 'group_tasks_by_priority';
+
+final showCompletedTasksProvider = NotifierProvider<BoolSettingNotifier, bool>(
+  () => BoolSettingNotifier(_kShowCompletedTasksKey, true),
+);
+
+final groupTasksByPriorityProvider =
+    NotifierProvider<BoolSettingNotifier, bool>(
+      () => BoolSettingNotifier(_kGroupTasksByPriorityKey, true),
+    );
+
+// --- Default Alert Time ---
+
+const _kDefaultAlertMinutesKey = 'default_alert_minutes';
+
+/// Time of the notifications that have no time of their own (the same-day
+/// alerts of all-day events, birthdays and name days included) and the time first
+/// offered when picking a task's due time, in minutes after midnight.
+/// Change it through `RemindersActions.setDefaultAlertTime`, which also
+/// reschedules the alerts.
+class DefaultAlertTimeNotifier extends Notifier<int> {
+  @override
+  int build() {
+    final v = ref
+        .watch(sharedPreferencesProvider)
+        .getInt(_kDefaultAlertMinutesKey);
+    return v != null && v >= 0 && v < 24 * 60 ? v : defaultAllDayAlertMinutes;
+  }
+
+  void set(int minutes) {
+    state = minutes;
+    ref
+        .read(sharedPreferencesProvider)
+        .setInt(_kDefaultAlertMinutesKey, minutes);
+  }
+}
+
+final defaultAlertTimeProvider =
+    NotifierProvider<DefaultAlertTimeNotifier, int>(
+      DefaultAlertTimeNotifier.new,
+    );
+
+const _kEventAlertOffsetKey = 'event_alert_offset_minutes';
+
+/// Alert given to new timed events (and to imported ones without an alert
+/// of their own), in minutes before the start; [noEventAlert] for none.
+/// Changing it leaves the existing events as they are.
+class EventAlertOffsetNotifier extends Notifier<int> {
+  @override
+  int build() {
+    final v = ref
+        .watch(sharedPreferencesProvider)
+        .getInt(_kEventAlertOffsetKey);
+    return v != null && (v == noEventAlert || (v >= 0 && v <= 7 * 24 * 60))
+        ? v
+        : defaultEventAlertOffset;
+  }
+
+  void set(int minutes) {
+    state = minutes;
+    ref.read(sharedPreferencesProvider).setInt(_kEventAlertOffsetKey, minutes);
+  }
+}
+
+final eventAlertOffsetProvider =
+    NotifierProvider<EventAlertOffsetNotifier, int>(
+      EventAlertOffsetNotifier.new,
+    );
+
+const _kDayBeforeAlertMinutesKey = 'day_before_alert_minutes';
+
+/// Time of the day-before alerts of all-day events (birthdays and name days
+/// included), in minutes after midnight, independent of the same-day one.
+/// Until it is set it follows [defaultAlertTimeProvider], as before it
+/// existed. Change it through `RemindersActions.setDayBeforeAlertTime`,
+/// which also reschedules the alerts.
+class DayBeforeAlertTimeNotifier extends Notifier<int> {
+  @override
+  int build() {
+    final v = ref
+        .watch(sharedPreferencesProvider)
+        .getInt(_kDayBeforeAlertMinutesKey);
+    return v != null && v >= 0 && v < 24 * 60
+        ? v
+        : ref.watch(defaultAlertTimeProvider);
+  }
+
+  void set(int minutes) {
+    state = minutes;
+    ref
+        .read(sharedPreferencesProvider)
+        .setInt(_kDayBeforeAlertMinutesKey, minutes);
+  }
+}
+
+final dayBeforeAlertTimeProvider =
+    NotifierProvider<DayBeforeAlertTimeNotifier, int>(
+      DayBeforeAlertTimeNotifier.new,
+    );
+
+// --- Onboarding ---
+
+const _kOnboardingSeenKey = 'onboarding_seen';
+
+/// Whether the first-launch introduction has been completed or skipped.
+final onboardingSeenProvider = NotifierProvider<BoolSettingNotifier, bool>(
+  () => BoolSettingNotifier(_kOnboardingSeenKey, false),
+);
+
+/// A boolean preference persisted to SharedPreferences under its key.
+class BoolSettingNotifier extends Notifier<bool> {
+  BoolSettingNotifier(this._key, this._defaultValue);
+
+  final String _key;
+  final bool _defaultValue;
+
+  @override
+  bool build() =>
+      ref.watch(sharedPreferencesProvider).getBool(_key) ?? _defaultValue;
+
+  void toggle() => set(!state);
+
+  void set(bool value) {
+    state = value;
+    ref.read(sharedPreferencesProvider).setBool(_key, value);
+  }
+}

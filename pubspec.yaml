@@ -1,0 +1,147 @@
+name: taskenda
+description: "Calendar, tasks and notes in one app."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI & Styling
+  flutter_riverpod: ^2.6.1
+  uuid: ^4.5.1
+  shared_preferences: ^2.3.4
+  intl: ^0.20.2
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  path_provider: ^2.1.4
+
+  # Firebase
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.3
+  google_sign_in: ^6.2.2
+  cloud_firestore: ^5.6.6
+  # Push notifications when an item is shared (sent by functions/)
+  firebase_messaging: ^15.2.10
+
+  # Backup & Storage
+  archive: ^3.6.1
+
+  # Notifications & Reminders
+  flutter_local_notifications: ^18.0.1
+  flutter_timezone: ^5.1.1
+  timezone: ^0.9.4
+
+  # Share
+  share_plus: ^13.3.1
+
+  # File Picker
+  file_picker: ^13.2.0
+
+  # Markdown
+  flutter_markdown: ^0.7.6
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # Home Widget
+  home_widget: ^0.9.1
+
+  # Audio
+  record: ^6.0.0
+  just_audio: ^0.9.39
+
+  # Links
+  url_launcher: ^6.3.3
+
+  # Place suggestions for event locations (searchPlaces Cloud Function)
+  http: ^1.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  fake_cloud_firestore: ^3.1.0
+  flutter_launcher_icons: ^0.14.2
+
+# Sources in assets/images/icons/ (not bundled: only assets/images/ is listed
+# below). The foreground already includes the adaptive-icon safe zone, so no
+# extra inset.
+flutter_launcher_icons:
+  android: "launcher_icon"
+  min_sdk_android: 21
+  ios: false # no iOS project; set true and remove_alpha_ios: true if added
+  image_path: "assets/images/icons/icon_full.png"
+  adaptive_icon_background: "#5B5BD6"
+  adaptive_icon_foreground: "assets/images/icons/icon_foreground.png"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/images/icons/icon_monochrome.png"
+  web:
+    generate: true
+    image_path: "assets/images/icons/icon_full.png"
+    background_color: "#5B5BD6"
+    theme_color: "#5B5BD6"
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/fonts/
+    - assets/images/
+
+  fonts:
+    # UI fonts (AppTheme): Manrope for titles/headlines, Inter for body/labels.
+    # Static files, one per weight, so FontWeight always picks the right cut.
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Manrope-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Manrope-ExtraBold.ttf
+          weight: 800
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+    - family: Exo 2
+      fonts:
+        - asset: assets/fonts/Exo2-var.ttf
+        - asset: assets/fonts/Exo2-Italic-var.ttf
+          style: italic
+
+    - family: Montserrat
+      fonts:
+        - asset: assets/fonts/Montserrat-var.ttf
+        - asset: assets/fonts/Montserrat-Italic-var.ttf
+          style: italic
+
+    - family: Open Sans
+      fonts:
+        - asset: assets/fonts/OpenSans-var.ttf
+        - asset: assets/fonts/OpenSans-Italic-var.ttf
+          style: italic
+
+    - family: Dancing Script
+      fonts:
+        - asset: assets/fonts/DancingScript-var.ttf
+
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/PlayfairDisplay-var.ttf
+        - asset: assets/fonts/PlayfairDisplay-Italic-var.ttf
+          style: italic
+
+    - family: Pacifico
+      fonts:
+        - asset: assets/fonts/Pacifico-Regular.ttf

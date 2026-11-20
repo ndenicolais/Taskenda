@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home screen widgets (layout/*_widget.xml, drawable/ic_widget_*.xml),
+         from the AppColors palette (light theme). -->
+    <color name="widget_icon">#FF5B5BD6</color>
+    <color name="widget_text">#FF1B1B2F</color>
+    <color name="widget_text_secondary">#FF4A4A63</color>
+    <color name="widget_header">#FF5B5BD6</color>
+    <color name="widget_divider">#FFE4E4F0</color>
+</resources>

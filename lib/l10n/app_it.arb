@@ -1,0 +1,873 @@
+{
+  "@@locale": "it",
+  "settingsAppearanceTitle": "Aspetto",
+  "settingsThemeSystem": "Sistema",
+  "settingsThemeLight": "Chiaro",
+  "settingsThemeDark": "Scuro",
+  "settingsLanguageTitle": "Lingua",
+  "settingsStartScreenTitle": "Schermata iniziale",
+  "settingsStartScreenSubtitle": "La sezione che vedi quando apri l'app",
+  "settingsNotificationsTitle": "Notifiche",
+  "settingsDefaultAlertTime": "Avviso il giorno stesso",
+  "settingsDefaultAlertTimeSubtitle": "Per eventi di tutto il giorno, compleanni e onomastici; è anche l'orario proposto per le scadenze dei task",
+  "settingsDayBeforeAlertTime": "Avviso il giorno prima",
+  "settingsDayBeforeAlertTimeSubtitle": "Per eventi di tutto il giorno, compleanni e onomastici",
+  "settingsLanguageSystem": "Sistema",
+  "changelog_dialog_title": "Novità",
+  "changelog_dialog_close": "Chiudi",
+  "changelog_section_added": "Novità",
+  "changelog_section_improved": "Miglioramenti",
+  "changelog_section_fixed": "Correzioni",
+  "changelog_section_security": "Sicurezza",
+  "commonCancel": "Annulla",
+  "commonRetry": "Riprova",
+  "commonEmail": "Email",
+  "commonPassword": "Password",
+  "commonGenericError": "Si è verificato un errore. Riprova.",
+  "loginTagline": "Il tuo taccuino digitale",
+  "loginTabSignIn": "Accedi",
+  "loginTabRegister": "Registrati",
+  "loginOr": "oppure",
+  "loginContinueWithGoogle": "Continua con Google",
+  "loginPrivacyNotice": "Continuando confermi di avere almeno 14 anni e di aver letto l'informativa sulla privacy.",
+  "loginForgotPassword": "Password dimenticata?",
+  "loginSubmitSignIn": "Accedi",
+  "loginConfirmPassword": "Conferma password",
+  "loginSubmitRegister": "Crea account",
+  "loginShowPassword": "Mostra password",
+  "loginHidePassword": "Nascondi password",
+  "loginResetEmailSent": "Email di reimpostazione inviata.",
+  "loginResetTitle": "Reimposta password",
+  "loginResetSend": "Invia",
+  "validationEmailEmpty": "Inserisci la tua email.",
+  "validationEmailInvalid": "Formato email non valido.",
+  "validationPasswordEmpty": "Inserisci la password.",
+  "validationPasswordTooShort": "Minimo 6 caratteri.",
+  "validationPasswordMismatch": "Le password non coincidono.",
+  "authErrorUserNotFound": "Nessun account trovato con questa email.",
+  "authErrorWrongPassword": "Password errata. Riprova.",
+  "authErrorInvalidCredential": "Credenziali non valide. Controlla email e password.",
+  "authErrorEmailInUse": "Questa email è già associata a un account.",
+  "authErrorWeakPassword": "La password è troppo debole (min. 6 caratteri).",
+  "authErrorTooManyRequests": "Troppi tentativi. Riprova più tardi.",
+  "authErrorNetwork": "Errore di rete. Controlla la connessione.",
+  "authErrorUserMismatch": "L'account scelto non è quello con cui hai effettuato l'accesso.",
+  "authErrorRequiresRecentLogin": "Per sicurezza, esci e accedi di nuovo prima di riprovare.",
+  "onboardingSkip": "Salta",
+  "onboardingNext": "Avanti",
+  "onboardingStart": "Inizia",
+  "onboardingWelcomeTitle": "Benvenuto in Taskenda",
+  "onboardingWelcomeBody": "Note, attività e calendario in un unico posto, sincronizzati sul tuo account e disponibili su tutti i tuoi dispositivi.",
+  "onboardingNotesTitle": "Note",
+  "onboardingNotesBody": "Scrivi note con stili personalizzati, Markdown, liste di controllo e note audio. Organizzale con etichette e collegale tra loro.",
+  "onboardingTasksTitle": "Attività",
+  "onboardingTasksBody": "Crea elenchi di attività con sottoattività, date e ricorrenze: se aggiungi un orario ricevi una notifica. Scorri un'attività verso destra per completarla.",
+  "onboardingCalendarTitle": "Calendario",
+  "onboardingCalendarBody": "Pianifica eventi con vista giorno, settimana, mese, anno e programma. Importa ed esporta i tuoi calendari in formato ICS.",
+  "onboardingRemindersTitle": "Notifiche e backup",
+  "onboardingRemindersBody": "Aggiungi un orario ad attività ed eventi per ricevere una notifica, o un promemoria alle note. Esporta le note e crea backup manuali o automatici dalle Impostazioni.",
+  "bootErrorTitle": "Impossibile avviare Taskenda",
+  "bootErrorBody": "Si è verificato un problema durante l'avvio. Controlla la connessione e riprova.",
+  "unknownRouteTitle": "Pagina non trovata",
+  "unknownRouteBody": "Il contenuto che cercavi non è disponibile.",
+  "unknownRouteHome": "Torna alla home",
+  "commonClose": "Chiudi",
+  "commonDelete": "Elimina",
+  "commonUndo": "Annulla",
+  "commonHide": "Nascondi",
+  "commonOk": "OK",
+  "commonDone": "Fine",
+  "dateTimePickerAddTime": "Aggiungi orario",
+  "dateTimePickerRemoveTime": "Rimuovi orario",
+  "commonPin": "Fissa",
+  "commonUnpin": "Rimuovi pin",
+  "commonArchive": "Archivia",
+  "commonUnarchive": "Ripristina",
+  "commonMoveToTrash": "Sposta nel cestino",
+  "commonTrash": "Cestino",
+  "commonLoading": "Caricamento…",
+  "commonClearSearch": "Cancella ricerca",
+  "commonUntitled": "Senza titolo",
+  "commonBold": "Grassetto",
+  "commonItalic": "Corsivo",
+  "commonFont": "Font",
+  "commonMoveEarlier": "Sposta prima",
+  "commonMoveLater": "Sposta dopo",
+  "commonRemoveReminder": "Rimuovi promemoria",
+  "commonSyncError": "Errore di sincronizzazione. Verifica la connessione e riprova.",
+  "commonLinkOpenFailed": "Impossibile aprire il link",
+  "appLogoLabel": "Logo Taskenda",
+  "navNotes": "Note",
+  "navTasks": "Task",
+  "navCalendar": "Calendario",
+  "navLabels": "Etichette",
+  "navArchive": "Archivio",
+  "navTrash": "Cestino",
+  "navSettings": "Impostazioni",
+  "navSignOut": "Esci",
+  "navExpandMenu": "Espandi menu",
+  "navCollapseMenu": "Comprimi menu",
+  "navOpenMenu": "Apri menu",
+  "syncChangeRejected": "Una modifica non è stata sincronizzata ed è stata annullata.",
+  "syncPendingBanner": "Modifiche non ancora sincronizzate: verranno inviate appena torni online.",
+  "sortTitle": "Ordina per",
+  "sortCreatedDate": "Data di creazione",
+  "sortModifiedDate": "Data di modifica",
+  "sortNewestFirst": "Più recenti prima",
+  "sortOldestFirst": "Più vecchie prima",
+  "homeSearchHint": "Cerca nelle note...",
+  "homeSortTooltip": "Ordina note",
+  "homeNewNote": "Nuova nota",
+  "homeNoResults": "Nessuna nota trovata",
+  "homeEmpty": "Ancora nessuna nota",
+  "homeCreateFirst": "Crea la prima nota",
+  "homeFabTask": "Task",
+  "homeFabChecklist": "Lista",
+  "homeFabNote": "Nota",
+  "homeFabAudio": "Audio",
+  "homeFabTemplate": "Modello",
+  "homeFabCloseMenu": "Chiudi menu azioni rapide",
+  "homeFabOpenMenu": "Nuova azione rapida",
+  "homeFabCloseTooltip": "Chiudi",
+  "homeFabOpenTooltip": "Nuovo",
+  "noteArchived": "Nota archiviata",
+  "noteUnarchived": "Nota rimossa dall'archivio",
+  "noteTrashed": "Nota spostata nel cestino",
+  "noteOpenHint": "Apri nota",
+  "noteReminderSetLabel": "Promemoria impostato",
+  "notePinnedLabel": "Nota fissata",
+  "taskPinnedLabel": "Task fissato",
+  "noteChecklistMore": "+{count} altri",
+  "@noteChecklistMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editorUndo": "Annulla",
+  "editorRedo": "Ripeti",
+  "editorInsertLink": "Inserisci link",
+  "editorEdit": "Modifica",
+  "editorMarkdownPreview": "Anteprima Markdown",
+  "editorShare": "Condividi",
+  "editorBackgroundColor": "Colore sfondo",
+  "editorEditStyle": "Modifica stile",
+  "editorReminder": "Promemoria",
+  "editorLinkNote": "Collega nota",
+  "editorRecordAudio": "Registra audio",
+  "editorAddItem": "Aggiungi elemento",
+  "editorDeleteNote": "Elimina nota",
+  "editorDeleteConfirm": "Vuoi spostare questa nota nel cestino?",
+  "editorTitleHint": "Titolo",
+  "editorContentHint": "Nota",
+  "editorItemHint": "Elemento...",
+  "editorChooseBackground": "Scegli colore sfondo",
+  "editorReminderFailed": "Impossibile pianificare il promemoria.",
+  "editorReminderNotificationTitle": "Promemoria nota",
+  "editorReminderNotificationBody": "Hai un promemoria per questa nota",
+  "editorAudioSection": "Audio",
+  "editorLinkedNotes": "Note collegate",
+  "editorRecordingError": "Impossibile registrare l'audio. Controlla il permesso del microfono.",
+  "editorStopAndAttach": "Ferma e allega",
+  "editorLinkText": "Testo (facoltativo)",
+  "editorLinkAddress": "Indirizzo",
+  "editorLinkInvalid": "Inserisci un indirizzo valido",
+  "editorLinkInsert": "Inserisci",
+  "editorSearchNoteHint": "Cerca nota...",
+  "editorUntitledNote": "Nota senza titolo",
+  "styleTitle": "Stile testo",
+  "styleSectionTitle": "Titolo",
+  "styleSectionBody": "Corpo",
+  "styleSize": "Dimensione: {size}pt",
+  "@styleSize": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "styleStrikethrough": "Sbarrato",
+  "styleTextColor": "Colore testo",
+  "styleTitleColor": "Colore titolo",
+  "styleResetTitle": "Ripristina stile titolo",
+  "styleMaterialColors": "Colori Material",
+  "templateChoose": "Scegli un modello",
+  "templateSectionNotes": "Note",
+  "templateSectionChecklists": "Checklist",
+  "templateMeetingName": "Note riunione",
+  "templateMeetingDescription": "Struttura per prendere appunti durante una riunione",
+  "templateMeetingContent": "## Riunione del [DATA]\n\n**Partecipanti:**\n- \n\n**Ordine del giorno:**\n1. \n\n**Punti discussi:**\n\n**Decisioni prese:**\n\n**Azioni da fare:**\n- \n\n**Prossima riunione:** ",
+  "templateJournalName": "Diario giornaliero",
+  "templateJournalDescription": "Traccia i tuoi pensieri e obiettivi del giorno",
+  "templateJournalContent": "## [DATA]\n\n**Come mi sento oggi:**\n\n**Tre cose per cui sono grato:**\n1. \n2. \n3. \n\n**Obiettivi di oggi:**\n\n**Riflessioni della giornata:**\n",
+  "templateProjectName": "Piano di progetto",
+  "templateProjectDescription": "Organizza obiettivi, milestones e risorse di un progetto",
+  "templateProjectContent": "## Progetto: [NOME]\n\n**Obiettivo:**\n\n**Scadenza:**\n\n**Milestones:**\n- [ ] \n- [ ] \n\n**Risorse necessarie:**\n\n**Note:**\n",
+  "templateShoppingName": "Lista spesa",
+  "templateShoppingDescription": "Lista della spesa con caselle di controllo",
+  "templateShoppingItems": "Frutta e verdura\nLatte\nPane\nUova",
+  "templateTravelName": "Lista viaggio",
+  "templateTravelDescription": "Non dimenticare nulla per il tuo viaggio",
+  "templateTravelItems": "Passaporto / Documenti\nCaricabatterie\nVestiti\nProdotti da toilette\nMedicinali\nContanti / Carte",
+  "templateIdeasName": "Brainstorming idee",
+  "templateIdeasDescription": "Spazio libero per raccogliere idee",
+  "templateIdeasContent": "## Idea: [TITOLO]\n\n**Descrizione:**\n\n**Pro:**\n- \n\n**Contro:**\n- \n\n**Prossimi passi:**\n",
+  "commonEdit": "Modifica",
+  "commonShare": "Condividi",
+  "commonReminderScheduled": "Promemoria: {date}",
+  "@commonReminderScheduled": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonReminderRemoved": "Promemoria rimosso",
+  "commonLastModified": "Ultima modifica: {date}",
+  "@commonLastModified": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksSearchHint": "Cerca tra i task...",
+  "tasksSortTooltip": "Ordina task",
+  "tasksNewTask": "Nuovo task",
+  "tasksNewTaskHint": "Cosa devi fare?",
+  "tasksNewList": "Nuovo elenco",
+  "tasksListNameHint": "Nome elenco",
+  "tasksCreate": "Crea",
+  "tasksDeleteList": "Elimina elenco",
+  "tasksDeleteListConfirm": "Vuoi davvero eliminare l'elenco \"{name}\"?",
+  "@tasksDeleteListConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksTabAll": "Tutte",
+  "tasksTabStarred": "Speciali",
+  "tasksEmpty": "Nessun task trovato",
+  "tasksCompletedSection": "Completati",
+  "tasksComplete": "Completa",
+  "tasksReopen": "Riapri",
+  "tasksCompleted": "Task completato",
+  "tasksReopened": "Task riaperto",
+  "tasksTrashed": "Task spostato nel cestino",
+  "tasksUnarchived": "Task rimosso dall'archivio",
+  "tasksAddStar": "Aggiungi agli speciali",
+  "tasksRemoveStar": "Rimuovi dagli speciali",
+  "tasksMoveToList": "Sposta in elenco",
+  "tasksDeleteTask": "Elimina task",
+  "tasksDeleteTaskNamedConfirm": "Vuoi spostare \"{title}\" nel cestino?",
+  "@tasksDeleteTaskNamedConfirm": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "tasksDeleteTaskConfirm": "Vuoi spostare questo task nel cestino?",
+  "tasksDeleteRecurringTitle": "Elimina task ricorrente",
+  "tasksDeleteThisOccurrence": "Solo questo task",
+  "tasksDeleteAllOccurrences": "Questo e tutti i successivi",
+  "tasksOccurrenceDeleted": "Task eliminato, passato alla prossima ripetizione",
+  "tasksMoveToListTitle": "Sposta in un elenco",
+  "tasksAddDetails": "Aggiungi dettagli",
+  "tasksRemoveDueDate": "Rimuovi data",
+  "tasksNoList": "Nessun elenco",
+  "tasksUnknownList": "Sconosciuto",
+  "taskEditorTitle": "Task",
+  "taskEditorUndo": "Annulla (Ctrl+Z)",
+  "taskEditorRedo": "Ripeti (Ctrl+Y)",
+  "taskEditorUnpin": "Sposta in alto",
+  "taskEditorPin": "Fissa in alto",
+  "taskEditorDueDate": "Imposta data e ora",
+  "taskEditorRecurrence": "Imposta ripetizione",
+  "taskEditorRecurrenceTitle": "Ripetizione",
+  "taskEditorTitleHint": "Titolo task",
+  "taskEditorDescriptionHint": "Descrizione...",
+  "taskEditorSubtasks": "Sottoattività ({completed}/{total})",
+  "@taskEditorSubtasks": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "taskEditorAddSubtaskHint": "Aggiungi sottoattività...",
+  "taskEditorReminderNotificationTitle": "Promemoria task",
+  "taskEditorReminderNotificationBody": "Hai un promemoria per questo task",
+  "recurrenceNone": "Nessuna",
+  "recurrenceDaily": "Giornaliero",
+  "recurrenceWeekly": "Settimanale",
+  "recurrenceMonthly": "Mensile",
+  "recurrenceYearly": "Annuale",
+  "commonSave": "Salva",
+  "commonRestore": "Ripristina",
+  "commonUntitledParens": "(senza titolo)",
+  "commonTabNotes": "Note",
+  "commonTabTasks": "Task",
+  "commonTabEvents": "Eventi",
+  "commonToday": "Oggi",
+  "commonTomorrow": "Domani",
+  "commonYesterday": "Ieri",
+  "tasksNoDateSection": "Senza data",
+  "tasksNotificationTimeLabel": "Orario notifica",
+  "calendarSearchHint": "Cerca eventi...",
+  "calendarChangeView": "Cambia visualizzazione",
+  "calendarViewDay": "Giorno",
+  "calendarViewWeek": "Settimana",
+  "calendarViewMonth": "Mese",
+  "calendarViewYear": "Anno",
+  "calendarViewSchedule": "Programma",
+  "calendarViewSevenDays": "7 giorni",
+  "calendarPreviousDay": "Giorno precedente",
+  "calendarNextDay": "Giorno successivo",
+  "calendarPreviousMonth": "Mese precedente",
+  "calendarNextMonth": "Mese successivo",
+  "calendarPreviousYear": "Anno precedente",
+  "calendarNextYear": "Anno successivo",
+  "calendarNoEventsDay": "Nessun evento per questo giorno",
+  "calendarNoEventsScheduled": "Nessun evento in programma",
+  "calendarNoEventsFound": "Nessun evento trovato",
+  "calendarAdd": "Aggiungi",
+  "calendarAllDay": "Tutto il giorno",
+  "calendarShowTasks": "Mostra i task",
+  "calendarHideTasks": "Nascondi i task",
+  "calendarAlerts": "Avvisi",
+  "calendarAlertDayBefore": "Il giorno prima",
+  "calendarAlertSameDay": "Il giorno stesso",
+  "holidayNewYear": "Capodanno",
+  "holidayEpiphany": "Epifania",
+  "holidayValentinesDay": "San Valentino",
+  "holidayWomensDay": "Festa della donna",
+  "holidayFathersDay": "Festa del papà",
+  "holidayEaster": "Pasqua",
+  "holidayEasterMonday": "Lunedì dell'Angelo",
+  "holidayLiberationDay": "Festa della Liberazione",
+  "holidayLabourDay": "Festa del Lavoro",
+  "holidayMothersDay": "Festa della mamma",
+  "holidayRepublicDay": "Festa della Repubblica",
+  "holidayAssumption": "Ferragosto",
+  "holidayStFrancis": "San Francesco d'Assisi",
+  "holidayHalloween": "Halloween",
+  "holidayAllSaints": "Ognissanti",
+  "holidayImmaculateConception": "Immacolata Concezione",
+  "holidayChristmas": "Natale",
+  "holidayStStephen": "Santo Stefano",
+  "calendarHolidayPublic": "Festività nazionale",
+  "calendarHolidayObservance": "Ricorrenza",
+  "settingsCalendarSection": "Calendario",
+  "settingsShowHolidays": "Festività nazionali",
+  "settingsShowHolidaysSubtitle": "Capodanno, Pasqua, 25 aprile, Natale e le altre festività italiane",
+  "settingsShowObservances": "Ricorrenze",
+  "settingsShowObservancesSubtitle": "Festa della mamma, Festa del papà, San Valentino, Festa della donna, Halloween",
+  "calendarAlert": "Avviso",
+  "eventAlertNone": "Nessun avviso",
+  "eventAlertAtStart": "All'inizio",
+  "eventAlertMinutesBefore": "{count, plural, =1{1 minuto prima} other{{count} minuti prima}}",
+  "@eventAlertMinutesBefore": {"placeholders": {"count": {"type": "int"}}},
+  "eventAlertHoursBefore": "{count, plural, =1{1 ora prima} other{{count} ore prima}}",
+  "@eventAlertHoursBefore": {"placeholders": {"count": {"type": "int"}}},
+  "eventAlertDaysBefore": "{count, plural, =1{1 giorno prima} other{{count} giorni prima}}",
+  "@eventAlertDaysBefore": {"placeholders": {"count": {"type": "int"}}},
+  "settingsEventAlertOffset": "Avviso degli eventi",
+  "settingsEventAlertOffsetSubtitle": "Proposto per i nuovi eventi con orario e per quelli importati senza avviso",
+  "calendarAlertAt": "Alle {time}",
+  "@calendarAlertAt": {"placeholders": {"time": {"type": "String"}}},
+  "calendarAlertBodyToday": "Oggi · {when}",
+  "@calendarAlertBodyToday": {"placeholders": {"when": {"type": "String"}}},
+  "calendarAlertBodyTomorrow": "Domani · {when}",
+  "@calendarAlertBodyTomorrow": {"placeholders": {"when": {"type": "String"}}},
+  "calendarEndTime": "Ora di fine",
+  "calendarNoEndTime": "Nessuna",
+  "calendarRemoveEndTime": "Rimuovi ora di fine",
+  "calendarBirthday": "Compleanno",
+  "calendarNameDay": "Onomastico",
+  "calendarRecurrence": "Ricorrenza",
+  "calendarLocationHint": "Aggiungi luogo",
+  "calendarLocationOpenMaps": "Apri in Maps",
+  "calendarColor": "Colore",
+  "calendarColorDefault": "Predefinito",
+  "calendarEventTitle": "Evento",
+  "calendarEntryTypeEvent": "Evento",
+  "calendarEntryTypeTask": "Task",
+  "calendarDeleteEvent": "Elimina evento",
+  "calendarDeleteEventConfirm": "Vuoi spostare questo evento nel cestino?",
+  "calendarEventTrashed": "Evento spostato nel cestino",
+  "calendarEventUnarchived": "Evento rimosso dall'archivio",
+  "calendarTitleHint": "Titolo",
+  "calendarDescriptionHint": "Descrizione",
+  "calendarReminderNotificationTitle": "Promemoria evento",
+  "eventRecurrenceNone": "Non ripetere",
+  "eventRecurrenceDaily": "Giornalmente",
+  "eventRecurrenceWeekly": "Settimanalmente",
+  "eventRecurrenceMonthly": "Mensilmente",
+  "eventRecurrenceYearly": "Annualmente",
+  "recurrenceEveryDays": "{count, plural, =1{Ogni giorno} other{Ogni {count} giorni}}",
+  "@recurrenceEveryDays": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceEveryWeeks": "{count, plural, =1{Ogni settimana} other{Ogni {count} settimane}}",
+  "@recurrenceEveryWeeks": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceEveryMonths": "{count, plural, =1{Ogni mese} other{Ogni {count} mesi}}",
+  "@recurrenceEveryMonths": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceEveryYears": "{count, plural, =1{Ogni anno} other{Ogni {count} anni}}",
+  "@recurrenceEveryYears": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceUnitDays": "{count, plural, =1{giorno} other{giorni}}",
+  "@recurrenceUnitDays": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceUnitWeeks": "{count, plural, =1{settimana} other{settimane}}",
+  "@recurrenceUnitWeeks": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceUnitMonths": "{count, plural, =1{mese} other{mesi}}",
+  "@recurrenceUnitMonths": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceUnitYears": "{count, plural, =1{anno} other{anni}}",
+  "@recurrenceUnitYears": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceRuleDetail": "{rule}: {detail}",
+  "@recurrenceRuleDetail": {"placeholders": {"rule": {"type": "String"}, "detail": {"type": "String"}}},
+  "recurrenceOnWeekdays": "{days}",
+  "@recurrenceOnWeekdays": {"placeholders": {"days": {"type": "String"}}},
+  "recurrenceUntil": "{rule}, fino al {date}",
+  "@recurrenceUntil": {"placeholders": {"rule": {"type": "String"}, "date": {"type": "String"}}},
+  "recurrenceMonthDay": "il giorno {day}",
+  "@recurrenceMonthDay": {"placeholders": {"day": {"type": "int"}}},
+  "recurrenceMonthWeekday": "{ordinal} {weekday}",
+  "@recurrenceMonthWeekday": {"placeholders": {"ordinal": {"type": "String"}, "weekday": {"type": "String"}}},
+  "recurrenceOrdinal": "{code, select, m1{il primo} m2{il secondo} m3{il terzo} m4{il quarto} m5{il quinto} mlast{l'ultimo} f1{la prima} f2{la seconda} f3{la terza} f4{la quarta} f5{la quinta} other{l'ultima}}",
+  "@recurrenceOrdinal": {"placeholders": {"code": {"type": "String"}}},
+  "recurrencePresetWeekly": "Ogni settimana di {weekday}",
+  "@recurrencePresetWeekly": {"placeholders": {"weekday": {"type": "String"}}},
+  "recurrencePresetWorkdays": "Ogni giorno feriale (lun–ven)",
+  "recurrencePresetMonthlyDay": "Ogni mese il giorno {day}",
+  "@recurrencePresetMonthlyDay": {"placeholders": {"day": {"type": "int"}}},
+  "recurrencePresetMonthlyWeekday": "Ogni mese, {ordinal} {weekday}",
+  "@recurrencePresetMonthlyWeekday": {"placeholders": {"ordinal": {"type": "String"}, "weekday": {"type": "String"}}},
+  "recurrencePresetYearly": "Ogni anno il {date}",
+  "@recurrencePresetYearly": {"placeholders": {"date": {"type": "String"}}},
+  "recurrenceCustom": "Personalizza…",
+  "recurrenceCustomTitle": "Ricorrenza personalizzata",
+  "recurrenceRepeatEvery": "Ripeti ogni",
+  "recurrenceRepeatOn": "Ripeti di",
+  "recurrenceEnds": "Termina",
+  "recurrenceEndsNever": "Mai",
+  "recurrenceEndsOn": "Il giorno",
+  "recurrenceEndsAfter": "Dopo",
+  "recurrenceOccurrences": "{count, plural, =1{volta} other{volte}}",
+  "@recurrenceOccurrences": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceExcludedDates": "{count, plural, =1{1 data esclusa} other{{count} date escluse}}",
+  "@recurrenceExcludedDates": {"placeholders": {"count": {"type": "int"}}},
+  "recurrenceRestoreExcluded": "Ripristina",
+  "calendarDeleteRecurringTitle": "Elimina evento ricorrente",
+  "calendarDeleteThisOccurrence": "Solo questo evento",
+  "calendarDeleteWholeSeries": "Tutti gli eventi della serie",
+  "calendarOccurrenceDeleted": "Evento eliminato",
+  "settingsIcsApproximated": "{count, plural, =1{1 ricorrenza è stata importata in modo approssimato: controllala nel calendario.} other{{count} ricorrenze sono state importate in modo approssimato: controllale nel calendario.}}",
+  "@settingsIcsApproximated": {"placeholders": {"count": {"type": "int"}}},
+  "archiveEmptyNotes": "Nessuna nota archiviata",
+  "archiveEmptyTasks": "Nessun task archiviato",
+  "archiveEmptyEvents": "Nessun evento archiviato",
+  "trashEmptyAction": "Svuota",
+  "trashAutoDeleteInfo": "Gli elementi vengono eliminati definitivamente dopo 7 giorni.",
+  "trashEmptyTitle": "Svuota cestino",
+  "trashEmptyConfirm": "Tutti gli elementi nel cestino verranno eliminati definitivamente.",
+  "trashEmptyNotes": "Nessuna nota nel cestino",
+  "trashEmptyTasks": "Nessun task nel cestino",
+  "trashEmptyEvents": "Nessun evento nel cestino",
+  "trashExpiresSoon": "Scade tra poco (eliminazione automatica)",
+  "trashExpiresToday": "Scade oggi",
+  "trashExpiresInDays": "{count, plural, =1{Scade tra 1 giorno} other{Scade tra {count} giorni}}",
+  "@trashExpiresInDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeleteForever": "Elimina definitivamente",
+  "trashDeleteForeverConfirm": "La nota verrà eliminata in modo permanente.",
+  "labelsNew": "Nuova etichetta",
+  "labelsNameHint": "Nome etichetta",
+  "labelsEmpty": "Nessuna etichetta",
+  "labelsEmptyHint": "Crea una nuova etichetta o aggiungila da una nota.",
+  "labelsRename": "Rinomina",
+  "labelsRenameTitle": "Rinomina etichetta",
+  "labelsDeleteTitle": "Elimina etichetta",
+  "labelsDeleteConfirm": "L'etichetta \"{tag}\" verrà rimossa da tutte le note.",
+  "@labelsDeleteConfirm": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "labelsNoteCount": "{count, plural, =0{Nessuna nota} =1{1 nota} other{{count} note}}",
+  "@labelsNoteCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelNotesEmpty": "Nessuna nota con questa etichetta",
+  "editorLabels": "Etichette",
+  "editorLabelsSearchHint": "Cerca o crea un'etichetta...",
+  "editorLabelsCreate": "Crea \"{name}\"",
+  "@editorLabelsCreate": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "editorLabelsEmpty": "Nessuna etichetta: scrivi un nome per crearne una.",
+  "statsTitle": "Statistiche",
+  "statsNotesActive": "Attive",
+  "statsNotesArchived": "Archiviate",
+  "statsNotesTrashed": "Eliminate",
+  "statsActive": "Attivi",
+  "statsArchived": "Archiviati",
+  "statsTrashed": "Eliminati",
+  "statsBirthdays": "Compleanni",
+  "statsNameDays": "Onomastici",
+  "statsTotal": "Totali",
+  "statsNotesDistribution": "Distribuzione note",
+  "statsNoNotes": "Nessuna nota presente",
+  "statsTasksDistribution": "Distribuzione task",
+  "statsNoTasks": "Nessun task presente",
+  "statsTaskCompletion": "Completamento task",
+  "statsNoData": "Nessun dato",
+  "statsNoTasksShort": "Nessun task",
+  "statsTotalSingular": "Totale",
+  "infoTitle": "Info su Taskenda",
+  "infoTagline": "Note, attività e promemoria in un unico posto",
+  "infoAboutTitle": "Cos'è Taskenda",
+  "infoFeaturesTitle": "Funzionalità",
+  "infoFeatureNotesTitle": "Note",
+  "infoFeatureNotesText": "Testo formattato, liste di controllo, note vocali e condivisione con altri utenti",
+  "infoFeatureTasksTitle": "Attività e calendario",
+  "infoFeatureTasksText": "Organizza impegni ed eventi giorno per giorno",
+  "infoFeatureRemindersTitle": "Notifiche",
+  "infoFeatureRemindersText": "Notifiche puntuali e widget nella schermata Home",
+  "infoFeatureSyncTitle": "Sincronizzazione e backup",
+  "infoFeatureSyncText": "Dati sul tuo account, backup ed esportazione in PDF, TXT, JSON, CSV e HTML",
+  "infoLinksTitle": "Link",
+  "infoLinkSource": "Codice sorgente",
+  "infoLinkDeveloper": "Profilo GitHub",
+  "infoLinkContact": "Contatta lo sviluppatore",
+  "infoLinkError": "Impossibile aprire il link",
+  "infoLinkWebsite": "Pagina del progetto",
+  "infoShareApp": "Condividi Taskenda",
+  "infoShareText": "Prova Taskenda, l'app per note, task e calendario: {url}",
+  "@infoShareText": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "infoMadeBy": "Realizzato da {name}",
+  "@infoMadeBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "infoGuideOpen": "Guida introduttiva",
+  "infoChangelogTitle": "Novità",
+  "infoLicensesTitle": "Licenze open source",
+  "exportTitle": "Esporta note",
+  "exportDestinationTitle": "Esporta",
+  "exportSaveToDevice": "Salva sul dispositivo",
+  "exportSaveToDeviceSubtitle": "Scegli la cartella: Download, Drive, scheda SD…",
+  "exportShareSubtitle": "Invia a Drive, email o un'altra app",
+  "exportFileDone": "{format} esportato",
+  "@exportFileDone": {
+    "placeholders": {
+      "format": {
+        "type": "String"
+      }
+    }
+  },
+  "exportFailed": "Esportazione non riuscita: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportIntro": "Esporta tutte le note attive (escluse quelle nel cestino).",
+  "exportPdfSubtitle": "Salva le note in un file .pdf",
+  "exportTxtSubtitle": "Salva le note in un file .txt",
+  "exportJsonSubtitle": "Salva le note in un file .json",
+  "exportCsvSubtitle": "Salva le note in un file .csv",
+  "exportHtmlSubtitle": "Salva le note in un file .html",
+  "exportDownload": "Scarica",
+  "settingsBackupDataTitle": "Backup e dati",
+  "settingsBackupDataSubtitle": "Backup automatico, esportazione, importazione ed eliminazione dei dati",
+  "settingsBackupTitle": "Backup",
+  "settingsAutoBackup": "Backup automatico",
+  "settingsAutoBackupSubtitle": "Salva automaticamente i tuoi dati",
+  "settingsBackupFrequency": "Frequenza backup",
+  "settingsViewBackups": "Visualizza backup",
+  "settingsViewBackupsSubtitle": "Gestisci i backup salvati",
+  "settingsExportCalendarJson": "Esporta calendario JSON",
+  "settingsExportCalendarJsonSubtitle": "Scarica gli eventi come file .json",
+  "settingsImportCalendarJson": "Importa calendario JSON",
+  "settingsImportCalendarJsonSubtitle": "Ripristina gli eventi da un file .json",
+  "settingsExportIcs": "Esporta calendario ICS",
+  "settingsExportIcsSubtitle": "Esporta tutti gli eventi in un file .ics",
+  "settingsImportIcs": "Importa da Google Calendar",
+  "settingsImportIcsSubtitle": "Importa eventi da un file .ics",
+  "settingsClearCalendar": "Cancella eventi calendario",
+  "settingsClearCalendarSubtitle": "Rimuove tutti gli eventi dal calendario",
+  "settingsGlobalBackupTitle": "Backup globale",
+  "settingsExportFullBackup": "Esporta backup completo",
+  "settingsExportFullBackupSubtitle": "Scarica un file .json con note, task ed eventi",
+  "settingsImportFullBackup": "Importa backup completo",
+  "settingsImportFullBackupSubtitle": "Ripristina dati da un file .json di backup",
+  "settingsClearAll": "Cancella tutti i dati",
+  "settingsClearAllSubtitle": "Elimina definitivamente note, task ed eventi",
+  "settingsAccountTitle": "Account",
+  "settingsDeleteAccount": "Elimina account",
+  "settingsDeleteAccountSubtitle": "Elimina definitivamente l'account e tutti i suoi dati",
+  "settingsExportNotesSubtitle": "Esporta tutte le note in diversi formati",
+  "settingsExportNotesJson": "Esporta note JSON",
+  "settingsExportNotesJsonSubtitle": "Scarica le note come file .json",
+  "settingsImportNotesJson": "Importa note JSON",
+  "settingsImportNotesJsonSubtitle": "Ripristina le note da un file .json",
+  "settingsClearNotes": "Cancella note",
+  "settingsClearNotesSubtitle": "Rimuove tutte le note",
+  "settingsLayout": "Layout",
+  "settingsLayoutGrid": "Griglia",
+  "settingsLayoutList": "Lista",
+  "settingsFabMenu": "Menu del pulsante +",
+  "settingsFabMenuOn": "Scegli tra nota, lista, task, audio e modello",
+  "settingsFabMenuOff": "Il pulsante + crea subito una nuova nota",
+  "settingsExportTasksJson": "Esporta task JSON",
+  "settingsExportTasksJsonSubtitle": "Scarica i task come file .json",
+  "settingsImportTasksJson": "Importa task JSON",
+  "settingsImportTasksJsonSubtitle": "Ripristina i task da un file .json",
+  "settingsClearTasks": "Cancella task",
+  "settingsClearTasksSubtitle": "Rimuove tutti i task",
+  "settingsShowCompleted": "Mostra task completati",
+  "settingsShowCompletedSubtitle": "Visualizza i task marcati come completati",
+  "settingsGroupByPriority": "Raggruppa per priorità",
+  "settingsGroupByPrioritySubtitle": "Ordina task per priorità (speciali in alto)",
+  "settingsRestoreBackup": "Ripristina backup",
+  "settingsReplaceAllConfirm": "I dati attuali (note, task ed eventi) verranno sostituiti con quelli del backup. Continuare?",
+  "settingsRestoreSettingsToo": "Ripristina anche le impostazioni",
+  "settingsRestoreSettingsTooSubtitle": "Tema, lingua, schermata iniziale, viste e preferenze di calendario, attività e note",
+  "settingsBackupReadFailed": "Impossibile leggere il backup.",
+  "settingsBackupRestored": "Backup ripristinato con successo.",
+  "settingsNoBackups": "Nessun backup disponibile",
+  "settingsBackupsAvailable": "Backup disponibili",
+  "settingsImport": "Importa",
+  "settingsBackupExported": "Backup esportato",
+  "settingsImportBackupTitle": "Importa backup",
+  "settingsBackupImported": "Backup importato con successo.",
+  "settingsBackupWrongApp": "Questo file non è un backup di Taskenda.",
+  "settingsBackupTooNew": "Questo backup è stato creato da una versione più recente di Taskenda: aggiorna l'app per importarlo.",
+  "settingsClearAllConfirm": "Tutti i dati (note, task ed eventi) verranno eliminati definitivamente. Questa operazione è irreversibile. Continuare?",
+  "settingsAllCleared": "Tutti i dati sono stati eliminati.",
+  "settingsDeleteAll": "Elimina tutto",
+  "settingsNotesExported": "Note esportate",
+  "settingsImportNotesTitle": "Importa note",
+  "settingsReplaceNotesConfirm": "Le note attuali verranno sostituite con quelle del file. Continuare?",
+  "settingsNotesImported": "Note importate con successo.",
+  "settingsClearNotesConfirm": "Tutte le note verranno eliminate definitivamente. Continuare?",
+  "settingsNotesCleared": "Tutte le note sono state eliminate.",
+  "settingsTasksExported": "Task esportati",
+  "settingsImportTasksTitle": "Importa task",
+  "settingsReplaceTasksConfirm": "I task attuali verranno sostituiti con quelli del file. Continuare?",
+  "settingsTasksImported": "Task importati con successo.",
+  "settingsClearTasksConfirm": "Tutti i task verranno eliminati definitivamente. Continuare?",
+  "settingsTasksCleared": "Tutti i task sono stati eliminati.",
+  "settingsCalendarExported": "Calendario esportato",
+  "settingsImportCalendarTitle": "Importa calendario",
+  "settingsReplaceCalendarConfirm": "Gli eventi attuali verranno sostituiti con quelli del file. Continuare?",
+  "settingsCalendarImported": "Calendario importato con successo.",
+  "settingsClearEventsTitle": "Cancella eventi",
+  "settingsClearCalendarConfirm": "Tutti gli eventi del calendario verranno eliminati definitivamente. Continuare?",
+  "settingsCalendarCleared": "Tutti gli eventi sono stati eliminati.",
+  "settingsNoEventsToExport": "Nessun evento da esportare.",
+  "settingsIcsExported": "Calendario ICS esportato",
+  "settingsNoEventsInFile": "Nessun evento trovato nel file.",
+  "settingsDeleteAccountConfirm": "L'account e tutti i suoi dati (note, task ed eventi) verranno eliminati definitivamente da tutti i dispositivi. Questa operazione è irreversibile: se vuoi conservare i dati, esporta prima un backup completo. Continuare?",
+  "settingsConfirmPassword": "Conferma la password",
+  "settingsDeleteAccountFailed": "Impossibile eliminare l'account. Controlla la connessione e riprova.",
+  "settingsAccountDeleted": "Account eliminato.",
+  "settingsImportError": "Errore durante l'importazione: {error}",
+  "@settingsImportError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsBackupsLoadError": "Errore nel caricamento dei backup: {error}",
+  "@settingsBackupsLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsIcsImported": "{count, plural, =1{1 evento importato nel calendario.} other{{count} eventi importati nel calendario.}}",
+  "@settingsIcsImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "infoVersion": "Versione {version}",
+  "@infoVersion": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "infoDescription": "Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account e disponibili su ogni dispositivo.",
+  "statsCompletedOf": "Completati: {completed} / {total}",
+  "@statsCompletedOf": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "exportPdfError": "Errore PDF: {error}",
+  "@exportPdfError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportEmptyNote": "(nota vuota)",
+  "exportModified": "Modificata: {date}",
+  "@exportModified": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "exportLabels": "Etichette: {labels}",
+  "@exportLabels": {
+    "placeholders": {
+      "labels": {
+        "type": "String"
+      }
+    }
+  },
+  "exportDateTimePattern": "d MMM y 'alle' HH:mm",
+  "exportCsvHeader": "id,titolo,contenuto,tipo,etichette,fissata,creata,modificata",
+  "exportHtmlHeading": "Export note – {date}",
+  "@exportHtmlHeading": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationChannelName": "Promemoria",
+  "notificationChannelDescription": "Notifiche per i promemoria di Taskenda",
+  "notificationTargetNotFound": "Elemento del promemoria non trovato",
+  "widgetNotesEmpty": "Nessuna nota",
+  "widgetTasksEmpty": "Nessun task da completare",
+  "widgetCalendarEmpty": "Nessun impegno nelle prossime due settimane",
+  "infoPrivacyOpen": "Informativa sulla privacy",
+  "privacyPolicyTitle": "Informativa sulla privacy",
+  "privacyPolicyIntro": "Taskenda è un'app per note, task e calendario. Questa informativa spiega quali dati tratta, perché e come puoi controllarli. Taskenda non mostra pubblicità, non usa strumenti di analisi o di tracciamento e non vende né cede i tuoi dati.",
+  "privacyPolicyLastUpdated": "Ultimo aggiornamento: {date}",
+  "@privacyPolicyLastUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyPolicyOnlineVersion": "Versione online",
+  "privacyPolicyOnlineVersionSubtitle": "Leggi l'informativa sul web",
+  "policy_section_controller_title": "1. Titolare del trattamento",
+  "policy_section_controller_text": "Il titolare del trattamento è {name}, sviluppatore di Taskenda. Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti puoi scrivere a {email}.",
+  "@policy_section_controller_text": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "policy_section_data_title": "2. Dati che raccogliamo",
+  "policy_section_data_text": "• Account: l'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell'account e dell'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette.\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell'app; viene cancellato quando esci dall'account su quel dispositivo.\n• Sul dispositivo: preferenze dell'app (lingua, tema, layout, ordinamento, opzioni di note e task, guida introduttiva e novità già viste, impostazioni dei backup), i backup automatici, una copia dei dati per l'uso offline, i promemoria programmati e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.",
+  "policy_section_use_title": "3. Come usiamo i dati",
+  "policy_section_use_text": "I dati servono solo a far funzionare Taskenda: accedere al tuo account, salvare i tuoi contenuti e sincronizzarli tra i tuoi dispositivi, inviarti le notifiche e i promemoria che imposti e creare i backup. La tua email viene usata solo per l'accesso e, se lo chiedi, per inviarti il link per reimpostare la password. Nessuna profilazione, nessuna pubblicità, nessuna analisi statistica né segnalazione automatica degli errori.",
+  "policy_section_storage_title": "4. Dove sono conservati",
+  "policy_section_storage_text": "Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.\n\nMentre scrivi il luogo di un evento, il testo digitato, la lingua dell'app e il paese impostato sul dispositivo passano dal server di Taskenda (Firebase Cloud Functions) al servizio Google Places di Google per suggerirti luoghi e indirizzi: non viene inviato nient'altro, né la tua posizione né i dati del tuo account, e Google non riceve il tuo indirizzo IP. Se tocchi il luogo per aprirlo in Maps, la ricerca passa all'app o al sito di Google Maps.",
+  "policy_section_device_title": "5. Elaborazione sul dispositivo",
+  "policy_section_device_text": "Alcune funzioni lavorano solo sul dispositivo e non inviano nulla allo sviluppatore né a terzi:\n• registrazione e riproduzione delle note audio;\n• esportazione delle note in PDF, TXT, JSON, CSV e HTML, esportazione e importazione di backup e calendari (ICS);\n• backup automatici, salvati in una cartella privata dell'app (al massimo gli ultimi 30);\n• statistiche, promemoria e widget della schermata Home.\nI file che esporti o condividi finiscono dove scegli tu (ad esempio una cartella o un'altra app).",
+  "policy_section_permissions_title": "6. Permessi",
+  "policy_section_permissions_text": "Su Android Taskenda usa questi permessi:\n• Microfono: solo per registrare le note audio, quando avvii una registrazione.\n• Notifiche: per mostrarti i promemoria e le notifiche di task ed eventi.\n• Sveglie e promemoria esatti: per far scattare i promemoria all'orario impostato.\n• Avvio all'accensione: per riprogrammare i promemoria dopo il riavvio del telefono.\n• Mantenere attivo il dispositivo e vibrazione: per consegnare i promemoria anche in standby.\n• Servizio in primo piano: richiesto dal componente di Android che esegue le attività in background, come l'aggiornamento del widget della schermata Home.\n• Internet e stato della rete: per sincronizzare i dati con Firebase e capire quando sei offline.\nTaskenda non accede a posizione, contatti, fotocamera, foto o file del telefono: i file da importare li scegli tu dal selettore di sistema.",
+  "policy_section_retention_title": "7. Conservazione e cancellazione",
+  "policy_section_retention_text": "I tuoi dati restano finché mantieni l'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall'elenco usato per la condivisione e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall'account non cancella i dati; disinstallando l'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Puoi anche chiedere la cancellazione scrivendo a {email}.",
+  "@policy_section_retention_text": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "policy_section_rights_title": "8. I tuoi diritti",
+  "policy_section_rights_text": "In base al GDPR hai diritto di:\n• accedere ai tuoi dati ed esportarli (anche direttamente dall'app);\n• correggerli;\n• cancellarli;\n• chiedere informazioni su come vengono trattati.\nPer esercitarli scrivi a {email}. Hai anche il diritto di presentare reclamo all'autorità di controllo del tuo Paese (in Italia il Garante per la protezione dei dati personali).",
+  "@policy_section_rights_text": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "policy_section_children_title": "9. Minori",
+  "policy_section_children_text": "Taskenda non è rivolta ai minori di 14 anni, l'età minima in Italia per acconsentire da soli ai servizi online. Sotto questa età puoi usarla solo con il consenso di un genitore o di chi ne fa le veci. Nei Paesi che prevedono un'età diversa vale quella stabilita dalla legge locale.",
+  "policy_section_changes_title": "10. Modifiche",
+  "policy_section_changes_text": "Se questa informativa cambia, la nuova versione sarà disponibile nell'app (Info app > Informativa sulla privacy) e online, con la data dell'ultimo aggiornamento.",
+  "shareCollaboratorsTitle": "Collaboratori",
+  "shareEmailHint": "Email di chi usa Taskenda",
+  "shareAdd": "Aggiungi",
+  "shareOwner": "Proprietario",
+  "shareYouSuffix": "{name} (tu)",
+  "@shareYouSuffix": {"placeholders": {"name": {"type": "String"}}},
+  "shareRemoveTooltip": "Rimuovi collaboratore",
+  "shareErrorNotFound": "Nessuno usa Taskenda con questa email. Chiedi alla persona di installare l'app e accedere almeno una volta.",
+  "shareErrorSelf": "Non puoi aggiungere te stesso.",
+  "shareErrorAlreadyAdded": "Questa persona è già tra i collaboratori.",
+  "sharePersonalInfo": "I collaboratori vedono e modificano titolo, testo, checklist e colori. Fissate, archivio, promemoria, etichette e cestino restano personali. Le note audio e i collegamenti ad altre note non vengono condivisi.",
+  "shareLeave": "Rimuovimi dalla condivisione",
+  "shareLeaveConfirmTitle": "Uscire dalla condivisione?",
+  "shareLeaveConfirmMessage": "Non lo vedrai più. Il proprietario potrà aggiungerti di nuovo.",
+  "shareLeaveConfirm": "Rimuovimi",
+  "shareLeft": "Non fai più parte della condivisione",
+  "shareSaveFirst": "Scrivi qualcosa nella nota prima di aggiungere collaboratori",
+  "shareSharedLabel": "Condiviso",
+  "shareNotificationChannelName": "Note condivise",
+  "shareNotificationChannelDescription": "Avvisi quando qualcuno condivide una nota con te",
+  "shareTaskPersonalInfo": "I collaboratori vedono e modificano titolo, descrizione, scadenza, ripetizione, sottotask e completamento. Stella, fissato, archivio, elenco, etichette e cestino restano personali.",
+  "shareEventPersonalInfo": "I collaboratori vedono e modificano titolo, descrizione, data e orari, luogo, colore e ripetizione. Fissato, archivio, avvisi, etichette e cestino restano personali.",
+  "navShared": "Condivisi",
+  "sharedEmpty": "Niente di condiviso. Apri una nota, un task o un evento e aggiungi un collaboratore tramite email.",
+  "sharedWithMeSection": "Condivisi con me",
+  "sharedByMeSection": "Condivisi da me"
+}

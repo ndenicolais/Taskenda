@@ -1,0 +1,159 @@
+# Taskenda — Privacy Policy
+
+[Italiano](#italiano) · [English](#english)
+
+---
+
+## Italiano
+
+**Ultimo aggiornamento: 17 novembre 2026**
+
+Taskenda è un'app per note, task e calendario. Questa informativa spiega quali dati tratta, perché e come puoi controllarli. Taskenda non mostra pubblicità, non usa strumenti di analisi o di tracciamento e non vende né cede i tuoi dati.
+
+### 1. Titolare del trattamento
+
+Il titolare del trattamento è Nicola De Nicolais, sviluppatore di Taskenda. Per qualsiasi domanda sulla privacy o per esercitare i tuoi diritti puoi scrivere a [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+
+### 2. Dati che raccogliamo
+
+- **Account**: l'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell'account e dell'ultimo accesso.
+- **Contenuti**: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette.
+- **Note audio**: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.
+- **Condivisione**: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell'app; viene cancellato quando esci dall'account su quel dispositivo.
+- **Sul dispositivo**: preferenze dell'app (lingua, tema, layout, ordinamento, opzioni di note e task, guida introduttiva e novità già viste, impostazioni dei backup), i backup automatici, una copia dei dati per l'uso offline, i promemoria programmati e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.
+
+### 3. Come usiamo i dati
+
+I dati servono solo a far funzionare Taskenda: accedere al tuo account, salvare i tuoi contenuti e sincronizzarli tra i tuoi dispositivi, inviarti le notifiche e i promemoria che imposti e creare i backup. La tua email viene usata solo per l'accesso e, se lo chiedi, per inviarti il link per reimpostare la password. Nessuna profilazione, nessuna pubblicità, nessuna analisi statistica né segnalazione automatica degli errori.
+
+### 4. Dove sono conservati
+
+Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.
+
+Mentre scrivi il luogo di un evento, il testo digitato, la lingua dell'app e il paese impostato sul dispositivo passano dal server di Taskenda (Firebase Cloud Functions) al servizio Google Places di Google per suggerirti luoghi e indirizzi: non viene inviato nient'altro, né la tua posizione né i dati del tuo account, e Google non riceve il tuo indirizzo IP. Se tocchi il luogo per aprirlo in Maps, la ricerca passa all'app o al sito di Google Maps.
+
+### 5. Elaborazione sul dispositivo
+
+Alcune funzioni lavorano solo sul dispositivo e non inviano nulla allo sviluppatore né a terzi:
+
+- registrazione e riproduzione delle note audio;
+- esportazione delle note in PDF, TXT, JSON, CSV e HTML, esportazione e importazione di backup e calendari (ICS);
+- backup automatici, salvati in una cartella privata dell'app (al massimo gli ultimi 30);
+- statistiche, promemoria e widget della schermata Home.
+
+I file che esporti o condividi finiscono dove scegli tu (ad esempio una cartella o un'altra app).
+
+### 6. Permessi
+
+Su Android Taskenda usa questi permessi:
+
+- **Microfono**: solo per registrare le note audio, quando avvii una registrazione.
+- **Notifiche**: per mostrarti i promemoria, le notifiche di task ed eventi e gli avvisi quando qualcuno condivide qualcosa con te. Viene chiesto la prima volta che apri l'app dopo l'accesso.
+- **Sveglie e promemoria esatti**: per far scattare i promemoria all'orario impostato.
+- **Avvio all'accensione**: per riprogrammare i promemoria dopo il riavvio del telefono.
+- **Mantenere attivo il dispositivo e vibrazione**: per consegnare i promemoria anche in standby.
+- **Servizio in primo piano**: richiesto dal componente di Android che esegue le attività in background, come l'aggiornamento del widget della schermata Home.
+- **Internet e stato della rete**: per sincronizzare i dati con Firebase e capire quando sei offline.
+
+Taskenda non accede a posizione, contatti, fotocamera, foto o file del telefono: i file da importare li scegli tu dal selettore di sistema.
+
+### 7. Conservazione e cancellazione
+
+I tuoi dati restano finché mantieni l'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l'account e tutti i dati da *Impostazioni > Account > Elimina account*: vengono cancellati l'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall'elenco usato per la condivisione e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da *Impostazioni > Backup e dati > Backup globale*. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall'account non cancella i dati; disinstallando l'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Puoi anche chiedere la cancellazione scrivendo a [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+
+### 8. I tuoi diritti
+
+In base al GDPR hai diritto di:
+
+- accedere ai tuoi dati ed esportarli (anche direttamente dall'app);
+- correggerli;
+- cancellarli;
+- chiedere informazioni su come vengono trattati.
+
+Per esercitarli scrivi a [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com). Hai anche il diritto di presentare reclamo all'autorità di controllo del tuo Paese (in Italia il Garante per la protezione dei dati personali).
+
+### 9. Minori
+
+Taskenda non è rivolta ai minori di 14 anni, l'età minima in Italia per acconsentire da soli ai servizi online. Sotto questa età puoi usarla solo con il consenso di un genitore o di chi ne fa le veci. Nei Paesi che prevedono un'età diversa vale quella stabilita dalla legge locale.
+
+### 10. Modifiche
+
+Se questa informativa cambia, la nuova versione sarà disponibile nell'app (*Info app > Informativa sulla privacy*) e online, con la data dell'ultimo aggiornamento.
+
+---
+
+## English
+
+**Last updated: November 17, 2026**
+
+Taskenda is an app for notes, tasks and calendar. This policy explains which data it processes, why, and how you can control it. Taskenda shows no ads, uses no analytics or tracking tools, and does not sell or hand over your data.
+
+### 1. Data controller
+
+The data controller is Nicola De Nicolais, developer of Taskenda. For any privacy question or to exercise your rights you can write to [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+
+### 2. Data we collect
+
+- **Account**: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.
+- **Content**: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels.
+- **Audio notes**: recordings stay on your device only; just the file name, duration and path are synced with the note.
+- **Sharing**: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.
+- **On your device**: app preferences (language, theme, layout, sorting, note and task options, intro guide and what's new already seen, backup settings), automatic backups, a copy of your data for offline use, scheduled reminders and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.
+
+### 3. How we use data
+
+Data is used only to make Taskenda work: signing in to your account, saving your content and syncing it across your devices, sending you the notifications and reminders you set and creating backups. Your email is used only to sign in and, if you ask, to send you a password reset link. No profiling, no ads, no analytics and no automatic crash reporting.
+
+### 4. Where it is stored
+
+Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service. The developer does not look at your content and does not share it with anyone.
+
+While you type the location of an event, the typed text, the app language and the country set on the device go through Taskenda's server (Firebase Cloud Functions) to Google's Places service to suggest places and addresses: nothing else is sent, neither your position nor your account data, and Google does not receive your IP address. If you tap the location to open it in Maps, the search is handed to the Google Maps app or website.
+
+### 5. On-device processing
+
+Some features work only on your device and send nothing to the developer or to third parties:
+
+- recording and playing audio notes;
+- exporting notes to PDF, TXT, JSON, CSV and HTML, exporting and importing backups and calendars (ICS);
+- automatic backups, saved in a private app folder (at most the latest 30);
+- statistics, reminders and the Home screen widget.
+
+Files you export or share go wherever you choose (for example a folder or another app).
+
+### 6. Permissions
+
+On Android Taskenda uses these permissions:
+
+- **Microphone**: only to record audio notes, when you start a recording.
+- **Notifications**: to show you reminders, task and event notifications and alerts when someone shares something with you. Asked the first time you open the app after signing in.
+- **Alarms and exact reminders**: to fire reminders at the time you set.
+- **Run at startup**: to schedule reminders again after the phone restarts.
+- **Keep the device awake and vibration**: to deliver reminders even in standby.
+- **Foreground service**: required by the Android component that runs background work, such as updating the Home screen widget.
+- **Internet and network state**: to sync data with Firebase and detect when you are offline.
+
+Taskenda does not access your location, contacts, camera, photos or phone files: you pick the files to import yourself from the system picker.
+
+### 7. Retention and deletion
+
+Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from *Settings > Account > Delete account*: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from *Settings > Backup and data > Full backup*. Any residual copies in Google's systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. You can also ask for deletion by writing to [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+
+### 8. Your rights
+
+Under the GDPR you have the right to:
+
+- access your data and export it (also directly from the app);
+- correct it;
+- erase it;
+- ask for information on how it is processed.
+
+To exercise them write to [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com). You also have the right to lodge a complaint with the supervisory authority of your country (in Italy, the Garante per la protezione dei dati personali).
+
+### 9. Children
+
+Taskenda is not intended for children under 14, the minimum age in Italy to consent to online services on their own. Below that age you may use it only with the consent of a parent or guardian. In countries that set a different age, the one set by local law applies.
+
+### 10. Changes
+
+If this policy changes, the new version will be available in the app (*App info > Privacy policy*) and online, with the date of the last update.

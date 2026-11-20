@@ -1,0 +1,507 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+//
+// Commercial use, including publishing or monetizing on any app store,
+// requires explicit written permission from the copyright holder.
+//
+// Author: Nicola De Nicolais
+// Contact: ndn21dev@gmail.com
+// GitHub: https://github.com/ndenicolais
+
+import 'package:flutter/material.dart';
+import '../../l10n/l10n.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../models/task_model.dart';
+import '../../models/subtask_model.dart';
+import '../../models/task_change_history.dart';
+import '../../providers/settings/ui_provider.dart';
+import '../../providers/tasks_provider.dart';
+import '../../providers/tasks_undo_redo_provider.dart';
+import '../../theme/app_font_sizes.dart';
+import '../../theme/app_spacing.dart';
+import '../../utils/notification_service.dart';
+import '../../utils/picker_defaults.dart';
+import '../../utils/recurrence.dart';
+import '../../utils/dialogs/move_to_list_dialog.dart';
+import '../../utils/focus_after_transition.dart';
+import '../../widgets/shared/error_feedback.dart';
+import '../../widgets/shared/date_time_picker_dialog.dart';
+import '../calendar/calendar_new_entry.dart';
+import '../tasks/task_delete.dart';
+import 'task_editor_app_bar.dart';
+import 'task_editor_bottom_bar.dart';
+import 'task_info_section.dart';
+import 'task_subtasks_section.dart';
+
+class TaskEditorScreen extends ConsumerStatefulWidget {
+  const TaskEditorScreen({super.key, required this.task});
+  final TaskModel task;
+
+  @override
+  ConsumerState<TaskEditorScreen> createState() => _TaskEditorScreenState();
+}
+
+class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
+  late TaskModel _task;
+  late TextEditingController _titleController;
+  late TextEditingController _descriptionController;
+  late TextEditingController _subtaskController;
+  late FocusNode _titleFocusNode;
+  late FocusNode _descriptionFocusNode;
+  bool _isNew = false;
+  bool _softDeleted = false;
+  bool _isApplyingUndoRedo = false;
+  String _lastTitle = '';
+  String _lastDescription = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _task = widget.task;
+    // Verifichiamo se il task esiste già nel provider
+    _isNew = ref.read(tasksProvider).every((t) => t.id != _task.id);
+
+    _titleController = TextEditingController(text: _task.title);
+    _descriptionController = TextEditingController(text: _task.description);
+    _subtaskController = TextEditingController();
+
+    // Salva i valori iniziali
+    _lastTitle = _titleController.text;
+    _lastDescription = _descriptionController.text;
+
+    // Crea FocusNode per tracciare quando finisci di digitare
+    _titleFocusNode = FocusNode();
+    _descriptionFocusNode = FocusNode();
+
+    _titleFocusNode.addListener(_onTitleFocusChanged);
+    _descriptionFocusNode.addListener(_onDescriptionFocusChanged);
+    _titleController.addListener(_onTitleTextChanged);
+    _descriptionController.addListener(_onDescriptionTextChanged);
+
+    // A new task starts with the cursor in the title.
+    if (_isNew) focusAfterRouteTransition(context, _titleFocusNode);
+  }
+
+  @override
+  void dispose() {
+    _titleController.removeListener(_onTitleTextChanged);
+    _descriptionController.removeListener(_onDescriptionTextChanged);
+    _titleFocusNode.removeListener(_onTitleFocusChanged);
+    _descriptionFocusNode.removeListener(_onDescriptionFocusChanged);
+    _titleFocusNode.dispose();
+    _descriptionFocusNode.dispose();
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _subtaskController.dispose();
+    super.dispose();
+  }
+
+  void _onTitleFocusChanged() {
+    if (!_titleFocusNode.hasFocus && !_isApplyingUndoRedo) {
+      _commitTitleChange(_titleController.text);
+    }
+  }
+
+  void _onDescriptionFocusChanged() {
+    if (!_descriptionFocusNode.hasFocus && !_isApplyingUndoRedo) {
+      _commitDescriptionChange(_descriptionController.text);
+    }
+  }
+
+  void _onTitleTextChanged() {
+    if (_isApplyingUndoRedo) return;
+    final current = _titleController.text;
+    if (_endsWithWordBoundary(current)) {
+      _commitTitleChange(current);
+    }
+  }
+
+  void _onDescriptionTextChanged() {
+    if (_isApplyingUndoRedo) return;
+    final current = _descriptionController.text;
+    if (_endsWithWordBoundary(current)) {
+      _commitDescriptionChange(current);
+    }
+  }
+
+  bool _endsWithWordBoundary(String text) {
+    if (text.isEmpty) return false;
+    final last = text[text.length - 1];
+    return last == ' ' ||
+        last == '\n' ||
+        last == '.' ||
+        last == ',' ||
+        last == '!' ||
+        last == '?' ||
+        last == ';' ||
+        last == ':';
+  }
+
+  void _commitTitleChange(String newTitle) {
+    if (newTitle == _lastTitle) return;
+    ref
+        .read(taskChangeHistoryProvider(_task.id).notifier)
+        .addChange(TaskTitleChange(oldTitle: _lastTitle, newTitle: newTitle));
+    _lastTitle = newTitle;
+  }
+
+  void _commitDescriptionChange(String newDescription) {
+    if (newDescription == _lastDescription) return;
+    ref
+        .read(taskChangeHistoryProvider(_task.id).notifier)
+        .addChange(
+          TaskDescriptionChange(
+            oldDescription: _lastDescription,
+            newDescription: newDescription,
+          ),
+        );
+    _lastDescription = newDescription;
+  }
+
+  bool _isEmpty() {
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+    return title.isEmpty && description.isEmpty;
+  }
+
+  /// Switches this never-saved task to a new event, keeping what was typed.
+  void _switchToEvent() {
+    _softDeleted = true; // Skips the save: the entry becomes an event.
+    switchTaskToEvent(
+      context,
+      _task,
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+    );
+  }
+
+  void _save() {
+    if (_softDeleted) return;
+    if (_isNew && _isEmpty()) return;
+
+    final updated = _task.copyWith(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      updatedAt: DateTime.now(),
+    );
+
+    final Future<void> pending;
+    if (_isNew) {
+      pending = ref.read(tasksProvider.notifier).addTask(updated);
+      _isNew = false;
+      // A due time carried over from an event (or set before the first
+      // save) still notifies.
+      NotificationService.instance.scheduleTaskReminder(updated).ignore();
+    } else {
+      pending = ref.read(tasksProvider.notifier).updateTask(updated);
+    }
+    notifyOnError(pending, context);
+    setState(() => _task = updated);
+  }
+
+  Future<void> _confirmDelete() async {
+    // A never-saved task has no series to keep: plain confirm only.
+    final current = _task.copyWith(
+      title: _titleController.text.trim(),
+      description: _descriptionController.text.trim(),
+      updatedAt: DateTime.now(),
+      recurrence: _isNew ? RecurrenceType.none : null,
+    );
+    final scope = await askTaskDeleteScope(
+      context,
+      current,
+      message: context.l10n.tasksDeleteTaskConfirm,
+    );
+    if (scope == null || !mounted) return;
+    // Skips the save on pop: the delete below already persists the task.
+    _softDeleted = true;
+    // A never-saved task is not in the provider: nothing to trash.
+    // Skipping an occurrence keeps the edits made here.
+    if (!_isNew) deleteTaskWithUndo(context, ref, current, scope);
+    Navigator.pop(context);
+  }
+
+  void _showMoveToListDialog() {
+    showMoveToListDialog(
+      context: context,
+      ref: ref,
+      currentListId: _task.listId,
+      onListSelected: (listId) {
+        setState(() => _task = _task.copyWith(listId: listId));
+      },
+    );
+  }
+
+  /// The default alert time from Settings, first offered for a due time.
+  TimeOfDay _defaultAlertTime() {
+    final minutes = ref.read(defaultAlertTimeProvider);
+    return TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60);
+  }
+
+  /// Due date and optional time in one dialog: without a time the due
+  /// date is day-only (no notification).
+  void _showDatePicker() async {
+    final current = _task.dueDate;
+    final now = DateTime.now();
+    final picked = await showDateTimePickerDialog(
+      context,
+      initialDate: current ?? now,
+      firstDate: now.subtract(const Duration(days: 365)),
+      lastDate: now.add(const Duration(days: 365)),
+      initialTime: _task.hasDueTime ? TimeOfDay.fromDateTime(current!) : null,
+      defaultTime: (date) => initialPickerTime(date, _defaultAlertTime()),
+    );
+    if (picked == null || !mounted) return;
+    _applyDueDate(picked.combined);
+  }
+
+  /// Sets (or with null clears) the due date. A due date with a time
+  /// notifies at that time, like in Google Tasks; a day-only one does not.
+  void _applyDueDate(DateTime? due) {
+    final previous = _task;
+    final updated =
+        due == null
+            ? previous.copyWith(clearDueDate: true)
+            : previous.copyWith(dueDate: due);
+    setState(() => _task = updated);
+    if (updated.dueDate == previous.dueDate) return;
+    _save();
+    final notifications = NotificationService.instance;
+    notifications
+        .cancelNotification(NotificationService.idForTask(updated.id))
+        .then((_) => notifications.scheduleTaskReminder(_task))
+        .ignore();
+  }
+
+  void _showRecurrenceDialog() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(context.l10n.taskEditorRecurrenceTitle),
+            content: SingleChildScrollView(
+              child: RadioGroup<RecurrenceType>(
+                groupValue: _task.recurrence,
+                onChanged: (v) {
+                  if (v != null) {
+                    setState(() => _task = _task.copyWith(recurrence: v));
+                    Navigator.pop(context);
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final type in RecurrenceType.values)
+                      RadioListTile<RecurrenceType>(
+                        title: Text(recurrenceLabel(context.l10n, type)),
+                        value: type,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+  }
+
+  void _addSubtask() {
+    final text = _subtaskController.text.trim();
+    if (text.isNotEmpty) {
+      final newSubtask = SubtaskModel(title: text);
+      setState(() {
+        _task = _task.copyWith(subtasks: [..._task.subtasks, newSubtask]);
+        _subtaskController.clear();
+      });
+    }
+  }
+
+  // ─── Share ────────────────────────────────────────────────────────────────
+
+  void _shareTask() {
+    final title = _task.title.trim();
+    final desc = _task.description.trim();
+    final subtaskLines = _task.subtasks
+        .map((s) => '  ${s.isCompleted ? '☑' : '☐'} ${s.title}')
+        .join('\n');
+
+    final parts = <String>[
+      if (title.isNotEmpty) title,
+      if (desc.isNotEmpty) desc,
+      if (subtaskLines.isNotEmpty) subtaskLines,
+    ];
+
+    final text = parts.join('\n\n');
+    if (text.isEmpty) return;
+    SharePlus.instance.share(ShareParams(text: text));
+  }
+
+  void _toggleSubtask(int index, bool completed) {
+    final updated = _task.subtasks[index].copyWith(isCompleted: completed);
+    final newSubtasks = [..._task.subtasks];
+    newSubtasks[index] = updated;
+    setState(() => _task = _task.copyWith(subtasks: newSubtasks));
+  }
+
+  void _deleteSubtask(int index) {
+    setState(() {
+      _task = _task.copyWith(subtasks: _task.subtasks..removeAt(index));
+    });
+  }
+
+  // ─── Undo / Redo ──────────────────────────────────────────────────────────
+
+  void _performUndo() {
+    _isApplyingUndoRedo = true;
+    final undoneTask = TaskUndoRedoManager.performUndo(ref, _task.id, _task);
+    if (undoneTask != null) {
+      setState(() => _task = undoneTask);
+      _titleController.text = undoneTask.title;
+      _descriptionController.text = undoneTask.description;
+      _lastTitle = undoneTask.title;
+      _lastDescription = undoneTask.description;
+    }
+    _isApplyingUndoRedo = false;
+  }
+
+  void _performRedo() {
+    _isApplyingUndoRedo = true;
+    final redoneTask = TaskUndoRedoManager.performRedo(ref, _task.id, _task);
+    if (redoneTask != null) {
+      setState(() => _task = redoneTask);
+      _titleController.text = redoneTask.title;
+      _descriptionController.text = redoneTask.description;
+      _lastTitle = redoneTask.title;
+      _lastDescription = redoneTask.description;
+    }
+    _isApplyingUndoRedo = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) _save();
+      },
+      child: Scaffold(
+        appBar: TaskEditorAppBar(
+          task: _task,
+          onUndo: () => setState(_performUndo),
+          onRedo: () => setState(_performRedo),
+          onTogglePin:
+              () => setState(
+                () => _task = _task.copyWith(isPinned: !_task.isPinned),
+              ),
+          onArchive: () {
+            setState(
+              () => _task = _task.copyWith(isArchived: !_task.isArchived),
+            );
+            _save();
+            Navigator.pop(context);
+          },
+          onShare: _shareTask,
+        ),
+        body: Column(
+          children: [
+            // Campo Titolo
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.md,
+                AppSpacing.lg,
+                AppSpacing.sm,
+              ),
+              child: TextField(
+                controller: _titleController,
+                textCapitalization: TextCapitalization.sentences,
+                focusNode: _titleFocusNode,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: null,
+                decoration: InputDecoration(
+                  hintText: context.l10n.taskEditorTitleHint,
+                  hintStyle: TextStyle(
+                    fontSize: 20,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(80),
+                  ),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+            if (_isNew)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  0,
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                ),
+                child: CalendarEntryTypeSelector(
+                  selected: CalendarEntryType.task,
+                  onChanged: (_) => _switchToEvent(),
+                ),
+              ),
+            TaskInfoSection(
+              task: _task,
+              onPickDueDate: _showDatePicker,
+              onClearDueDate: () => _applyDueDate(null),
+              onPickRecurrence: _showRecurrenceDialog,
+              onPickList: _showMoveToListDialog,
+            ),
+            // Campo Descrizione
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                child: TextField(
+                  controller: _descriptionController,
+                  textCapitalization: TextCapitalization.sentences,
+                  focusNode: _descriptionFocusNode,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.taskEditorDescriptionHint,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+            ),
+            if (_task.subtasks.isNotEmpty)
+              TaskSubtasksList(
+                subtasks: _task.subtasks,
+                onToggle: _toggleSubtask,
+                onDelete: _deleteSubtask,
+              ),
+            TaskAddSubtaskField(
+              controller: _subtaskController,
+              onAdd: _addSubtask,
+            ),
+            // Footer con data ultima modifica
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              child: Text(
+                context.l10n.commonLastModified(
+                  DateFormat('dd MMM, HH:mm').format(_task.updatedAt),
+                ),
+                style: TextStyle(
+                  fontSize: AppFontSizes.sm,
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(150),
+                ),
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: TaskEditorBottomBar(
+          onDatePicker: _showDatePicker,
+          onRecurrence: _showRecurrenceDialog,
+          onMoveToList: _showMoveToListDialog,
+          onDelete: _confirmDelete,
+        ),
+      ),
+    );
+  }
+}

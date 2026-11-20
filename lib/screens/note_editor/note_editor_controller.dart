@@ -1,0 +1,180 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+//
+// Commercial use, including publishing or monetizing on any app store,
+// requires explicit written permission from the copyright holder.
+//
+// Author: Nicola De Nicolais
+// Contact: ndn21dev@gmail.com
+// GitHub: https://github.com/ndenicolais
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/audio_note.dart';
+import '../../models/note_model.dart';
+import '../../providers/labels_provider.dart';
+import '../../providers/notes_provider.dart';
+import '../../providers/notes_undo_redo_provider.dart';
+import '../../utils/notification_service.dart';
+
+/// Owns [NoteEditorScreen]'s note state and every Firestore/notification
+/// mutation, so the widget only holds text/focus controllers and UI. Callers
+/// are expected to wrap fire-and-forget futures returned here (e.g. [save])
+/// with `notifyOnError` for user-facing error feedback, same as everywhere
+/// else in the app.
+class NoteEditorController extends ChangeNotifier {
+  NoteEditorController({required WidgetRef ref, required NoteModel initialNote})
+    : _ref = ref,
+      _note = initialNote {
+    _isNew = ref.read(notesProvider).every((n) => n.id != initialNote.id);
+  }
+
+  final WidgetRef _ref;
+  NoteModel _note;
+  late bool _isNew;
+  bool _isSaving = false;
+  bool _softDeleted = false;
+
+  NoteModel get note => _note;
+  bool get isSaving => _isSaving;
+  bool get softDeleted => _softDeleted;
+
+  bool _isEmpty(String title, String content) {
+    if (title.trim().isNotEmpty || content.trim().isNotEmpty) return false;
+    if (_note.type == NoteType.checklist) {
+      return _note.checklistItems.every((i) => i.text.trim().isEmpty);
+    }
+    return true;
+  }
+
+  /// Persists the current note (with [title]/[content] trimmed in), adding
+  /// it if this is a brand-new note. No-ops if the note was soft-deleted, or
+  /// if it's new and still empty.
+  Future<void> save(String title, String content) async {
+    if (_softDeleted) return;
+    if (_isNew && _isEmpty(title, content)) return;
+
+    final updated = _note.copyWith(
+      title: title.trim(),
+      content: content.trim(),
+      updatedAt: DateTime.now(),
+    );
+
+    final Future<void> pending;
+    if (_isNew) {
+      pending = _ref.read(notesProvider.notifier).addNote(updated);
+      _isNew = false;
+    } else {
+      pending = _ref.read(notesProvider.notifier).updateNote(updated);
+    }
+    _note = updated;
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      await pending;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  /// Applies [update] to the current note and notifies listeners, without
+  /// persisting — callers still need to call [save] afterwards.
+  void updateNote(NoteModel Function(NoteModel current) update) {
+    _note = update(_note);
+    notifyListeners();
+  }
+
+  // ─── Reminder ─────────────────────────────────────────────────────────────
+
+  Future<void> scheduleReminderNotification(DateTime scheduled) {
+    return NotificationService.instance.scheduleNoteReminder(
+      _note.copyWith(reminder: scheduled),
+    );
+  }
+
+  Future<void> cancelReminderNotification() {
+    return NotificationService.instance.cancelNotification(
+      NotificationService.idForNote(_note.id),
+    );
+  }
+
+  // ─── Undo / Redo ──────────────────────────────────────────────────────────
+
+  /// Applies the next undo step (if any) and returns the resulting note, or
+  /// null if there was nothing to undo.
+  NoteModel? performUndo() {
+    final undone = NoteUndoRedoManager.performUndo(_ref, _note.id, _note);
+    if (undone != null) {
+      _note = undone;
+      notifyListeners();
+    }
+    return undone;
+  }
+
+  /// Applies the next redo step (if any) and returns the resulting note, or
+  /// null if there was nothing to redo.
+  NoteModel? performRedo() {
+    final redone = NoteUndoRedoManager.performRedo(_ref, _note.id, _note);
+    if (redone != null) {
+      _note = redone;
+      notifyListeners();
+    }
+    return redone;
+  }
+
+  // ─── Labels ───────────────────────────────────────────────────────────────
+
+  /// Adds [tag] to the note, or removes it if the note already has it.
+  void toggleTag(String tag) {
+    updateNote(
+      (n) => n.copyWith(
+        tags:
+            n.tags.contains(tag)
+                ? n.tags.where((t) => t != tag).toList()
+                : [...n.tags, tag],
+      ),
+    );
+  }
+
+  /// Creates the label [name] (if new) and adds it to the note. Returns the
+  /// label creation write.
+  Future<void> createTag(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return Future.value();
+    if (!_note.tags.contains(trimmed)) toggleTag(trimmed);
+    return _ref.read(labelsProvider.notifier).add(trimmed);
+  }
+
+  // ─── Audio notes ──────────────────────────────────────────────────────────
+
+  void addAudioNote(AudioNote audioNote) {
+    updateNote((n) => n.copyWith(audioNotes: [...n.audioNotes, audioNote]));
+  }
+
+  void removeAudioNote(String audioNoteId) {
+    updateNote(
+      (n) => n.copyWith(
+        audioNotes: n.audioNotes.where((a) => a.id != audioNoteId).toList(),
+      ),
+    );
+  }
+
+  // ─── Delete ───────────────────────────────────────────────────────────────
+
+  /// Moves the note to the trash. Returns null if the note was never saved,
+  /// so there is nothing to trash (or to restore with [restore]).
+  Future<void>? delete() {
+    _softDeleted = true;
+    if (_isNew) return null;
+    return _ref.read(notesProvider.notifier).softDelete(_note.id);
+  }
+
+  /// The user left this shared note (see `NotesNotifier.leaveNote`): the
+  /// save on closing the editor must not write it back.
+  void markLeft() => _softDeleted = true;
+
+  Future<void> restore() =>
+      _ref.read(notesProvider.notifier).restoreFromTrash(_note.id);
+}

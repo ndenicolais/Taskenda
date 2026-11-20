@@ -1,0 +1,297 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+//
+// Commercial use, including publishing or monetizing on any app store,
+// requires explicit written permission from the copyright holder.
+//
+// Author: Nicola De Nicolais
+// Contact: ndn21dev@gmail.com
+// GitHub: https://github.com/ndenicolais
+
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:taskenda/models/note_model.dart';
+import 'package:taskenda/providers/core_providers.dart';
+import 'package:taskenda/providers/notes_provider.dart';
+import 'package:taskenda/providers/settings/ui_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../helpers/test_container.dart';
+
+void main() {
+  late FakeFirebaseFirestore firestore;
+  late ProviderContainer container;
+  late NotesNotifier notifier;
+
+  setUp(() {
+    firestore = FakeFirebaseFirestore();
+    container = createTestContainer(firestore);
+    notifier = container.read(notesProvider.notifier);
+  });
+
+  Future<Map<String, dynamic>?> firestoreDoc(String id) async {
+    final snap =
+        await firestore
+            .collection('users')
+            .doc('test-uid')
+            .collection('notes')
+            .doc(id)
+            .get();
+    return snap.data();
+  }
+
+  group('NotesNotifier CRUD', () {
+    test('addNote adds to state and persists to Firestore', () async {
+      final note = NoteModel(title: 'Hello');
+      await notifier.addNote(note);
+
+      expect(notifier.state.map((n) => n.id), contains(note.id));
+      final data = await firestoreDoc(note.id);
+      expect(data, isNotNull);
+      expect(data!['title'], 'Hello');
+    });
+
+    test('updateNote replaces the existing note', () async {
+      final note = NoteModel(title: 'Original');
+      await notifier.addNote(note);
+
+      final updated = note.copyWith(title: 'Updated');
+      await notifier.updateNote(updated);
+
+      expect(notifier.state.single.title, 'Updated');
+      final data = await firestoreDoc(note.id);
+      expect(data!['title'], 'Updated');
+    });
+
+    test('deleteNote removes from state and Firestore', () async {
+      final note = NoteModel(title: 'ToDelete');
+      await notifier.addNote(note);
+
+      await notifier.deleteNote(note.id);
+
+      expect(notifier.state, isEmpty);
+      expect(await firestoreDoc(note.id), isNull);
+    });
+
+    test('reload replaces state with what is in Firestore', () async {
+      final kept = NoteModel(title: 'Kept');
+      final removed = NoteModel(title: 'Removed elsewhere');
+      await notifier.addNote(kept);
+      await notifier.addNote(removed);
+
+      // Simulate edits made from another device.
+      final col = firestore
+          .collection('users')
+          .doc('test-uid')
+          .collection('notes');
+      await col.doc(removed.id).delete();
+      await col.doc(kept.id).update({'title': 'Edited elsewhere'});
+
+      await notifier.reload();
+
+      expect(notifier.state.single.id, kept.id);
+      expect(notifier.state.single.title, 'Edited elsewhere');
+    });
+
+    test('clearAll removes every note', () async {
+      await notifier.addNote(NoteModel(title: 'A'));
+      await notifier.addNote(NoteModel(title: 'B'));
+
+      await notifier.clearAll();
+
+      expect(notifier.state, isEmpty);
+    });
+  });
+
+  group('NotesNotifier trash lifecycle', () {
+    test('softDelete sets deletedAt and clears archive flag', () async {
+      final note = NoteModel(title: 'Archived', isArchived: true);
+      await notifier.addNote(note);
+
+      await notifier.softDelete(note.id);
+
+      final result = notifier.state.single;
+      expect(result.deletedAt, isNotNull);
+      expect(result.isArchived, isFalse);
+    });
+
+    test('restoreFromTrash clears deletedAt', () async {
+      final note = NoteModel(title: 'Trashed');
+      await notifier.addNote(note);
+      await notifier.softDelete(note.id);
+
+      await notifier.restoreFromTrash(note.id);
+
+      expect(notifier.state.single.deletedAt, isNull);
+    });
+
+    test('permanentlyDelete removes the note entirely', () async {
+      final note = NoteModel(title: 'Gone');
+      await notifier.addNote(note);
+      await notifier.softDelete(note.id);
+
+      await notifier.permanentlyDelete(note.id);
+
+      expect(notifier.state, isEmpty);
+      expect(await firestoreDoc(note.id), isNull);
+    });
+  });
+
+  group('NotesNotifier toggles', () {
+    test('toggleArchive flips isArchived', () async {
+      final note = NoteModel(title: 'A');
+      await notifier.addNote(note);
+
+      await notifier.toggleArchive(note.id);
+      expect(notifier.state.single.isArchived, isTrue);
+
+      await notifier.toggleArchive(note.id);
+      expect(notifier.state.single.isArchived, isFalse);
+    });
+
+    test('togglePin flips isPinned', () async {
+      final note = NoteModel(title: 'A');
+      await notifier.addNote(note);
+
+      await notifier.togglePin(note.id);
+
+      expect(notifier.state.single.isPinned, isTrue);
+    });
+  });
+
+  group('NotesNotifier tags', () {
+    test('renameTag updates the tag only on notes that have it', () async {
+      final withTag = NoteModel(title: 'One', tags: ['work']);
+      final other = NoteModel(title: 'Two', tags: ['personal']);
+      await notifier.addNote(withTag);
+      await notifier.addNote(other);
+
+      await notifier.renameTag('work', 'job');
+
+      expect(notifier.state.firstWhere((n) => n.id == withTag.id).tags, [
+        'job',
+      ]);
+      expect(notifier.state.firstWhere((n) => n.id == other.id).tags, [
+        'personal',
+      ]);
+    });
+
+    test('deleteTag removes the tag from every note that has it', () async {
+      final note = NoteModel(title: 'One', tags: ['work', 'urgent']);
+      await notifier.addNote(note);
+
+      await notifier.deleteTag('work');
+
+      expect(notifier.state.single.tags, ['urgent']);
+    });
+  });
+
+  test('reorderNotes moves a note to its new position', () async {
+    final a = NoteModel(title: 'A');
+    final b = NoteModel(title: 'B');
+    final c = NoteModel(title: 'C');
+    // addNote prepends, so the resulting state order is [C, B, A].
+    await notifier.addNote(a);
+    await notifier.addNote(b);
+    await notifier.addNote(c);
+
+    await notifier.reorderNotes(notifier.state, 0, 2);
+
+    List<String> customOrder() =>
+        ([...notifier.state]
+          ..sort(compareCustomOrder)).map((n) => n.title).toList();
+    expect(customOrder(), ['B', 'C', 'A']);
+
+    // The order is saved with the notes: a reload from Firestore keeps it.
+    await notifier.reload();
+    expect(customOrder(), ['B', 'C', 'A']);
+  });
+
+  test('a new note goes to the top of the custom order', () async {
+    await notifier.addNote(NoteModel(title: 'A'));
+    await notifier.addNote(NoteModel(title: 'B'));
+    await notifier.reorderNotes(notifier.state, 0, 2);
+    await notifier.addNote(NoteModel(title: 'New'));
+
+    final sorted = [...notifier.state]..sort(compareCustomOrder);
+    expect(sorted.map((n) => n.title).toList(), ['New', 'A', 'B']);
+  });
+
+  test(
+    'toggling a non-existent note id throws without touching state',
+    () async {
+      final note = NoteModel(title: 'Untouched');
+      await notifier.addNote(note);
+
+      expect(() => notifier.toggleArchive('non-existent-id'), throwsStateError);
+      expect(notifier.state.single.id, note.id);
+    },
+  );
+
+  group('Derived providers', () {
+    test('activeNotesProvider/archivedNotesProvider/trashedNotesProvider '
+        'filter by archive/trash status', () async {
+      final active = NoteModel(title: 'Active');
+      final archived = NoteModel(title: 'Archived', isArchived: true);
+      final trashed = NoteModel(title: 'Trashed', deletedAt: DateTime.now());
+      await notifier.addNote(active);
+      await notifier.addNote(archived);
+      await notifier.addNote(trashed);
+
+      expect(container.read(activeNotesProvider).map((n) => n.title), [
+        'Active',
+      ]);
+      expect(container.read(archivedNotesProvider).map((n) => n.title), [
+        'Archived',
+      ]);
+      expect(container.read(trashedNotesProvider).map((n) => n.title), [
+        'Trashed',
+      ]);
+    });
+
+    group('filteredNotesProvider puts pinned notes first', () {
+      Future<ProviderContainer> containerWithSort(SortOrder sort) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final c = createTestContainer(
+          firestore,
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        c.read(sortOrderProvider.notifier).set(sort);
+        return c;
+      }
+
+      Future<void> addNotes(ProviderContainer c) async {
+        final n = c.read(notesProvider.notifier);
+        final base = DateTime(2026, 1, 1);
+        // addNote puts each new note on top: the custom order is D, C, B, A.
+        for (final (title, day, pinned) in [
+          ('A', 1, false),
+          ('B', 2, true),
+          ('C', 3, false),
+          ('D', 4, true),
+        ]) {
+          await n.addNote(
+            NoteModel(
+              title: title,
+              isPinned: pinned,
+              createdAt: base.add(Duration(days: day)),
+            ),
+          );
+        }
+      }
+
+      for (final (sort, expected) in [
+        (SortOrder.createdNewest, ['D', 'B', 'C', 'A']),
+        (SortOrder.createdOldest, ['B', 'D', 'A', 'C']),
+        (SortOrder.custom, ['D', 'B', 'C', 'A']),
+      ]) {
+        test(sort.name, () async {
+          final c = await containerWithSort(sort);
+          await addNotes(c);
+          expect(c.read(filteredNotesProvider).map((n) => n.title), expected);
+        });
+      }
+    });
+  });
+}

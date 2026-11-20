@@ -1,0 +1,62 @@
+# LICENSE - Taskenda
+
+**Copyright (c) 2026 Nicola De Nicolais <ndn21dev@gmail.com>. All rights reserved.**
+
+---
+
+## 1. PREAMBLE
+
+This is a **source-available, non-commercial license**. It is **not** the GNU General Public License (GPL) or any other OSI-approved open-source license, and no such license applies to this software.
+
+The goal is to keep the source code visible and usable for educational, personal, and non-commercial purposes, while the copyright holder retains full control over commercial exploitation, distribution, and the Taskenda name.
+
+---
+
+## 2. GRANT OF RIGHTS
+
+Subject to the restrictions in Section 3, the copyright holder grants you a worldwide, royalty-free, non-exclusive license to:
+
+* **View, study, and download** the source code.
+* **Use** the software for personal, educational, or evaluation purposes.
+* **Modify** the source code for your own personal or educational use.
+* **Share** unmodified or modified copies of the source code, provided you comply with Section 3.
+
+---
+
+## 3. RESTRICTIONS
+
+For the purposes of this license, **"Commercial Use"** means any use of the software, in whole or in part, that is intended for or directed toward commercial advantage or monetary compensation, including (but not limited to) selling it, charging for access to it, displaying advertising in it, offering in-app purchases or subscriptions, or using it to provide a paid service.
+
+* **NO COMMERCIAL USE:** You may not make Commercial Use of this software without explicit prior written permission from Nicola De Nicolais.
+* **NO PUBLIC APP DISTRIBUTION:** You may not publish or distribute a compiled application built from this software, in whole or in part, on any platform (including but not limited to the Google Play Store, Apple App Store, alternative app stores, or any web distribution), **whether free of charge or paid**, without explicit prior written permission from Nicola De Nicolais. Sharing the source code as allowed by Section 2 is not affected by this restriction.
+* **NO SUBLICENSING OF COMMERCIAL RIGHTS:** You may not grant any third party rights to this software beyond those granted to you under this license.
+* **ATTRIBUTION:** All copies or substantial portions of the software, modified or not, must retain the original copyright notice and this license in full.
+* **BRANDING:** "Taskenda" is a protected project name. You may not use this name, or any confusingly similar name, for derivative or redistributed works without permission.
+* **CHANGES TO THESE TERMS:** The copyright holder may stop distributing or update the source code, or change these terms for future releases, at any time. This license, as applied to a given copy of the code, is not revoked retroactively for that copy.
+
+For commercial licensing inquiries or special permissions, contact: **ndn21dev@gmail.com**
+
+---
+
+## 4. DISCLAIMER OF WARRANTY
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+## 5. TERMINATION
+
+Any violation of Section 3 automatically terminates your rights under this license. Upon termination, you must cease all use, distribution, and modification of the software.
+
+---
+
+## 6. ORIGINAL AUTHOR & COPYRIGHT SUMMARY
+
+* **Project:** Taskenda
+* **Author:** Nicola De Nicolais
+* **Email:** ndn21dev@gmail.com
+* **Year:** 2026
+* **Terms version:** these terms apply to every release of Taskenda.
+* **GitHub:** [https://github.com/ndenicolais](https://github.com/ndenicolais)
+
+This project and all its source code are the original intellectual property of Nicola De Nicolais. Unauthorized commercial use or claiming authorship of this work is a violation of this license and applicable copyright law.

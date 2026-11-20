@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launch screen before Android 12: brand background with the icon
+     foreground (adaptive-icon canvas, so the glyph keeps its safe-zone margin)
+     in the centre. Android 12+ uses values*-v31/styles.xml instead. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item
+        android:width="216dp"
+        android:height="216dp"
+        android:gravity="center"
+        android:drawable="@drawable/ic_launcher_foreground" />
+</layer-list>

@@ -1,0 +1,86 @@
+rules_version = '2';
+
+// All app data lives under users/{uid}/ (notes, tasks, task_lists,
+// calendar_events, labels, shared_*_prefs, fcm_tokens). Each signed-in user
+// has full access to their own branch. On top of that:
+// - user_directory maps an email to a uid, so items can be shared by email;
+// - a note, task or event can be shared: its collaborators (uids in
+//   `collaborators`) may read it, edit its shared content and remove
+//   themselves from it.
+// Everything else is denied by default.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isCollaborator() {
+      return signedIn() && request.auth.uid in resource.data.collaborators;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // The collaborator only removes themselves from the item.
+    function leaves() {
+      return changedKeys().hasOnly(['collaborators', 'collaboratorProfiles'])
+        && request.resource.data.collaborators
+          == resource.data.collaborators.removeAll([request.auth.uid])
+        && !(request.auth.uid in request.resource.data.collaboratorProfiles)
+        && request.resource.data.collaboratorProfiles.keys().toSet()
+          == resource.data.collaboratorProfiles.keys().toSet()
+            .difference([request.auth.uid].toSet());
+    }
+
+    // A collaborator may change only the shared content [keys] of an item
+    // (personal fields live in their own shared_*_prefs) or leave it.
+    function collaboratorUpdate(keys) {
+      return isCollaborator() && (changedKeys().hasOnly(keys) || leaves());
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // One entry per user, keyed by their lowercase email. Readable one at a
+    // time by its exact email (no listing, so emails can't be enumerated),
+    // written only by the user it describes.
+    match /user_directory/{email} {
+      allow get: if signedIn();
+      allow create, update: if signedIn()
+        && request.auth.token.email != null
+        && email == request.auth.token.email.lower()
+        && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // Shared items, for collaborators (the owner is covered above). Also
+    // match the collection-group queries on `collaborators`. The key lists
+    // mirror `sharedKeys` of NoteModel, TaskModel and CalendarEventModel.
+    match /{path=**}/notes/{noteId} {
+      allow read: if isCollaborator();
+      allow update: if collaboratorUpdate([
+        'title', 'content', 'type', 'style', 'checklistItems', 'updatedAt'
+      ]);
+    }
+
+    match /{path=**}/tasks/{taskId} {
+      allow read: if isCollaborator();
+      allow update: if collaboratorUpdate([
+        'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
+        'subtasks', 'updatedAt'
+      ]);
+    }
+
+    match /{path=**}/calendar_events/{eventId} {
+      allow read: if isCollaborator();
+      allow update: if collaboratorUpdate([
+        'title', 'description', 'location', 'color', 'startTime', 'endTime',
+        'isAllDay', 'isBirthday', 'isNameDay', 'recurrence',
+        'recurrenceEndDate', 'recurrenceInterval', 'recurrenceWeekdays',
+        'recurrenceMonthWeek', 'recurrenceExceptions', 'updatedAt'
+      ]);
+    }
+  }
+}

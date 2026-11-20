@@ -1,0 +1,163 @@
+// Taskenda — Copyright © 2026 Nicola De Nicolais — All Rights Reserved.
+// Licensed under a source-available, non-commercial license. See LICENSE.
+
+import 'package:flutter/material.dart';
+import '../../core/routing/app_router.dart';
+import '../../l10n/l10n.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../widgets/shared/app_logo.dart';
+
+/// App logo, name and tagline at the top of the login screen.
+class LoginHeader extends StatelessWidget {
+  const LoginHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Center(child: AppLogo()),
+        const SizedBox(height: 20),
+        Text(
+          'Taskenda',
+          textAlign: TextAlign.center,
+          style: textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          context.l10n.loginTagline,
+          textAlign: TextAlign.center,
+          style: textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+        ),
+      ],
+    );
+  }
+}
+
+/// Pill-shaped "Accedi / Registrati" tab switcher.
+class LoginTabBar extends StatelessWidget {
+  const LoginTabBar({super.key, required this.controller});
+
+  final TabController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TabBar(
+        controller: controller,
+        dividerColor: Colors.transparent,
+        indicator: BoxDecoration(
+          color: colorScheme.primary,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: colorScheme.onPrimary,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
+        tabs: [
+          Tab(text: context.l10n.loginTabSignIn),
+          Tab(text: context.l10n.loginTabRegister),
+        ],
+      ),
+    );
+  }
+}
+
+/// Horizontal rule with "oppure" in the middle.
+class OrDivider extends StatelessWidget {
+  const OrDivider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(
+            context.l10n.loginOr,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          ),
+        ),
+        const Expanded(child: Divider()),
+      ],
+    );
+  }
+}
+
+class GoogleSignInButton extends StatelessWidget {
+  const GoogleSignInButton({super.key, this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        side: BorderSide(color: colorScheme.outline),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'G',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            context.l10n.loginContinueWithGoogle,
+            style: const TextStyle(fontSize: 15),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// GDPR notice under the sign-in buttons: minimum age and a link to the
+/// privacy policy, readable before an account is created.
+class LoginPrivacyNotice extends StatelessWidget {
+  const LoginPrivacyNotice({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Text(
+          context.l10n.loginPrivacyNotice,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        // A real button rather than a text span: full touch target and
+        // announced as a button by screen readers.
+        TextButton(
+          onPressed: () => AppNav.openPrivacyPolicy(context),
+          child: Text(context.l10n.infoPrivacyOpen),
+        ),
+      ],
+    );
+  }
+}

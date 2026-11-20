@@ -1,0 +1,37 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.log"
+      ]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "taskenda21",
+          "appId": "1:796874919438:android:f7ad153454321ad4a4b65f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "taskenda21",
+          "configurations": {
+            "android": "1:796874919438:android:f7ad153454321ad4a4b65f",
+            "web": "1:796874919438:web:b5ae5b8b5fdca008a4b65f"
+          }
+        }
+      }
+    }
+  }
+}
