@@ -113,7 +113,7 @@ class TaskItem extends ConsumerWidget {
           ],
         ),
         subtitle:
-            task.description.isNotEmpty || task.hasDueTime
+            task.description.isNotEmpty || task.hasDueTime || task.isRecurring
                 ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -126,33 +126,49 @@ class TaskItem extends ConsumerWidget {
                           color: task.isCompleted ? cs.onSurfaceVariant : null,
                         ),
                       ),
-                    // The day is the group header: the row shows the time.
-                    if (task.hasDueTime)
+                    // The day is the group header: the row shows the time,
+                    // followed by the repeat icon for a recurring task.
+                    if (task.hasDueTime || task.isRecurring)
                       Padding(
                         padding: const EdgeInsets.only(top: AppSpacing.xs),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.alarm,
-                              size: 14,
-                              color:
-                                  task.isCompleted
-                                      ? cs.onSurfaceVariant
-                                      : cs.primary,
-                              semanticLabel: l10n.tasksNotificationTimeLabel,
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                            Text(
-                              DateFormat.Hm().format(task.dueDate!),
-                              style: Theme.of(
-                                context,
-                              ).textTheme.labelMedium?.copyWith(
+                            if (task.hasDueTime) ...[
+                              Icon(
+                                Icons.alarm,
+                                size: 14,
                                 color:
                                     task.isCompleted
                                         ? cs.onSurfaceVariant
                                         : cs.primary,
+                                semanticLabel: l10n.tasksNotificationTimeLabel,
                               ),
-                            ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Text(
+                                DateFormat.Hm().format(task.dueDate!),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.labelMedium?.copyWith(
+                                  color:
+                                      task.isCompleted
+                                          ? cs.onSurfaceVariant
+                                          : cs.primary,
+                                ),
+                              ),
+                            ],
+                            if (task.isRecurring) ...[
+                              if (task.hasDueTime)
+                                const SizedBox(width: AppSpacing.sm),
+                              Icon(
+                                Icons.repeat,
+                                size: 14,
+                                color:
+                                    task.isCompleted
+                                        ? cs.onSurfaceVariant
+                                        : cs.primary,
+                                semanticLabel: l10n.tasksRecurringLabel,
+                              ),
+                            ],
                           ],
                         ),
                       ),
