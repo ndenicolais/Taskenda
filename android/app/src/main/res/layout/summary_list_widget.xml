@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/widget_background"
+    android:id="@+id/widget_container"
+    android:background="@drawable/widget_list_background"
     android:paddingStart="12dp"
     android:paddingEnd="8dp"
     android:paddingTop="4dp"
@@ -31,6 +32,7 @@
                 android:id="@+id/widget_icon"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
+                android:tint="@color/widget_list_accent"
                 android:importantForAccessibility="no" />
 
             <TextView
@@ -41,7 +43,7 @@
                 android:layout_marginStart="8dp"
                 android:textStyle="bold"
                 android:textSize="14sp"
-                android:textColor="@color/widget_text"
+                android:textColor="@color/widget_list_text"
                 android:maxLines="1"
                 android:ellipsize="end" />
         </LinearLayout>
@@ -52,16 +54,18 @@
             android:layout_height="40dp"
             android:padding="8dp"
             android:src="@drawable/ic_widget_add"
+            android:tint="@color/widget_list_accent"
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@string/widget_add" />
     </LinearLayout>
 
     <FrameLayout
+        android:id="@+id/widget_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginEnd="4dp"
         android:layout_marginBottom="4dp"
-        android:background="@color/widget_divider" />
+        android:background="@color/widget_list_divider" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -81,7 +85,7 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:textSize="12sp"
-            android:textColor="@color/widget_text_secondary" />
+            android:textColor="@color/widget_list_text_secondary" />
     </FrameLayout>
 
 </LinearLayout>

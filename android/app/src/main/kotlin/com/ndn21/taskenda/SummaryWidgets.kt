@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
 import android.view.View
@@ -24,6 +25,31 @@ import java.util.Locale
 // "<kind>_empty"; the row format is documented in lib/utils/home_widget_rows.dart.
 // The string resources are only shown before the first sync.
 private const val EXTRA_KIND = "com.ndn21.taskenda.SUMMARY_KIND"
+
+/**
+ * Colors of the list widgets when the app theme is forced to Light or Dark
+ * ("theme_mode", written by WidgetService). On "System" (or before the first
+ * sync) it is null and the layouts' night-aware @color/widget_list_* follow
+ * the device on their own.
+ */
+private class ListWidgetPalette(context: Context, val dark: Boolean) {
+    val text = context.getColor(if (dark) R.color.widget_list_text_dark else R.color.widget_list_text_light)
+    val textSecondary = context.getColor(
+        if (dark) R.color.widget_list_text_secondary_dark else R.color.widget_list_text_secondary_light
+    )
+    val accent = context.getColor(if (dark) R.color.widget_list_accent_dark else R.color.widget_list_accent_light)
+    val divider = context.getColor(if (dark) R.color.widget_list_divider_dark else R.color.widget_list_divider_light)
+    val background = if (dark) R.drawable.widget_list_background_dark else R.drawable.widget_list_background_light
+
+    companion object {
+        fun forced(context: Context, prefs: SharedPreferences): ListWidgetPalette? =
+            when (prefs.getString("theme_mode", null)) {
+                "dark" -> ListWidgetPalette(context, true)
+                "light" -> ListWidgetPalette(context, false)
+                else -> null
+            }
+    }
+}
 
 /**
  * List widget: a header (icon, title, "+") over a scrolling list of rows.
@@ -46,12 +72,14 @@ abstract class SummaryListWidget(
         val prefs = HomeWidgetPlugin.getData(context)
         val title = prefs.getString("${kind}_title", null) ?: context.getString(titleRes)
         val empty = prefs.getString("${kind}_empty", null) ?: context.getString(emptyRes)
+        val palette = ListWidgetPalette.forced(context, prefs)
 
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.summary_list_widget)
             views.setImageViewResource(R.id.widget_icon, iconRes)
             views.setTextViewText(R.id.widget_title, title)
             views.setTextViewText(R.id.widget_empty, empty)
+            palette?.let { applyPalette(views, it) }
 
             val adapter = Intent(context, SummaryListService::class.java).apply {
                 putExtra(EXTRA_KIND, kind)
@@ -74,6 +102,15 @@ abstract class SummaryListWidget(
         // Re-reads the rows: new data from the app, or a new day.
         @Suppress("DEPRECATION")
         appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_list)
+    }
+
+    private fun applyPalette(views: RemoteViews, palette: ListWidgetPalette) {
+        views.setInt(R.id.widget_container, "setBackgroundResource", palette.background)
+        views.setTextColor(R.id.widget_title, palette.text)
+        views.setTextColor(R.id.widget_empty, palette.textSecondary)
+        views.setInt(R.id.widget_icon, "setColorFilter", palette.accent)
+        views.setInt(R.id.widget_add, "setColorFilter", palette.accent)
+        views.setInt(R.id.widget_divider, "setBackgroundColor", palette.divider)
     }
 
     /**
@@ -121,10 +158,13 @@ private class SummaryListFactory(
     /** Today/Tomorrow/Yesterday labels by `yyyy-MM-dd` day. */
     private var relativeLabels: Map<String, String> = emptyMap()
 
+    private var palette: ListWidgetPalette? = null
+
     override fun onCreate() {}
 
     override fun onDataSetChanged() {
         val prefs = HomeWidgetPlugin.getData(context)
+        palette = ListWidgetPalette.forced(context, prefs)
         val format = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         fun day(offset: Int): String {
             val cal = Calendar.getInstance()
@@ -167,6 +207,7 @@ private class SummaryListFactory(
         val views = RemoteViews(context.packageName, R.layout.summary_list_header)
         val label = relativeLabels[row.optString("day", "")] ?: row.optString("label", "")
         views.setTextViewText(R.id.row_label, label)
+        palette?.let { views.setTextColor(R.id.row_label, it.accent) }
         return views
     }
 
@@ -177,6 +218,10 @@ private class SummaryListFactory(
         val sub = row.optString("sub", "")
         views.setTextViewText(R.id.row_subtitle, sub)
         views.setViewVisibility(R.id.row_subtitle, if (sub.isEmpty()) View.GONE else View.VISIBLE)
+        palette?.let {
+            views.setTextColor(R.id.row_title, it.text)
+            views.setTextColor(R.id.row_subtitle, it.textSecondary)
+        }
 
         if (row.has("color")) {
             views.setInt(R.id.row_bar, "setBackgroundColor", row.optLong("color").toInt())

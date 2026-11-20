@@ -7,4 +7,26 @@
     <color name="widget_text_secondary">#FF4A4A63</color>
     <color name="widget_header">#FF5B5BD6</color>
     <color name="widget_divider">#FFE4E4F0</color>
+
+    <!-- List widgets (SummaryWidgets.kt): they follow the app theme. These
+         night-aware colors cover "System" (values-night overrides them); with
+         a forced Light/Dark mode SummaryWidgets.kt applies the _light/_dark
+         ones instead. -->
+    <color name="widget_list_background">@color/widget_list_background_light</color>
+    <color name="widget_list_text">@color/widget_list_text_light</color>
+    <color name="widget_list_text_secondary">@color/widget_list_text_secondary_light</color>
+    <color name="widget_list_accent">@color/widget_list_accent_light</color>
+    <color name="widget_list_divider">@color/widget_list_divider_light</color>
+
+    <color name="widget_list_background_light">#FFFFFFFF</color>
+    <color name="widget_list_text_light">#FF1B1B2F</color>
+    <color name="widget_list_text_secondary_light">#FF4A4A63</color>
+    <color name="widget_list_accent_light">#FF5B5BD6</color>
+    <color name="widget_list_divider_light">#FFE4E4F0</color>
+
+    <color name="widget_list_background_dark">#FF1F1F2E</color>
+    <color name="widget_list_text_dark">#FFEDEDF5</color>
+    <color name="widget_list_text_secondary_dark">#FFA6A6BF</color>
+    <color name="widget_list_accent_dark">#FF8C8CF0</color>
+    <color name="widget_list_divider_dark">#FF2E2E42</color>
 </resources>

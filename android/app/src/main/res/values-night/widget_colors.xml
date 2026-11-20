@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- List widgets with the app theme on "System" and the device in dark
+         mode (see values/widget_colors.xml). -->
+    <color name="widget_list_background">@color/widget_list_background_dark</color>
+    <color name="widget_list_text">@color/widget_list_text_dark</color>
+    <color name="widget_list_text_secondary">@color/widget_list_text_secondary_dark</color>
+    <color name="widget_list_accent">@color/widget_list_accent_dark</color>
+    <color name="widget_list_divider">@color/widget_list_divider_dark</color>
+</resources>

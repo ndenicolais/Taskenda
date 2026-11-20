@@ -9,6 +9,6 @@
     android:paddingBottom="2dp"
     android:textStyle="bold"
     android:textSize="11sp"
-    android:textColor="@color/widget_header"
+    android:textColor="@color/widget_list_accent"
     android:maxLines="1"
     android:ellipsize="end" />

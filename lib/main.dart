@@ -75,6 +75,8 @@ class NotesApp extends ConsumerWidget {
     ref.listen(activeEventsProvider, (_, _) => _syncHomeWidget(ref));
     // The widget labels are in the UI language.
     ref.listen(appLanguageProvider, (_, _) => _syncHomeWidget(ref));
+    // The list widgets follow the app theme.
+    ref.listen(themeModeProvider, (_, _) => _syncHomeWidget(ref));
     // Reminders live on the device: rebuild them from the account after a
     // sign-in (also on a cold start, when the restored session arrives) and
     // cancel them after a sign-out, so another account's reminders never fire.
@@ -145,6 +147,7 @@ class NotesApp extends ConsumerWidget {
       ref.read(activeNotesProvider),
       ref.read(activeTasksProvider),
       ref.read(activeEventsProvider),
+      ref.read(themeModeProvider),
     );
   }
 }

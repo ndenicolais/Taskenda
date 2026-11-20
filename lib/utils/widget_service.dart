@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:home_widget/home_widget.dart';
 import '../l10n/l10n.dart';
 import '../models/calendar_model.dart';
@@ -32,8 +33,10 @@ class WidgetService {
     ],
   };
 
-  /// Day labels shared by the list widgets, which pick them by date.
+  /// Keys read by every list widget: the day labels, picked by date, and the
+  /// app theme ("system" | "light" | "dark") their colors follow.
   static const _sharedKeys = [
+    'theme_mode',
     'label_today',
     'label_tomorrow',
     'label_yesterday',
@@ -49,19 +52,20 @@ class WidgetService {
     }
   }
 
-  /// Schedules a refresh of every widget from the current notes, tasks and
-  /// events. Bursts of changes (e.g. notes and tasks emitting back to back)
+  /// Schedules a refresh of every widget from the current notes, tasks,
+  /// events and app theme. Bursts of changes (e.g. notes and tasks emitting back to back)
   /// collapse into a single write, and identical values are not rewritten.
   void scheduleSync(
     List<NoteModel> notes,
     List<TaskModel> tasks,
     List<CalendarEventModel> events,
+    ThemeMode themeMode,
   ) {
     if (kIsWeb) return;
     _pending?.cancel();
     _pending = Timer(
       _debounce,
-      () => _write(_buildValues(notes, tasks, events)),
+      () => _write(_buildValues(notes, tasks, events, themeMode)),
     );
   }
 
@@ -71,10 +75,12 @@ class WidgetService {
     List<NoteModel> notes,
     List<TaskModel> tasks,
     List<CalendarEventModel> events,
+    ThemeMode themeMode,
   ) {
     final l10n = currentL10n();
     final now = DateTime.now();
     return {
+      'theme_mode': themeMode.name,
       'label_today': l10n.commonToday,
       'label_tomorrow': l10n.commonTomorrow,
       'label_yesterday': l10n.commonYesterday,
