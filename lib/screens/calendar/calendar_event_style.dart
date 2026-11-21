@@ -11,6 +11,9 @@
 import 'package:flutter/material.dart';
 import '../../models/calendar_model.dart';
 import '../../theme/app_colors.dart';
+import 'calendar_event_texture.dart';
+
+export 'calendar_event_texture.dart' show EventTexture, EventTexturePainter;
 
 /// Colors and icon of a calendar entry, shared by every calendar view so the
 /// same kind of entry always looks the same (list cards, month and week chips).
@@ -22,7 +25,17 @@ class CalendarItemStyle {
     this.icon,
     this.isDone = false,
     this.festiveEnd,
+    this.texture,
   });
+
+  /// Pattern behind plain events (not tasks, holidays, birthdays or name
+  /// days): stripes when all-day, dots when timed. Drawn on the larger
+  /// shapes only (list cards, day / week blocks).
+  final EventTexture? texture;
+
+  /// Color of the [texture]: the [accent], faded so text stays readable.
+  Color textureColor(bool isDark) =>
+      accent.withValues(alpha: isDark ? 0.10 : 0.07);
 
   /// Second gradient stop of birthdays and name days, whose list cards are
   /// larger and festive; null for every other kind.
@@ -65,16 +78,17 @@ _Swatch _category(Color accent) => (
   accent: accent,
 );
 
-final _Swatch _timedSwatch = _category(AppColors.indigo);
 final _Swatch _taskSwatch = _category(AppColors.teal);
 final _Swatch _birthdaySwatch = _category(birthdayColor);
 final _Swatch _nameDaySwatch = _category(nameDayColor);
-final _Swatch _allDaySwatch = _category(AppColors.violet);
 final _Swatch _holidaySwatch = _category(AppColors.coral);
 
-/// Tasks, birthdays, name days, all-day and timed events each get their own
-/// category color; an event with a [CalendarEventModel.color] uses that one
-/// instead (birthdays and name days keep their icon and festive gradient).
+/// Tasks, birthdays, name days and holidays each get their own category
+/// color. Other events get a color of the pastel palette picked from their
+/// title ([autoEventSwatchIndex]: the same title, the same color) and a
+/// [EventTexture] by kind. An event with a [CalendarEventModel.color] uses
+/// that one instead (birthdays and name days keep their icon and festive
+/// gradient).
 CalendarItemStyle calendarItemStyle(
   CalendarEventModel item,
   ColorScheme colorScheme,
@@ -117,9 +131,38 @@ CalendarItemStyle calendarItemStyle(
       festiveEnd: _festiveEnd(AppColors.coral, isDark),
     );
   }
-  if (custom != null) return _style(_customSwatch(custom), isDark, null);
-  if (item.isAllDay) return _style(_allDaySwatch, isDark, null);
-  return _style(_timedSwatch, isDark, null);
+  final texture = item.isAllDay ? EventTexture.stripes : EventTexture.dots;
+  return _style(
+    custom != null ? _customSwatch(custom) : _autoSwatch(item),
+    isDark,
+    null,
+    texture: texture,
+  );
+}
+
+/// Pastel families an event can get automatically: all but the grey one.
+const _autoFamilies = 9;
+
+/// Index (in the pastel families) of the automatic color of an event titled
+/// [title]: FNV-1a of the trimmed, lower-case title, stable across runs and
+/// platforms (unlike [String.hashCode]). An empty title falls back to
+/// [fallback] (the id).
+int autoEventSwatchIndex(String title, String fallback) {
+  final key = title.trim().toLowerCase();
+  var hash = 0x811c9dc5;
+  for (final unit in (key.isEmpty ? fallback : key).codeUnits) {
+    hash = ((hash ^ unit) * 0x01000193) & 0xFFFFFFFF;
+  }
+  return hash % _autoFamilies;
+}
+
+_Swatch _autoSwatch(CalendarEventModel item) {
+  final i = autoEventSwatchIndex(item.title, item.id);
+  return (
+    light: AppColors.pastelLight[i],
+    dark: AppColors.pastelDark[i],
+    accent: AppColors.pastelDeep[i],
+  );
 }
 
 Color _festiveEnd(Color color, bool isDark) =>
@@ -146,6 +189,7 @@ CalendarItemStyle _style(
   IconData? icon, {
   bool isDone = false,
   Color? festiveEnd,
+  EventTexture? texture,
 }) {
   final opaque = isDark ? swatch.dark : swatch.light;
   return CalendarItemStyle(
@@ -155,5 +199,6 @@ CalendarItemStyle _style(
     icon: icon,
     isDone: isDone,
     festiveEnd: festiveEnd,
+    texture: texture,
   );
 }

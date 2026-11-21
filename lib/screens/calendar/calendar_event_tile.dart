@@ -70,6 +70,7 @@ class CalendarEventListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = calendarItemStyle(event, Theme.of(context).colorScheme);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final subtitle = calendarItemSubtitle(context.l10n, event);
     final festive = style.isFestive;
     final radius = BorderRadius.circular(festive ? 12 : 8);
@@ -100,8 +101,13 @@ class CalendarEventListTile extends StatelessWidget {
                 festive
                     ? _ConfettiPainter(
                       seed: event.title.hashCode,
-                      isDark: Theme.of(context).brightness == Brightness.dark,
+                      isDark: isDark,
                       accent: style.accent,
+                    )
+                    : style.texture != null
+                    ? EventTexturePainter(
+                      texture: style.texture!,
+                      color: style.textureColor(isDark),
                     )
                     : null,
             child: InkWell(

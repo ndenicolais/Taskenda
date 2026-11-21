@@ -522,42 +522,57 @@ class _EventBlock extends StatelessWidget {
         child: Container(
           // Side bar: Container insets the child by the border width.
           decoration: BoxDecoration(border: style.sideBar(3)),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              // As many lines as fit: title first, then the time range.
-              final lines = math.max(
-                1,
-                ((constraints.maxHeight - 4) / (scaler.scale(fontSize) * 1.2))
-                    .floor(),
-              );
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text:
-                            event.title.isEmpty
-                                ? context.l10n.commonUntitledParens
-                                : event.title,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+          child: CustomPaint(
+            painter:
+                style.texture == null
+                    ? null
+                    : EventTexturePainter(
+                      texture: style.texture!,
+                      color: style.textureColor(
+                        Theme.of(context).brightness == Brightness.dark,
                       ),
-                      TextSpan(
-                        text: '\n${formatEventTimeRange(context.l10n, event)}',
-                      ),
-                    ],
+                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // As many lines as fit: title first, then the time range.
+                final lines = math.max(
+                  1,
+                  ((constraints.maxHeight - 4) / (scaler.scale(fontSize) * 1.2))
+                      .floor(),
+                );
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
                   ),
-                  maxLines: lines,
-                  overflow: TextOverflow.ellipsis,
-                  textScaler: scaler,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    height: 1.2,
-                    color: style.foreground,
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text:
+                              event.title.isEmpty
+                                  ? context.l10n.commonUntitledParens
+                                  : event.title,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        TextSpan(
+                          text:
+                              '\n${formatEventTimeRange(context.l10n, event)}',
+                        ),
+                      ],
+                    ),
+                    maxLines: lines,
+                    overflow: TextOverflow.ellipsis,
+                    textScaler: scaler,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      height: 1.2,
+                      color: style.foreground,
+                    ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
