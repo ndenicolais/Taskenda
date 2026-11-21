@@ -247,6 +247,10 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
         child:
             isSearching
                 ? CalendarSearchResultsView(events: filteredEvents)
+                // Blank until the cached events are in, instead of a
+                // "no events" placeholder flashing before them.
+                : !ref.watch(calendarCacheSeededProvider).hasValue
+                ? const SizedBox.shrink()
                 : _buildCurrentView(allEvents),
       ),
       floatingActionButton: FloatingActionButton(

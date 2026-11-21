@@ -456,16 +456,17 @@ final calendarCacheSeededProvider = FutureProvider<void>((ref) {
 /// What the calendar views display: active events, the holidays switched on
 /// and, when enabled, the tasks with a due date.
 final calendarItemsProvider = Provider<List<CalendarEventModel>>((ref) {
-  final events = [
+  // Holidays are computed locally and the tasks' cache read is much smaller:
+  // shown before the events, they appeared ahead of them (~0.8 s with 625
+  // events), so the calendar filled in steps. Holding everything back until
+  // the cached events are in makes it all appear together.
+  if (!ref.watch(calendarCacheSeededProvider).hasValue) return const [];
+  return [
     ...ref.watch(activeEventsProvider),
     ...ref.watch(calendarHolidayItemsProvider),
+    if (ref.watch(calendarShowTasksProvider))
+      ...ref.watch(calendarTaskItemsProvider),
   ];
-  if (!ref.watch(calendarShowTasksProvider)) return events;
-  // The tasks' cache read is much smaller: shown before the events are, they
-  // appeared ~0.8 s ahead of them (625 events), so the calendar filled in
-  // two steps. Holding them back makes both appear together.
-  if (!ref.watch(calendarCacheSeededProvider).hasValue) return events;
-  return [...events, ...ref.watch(calendarTaskItemsProvider)];
 });
 
 final filteredCalendarEventsProvider = Provider<List<CalendarEventModel>>((
