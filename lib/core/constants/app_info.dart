@@ -24,6 +24,9 @@ final uriPrivacyPolicy = Uri.parse(
 /// Links of the Info screen.
 /// Project page on the portfolio: also the link sent by "Share Taskenda".
 final uriProjectPage = Uri.parse('https://ndenicolais.github.io/taskenda/');
+
+/// Web version on Firebase Hosting (hidden in Info when already on the web).
+final uriWebApp = Uri.parse('https://taskenda21.web.app');
 final uriSourceCode = Uri.parse('https://github.com/ndenicolais/Taskenda');
 final uriDeveloperGithub = Uri.parse('https://github.com/ndenicolais');
 final uriContactMail = Uri(

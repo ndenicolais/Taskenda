@@ -563,6 +563,7 @@
   "infoLinkContact": "Contatta lo sviluppatore",
   "infoLinkError": "Impossibile aprire il link",
   "infoLinkWebsite": "Pagina del progetto",
+  "infoLinkWebApp": "Versione web",
   "infoShareApp": "Condividi Taskenda",
   "infoShareText": "Prova Taskenda, l'app per note, task e calendario: {url}",
   "@infoShareText": {

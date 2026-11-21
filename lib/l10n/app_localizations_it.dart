@@ -1612,6 +1612,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get infoLinkWebsite => 'Pagina del progetto';
 
   @override
+  String get infoLinkWebApp => 'Versione web';
+
+  @override
   String get infoShareApp => 'Condividi Taskenda';
 
   @override

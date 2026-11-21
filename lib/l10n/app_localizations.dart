@@ -2834,6 +2834,12 @@ abstract class AppLocalizations {
   /// **'Pagina del progetto'**
   String get infoLinkWebsite;
 
+  /// No description provided for @infoLinkWebApp.
+  ///
+  /// In it, this message translates to:
+  /// **'Versione web'**
+  String get infoLinkWebApp;
+
   /// No description provided for @infoShareApp.
   ///
   /// In it, this message translates to:

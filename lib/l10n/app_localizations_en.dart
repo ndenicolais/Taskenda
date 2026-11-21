@@ -1604,6 +1604,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get infoLinkWebsite => 'Project page';
 
   @override
+  String get infoLinkWebApp => 'Web version';
+
+  @override
   String get infoShareApp => 'Share Taskenda';
 
   @override

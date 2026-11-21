@@ -8,6 +8,7 @@
 // Contact: ndn21dev@gmail.com
 // GitHub: https://github.com/ndenicolais
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import '../l10n/l10n.dart';
@@ -289,6 +290,13 @@ class _LinksCard extends StatelessWidget {
         external: true,
         onTap: () => _open(context, uriProjectPage),
       ),
+      if (!kIsWeb)
+        _LinkRow(
+          icon: Icons.open_in_browser,
+          text: l10n.infoLinkWebApp,
+          external: true,
+          onTap: () => _open(context, uriWebApp),
+        ),
       _LinkRow(
         icon: Icons.share_outlined,
         text: l10n.infoShareApp,
