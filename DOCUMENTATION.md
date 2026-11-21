@@ -26,7 +26,7 @@
 
 ## 1. App overview
 
-Taskenda brings together calendar, tasks and notes in one Android app (the web build is used only for development and is not published), synced to the user's account through Firebase.
+Taskenda brings together calendar, tasks and notes in one Android app (also served as a web app on Firebase Hosting, `taskenda21.web.app`), synced to the user's account through Firebase.
 
 - Sign in with email/password or Google; first launch shows an onboarding.
 - Write text notes (formatting bar, formatted view, web links) and checklists, styled per note (font, size, colors), with audio recordings, labels, links to other notes and reminders.
@@ -45,7 +45,7 @@ Languages: Italian and English (see [Localization](#10-localization)). Themes: l
 
 | Component | Technology |
 |---|---|
-| Framework | Flutter (Android; Web for development only) |
+| Framework | Flutter (Android; Web on Firebase Hosting) |
 | State management | [flutter_riverpod](https://pub.dev/packages/flutter_riverpod) (`Notifier`/`NotifierProvider` declared by hand, no code generation) |
 | Authentication | [firebase_auth](https://pub.dev/packages/firebase_auth), [google_sign_in](https://pub.dev/packages/google_sign_in) |
 | Database | [cloud_firestore](https://pub.dev/packages/cloud_firestore) with offline persistence |
@@ -769,7 +769,7 @@ Helpers in `test/helpers/`: `createTestContainer(db)` / `firestoreOverrides(db)`
 | Android minimum | API 24 (Android 7.0), Flutter's default `minSdk` |
 | Android target | `targetSdk` 36 (Flutter's default), `compileSdk` 37 |
 | Architectures | Release APK built for `arm64-v8a` only |
-| Web | Development only, not published (no Firebase Hosting): modern browsers, run on `localhost:5000`; no Home screen widgets and no automatic backups (they need `dart:io`) |
+| Web | Firebase Hosting on `https://taskenda21.web.app` (site `taskenda21`); locally run on `localhost:5000`; modern browsers; no Home screen widgets and no automatic backups (they need `dart:io`) |
 | Internet | Needed for sign-in and sync; Firestore works offline and syncs later |
 | Google Play services | Needed for Google sign-in |
 | Firebase | `android/app/google-services.json` and `lib/firebase_options.dart` (both git-ignored) |
@@ -810,6 +810,8 @@ flutter build web                             # web
 
 The local script `deploy_android.ps1` (git-ignored) runs clean, `pub get` and the release build above, and stops if `android/key.properties` is missing, then renames the output to `Taskenda_v<X.Y.Z>_b<N>.apk` (version and build from `pubspec.yaml`), which is the name used for the GitHub releases.
 
+**Web deploy (Firebase Hosting).** The `hosting` block in `firebase.json` publishes `build/web` to the site `taskenda21` (`https://taskenda21.web.app`): every path is rewritten to `/index.html` (the app does its own routing) and HTML/JS/JSON/WASM files, plus extensionless paths, are served `no-cache`, because Flutter web file names carry no hash and a cached `main.dart.js` would outlive the deploy. The local script `deploy_web.ps1` (git-ignored) checks Flutter, the Firebase CLI and `lib/firebase_options.dart`, runs `flutter analyze`, recreates `build/web` with `flutter build web --release`, checks `index.html`, `main.dart.js`, `flutter_bootstrap.js`, `manifest.json` and `firebase-messaging-sw.js`, then runs `firebase deploy --only hosting:taskenda21`. `-Preview` deploys to the `preview` channel instead (`-Channel`, `-Expires`, default 7 days) with `hosting:channel:deploy`: fixed URL per channel, added automatically to the Firebase Auth authorized domains, public site unchanged. Google sign-in on the web uses the taskenda21 Web OAuth client (`google-signin-client_id` in `web/index.html`, the `client_type: 3` client in `google-services.json`): every origin that serves the app (`localhost:5000`, `taskenda21.web.app`, preview channels) must be among its authorized JavaScript origins in Google Cloud, and among the API key HTTP referrers if the key is restricted.
+
 **Android toolchain**
 
 | Tool | Version | Notes |
@@ -849,7 +851,7 @@ keyPassword=<key password>
 
 **Notes**
 
-- Never commit: `key.properties`, keystores, `google-services.json`, `firebase_options.dart`, `adi-registration.properties`, `symbols/`, `/tool/`, `deploy_android.ps1`, `CLAUDE.md`, `TASKS.md`.
+- Never commit: `key.properties`, keystores, `google-services.json`, `firebase_options.dart`, `adi-registration.properties`, `symbols/`, `/tool/`, `deploy_android.ps1`, `deploy_web.ps1`, `.firebase/`, `CLAUDE.md`, `TASKS.md`.
 - Version source of truth: `version: X.Y.Z+N` in `pubspec.yaml` (`N` is the Android `versionCode` and always grows), mirrored by `appVersion`/`appBuildNumber` in `lib/core/constants/app_version.dart`. Each release adds a `ChangelogEntry` at the top of `changelogEntries`, with every bullet key in both ARB files (`changelog_test.dart` fails otherwise).
 - Obfuscation symbols go to `symbols/v<version>` (outside `build/`, so `flutter clean` keeps them) and are needed to read crash stack traces with `flutter symbolize`: keep them for every release.
 - Privacy policy: the same text lives in `PRIVACY.md`, in the ARB files (`PrivacyPolicyScreen`) and on the portfolio page `https://ndenicolais.github.io/taskenda/privacy/` (built from `TASKENDA_PORTFOLIO_PAGES.md` by the site project; it is also the privacy URL of the OAuth consent screen). Update them together, with `privacyPolicyUpdatedAt` in `app_info.dart` equal to the date in `PRIVACY.md`, and before the release when adding services, analytics or permissions.

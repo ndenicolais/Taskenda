@@ -56,8 +56,12 @@ web/firebase-messaging-sw.js
 # Kotlin compiler daemon sessions
 android/.kotlin/
 
-# Local release build script
+# Local release build and deploy scripts
 deploy_android.ps1
+deploy_web.ps1
+
+# Firebase CLI cache (Hosting deploy hashes)
+.firebase/
 
 # Local AI assistant context (not shared with the team)
 CLAUDE.md
