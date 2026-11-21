@@ -42,6 +42,19 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('uses the full width on a wide screen', (tester) async {
+    await _pump(tester, size: const Size(1400, 1600));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(tester.getSize(find.byType(ListView)).width, 1400);
+    // The four features share one row.
+    final tops = [
+      for (final e in find.byType(Card).evaluate().take(5))
+        tester.getTopLeft(find.byWidget(e.widget)).dy,
+    ];
+    expect(tops.toSet().length, lessThan(tops.length));
+  });
+
   testWidgets('opens the open source licenses page', (tester) async {
     await _pump(tester);
     await tester.pumpAndSettle();

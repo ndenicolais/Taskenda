@@ -626,7 +626,7 @@ Screens use `ColorScheme` roles or `AppColors`, never color literals (exception:
 
 `_textTheme` maps the roles to `AppFontSizes`: display/headline/title in Manrope (display 800, headline and `titleLarge` 700, other titles 600), body in Inter 400, labels in Inter 500–600. Screens use `Theme.of(context).textTheme.*`, and `AppFontSizes` only when an explicit size is needed. `dialogTheme` and `bottomSheetTheme` set radius `xl`, so dialogs and sheets do not redeclare the shape. Off-scale spacing values (6, 10, 14, 20, 28) still appear as literals.
 
-**Layout.** Home grid columns depend on the width (`gridColumns` in `home_layout_utils.dart`); Info is centered with a max width of 600.
+**Layout.** Home grid columns depend on the width (`gridColumns` in `home_layout_utils.dart`); Info uses the full width like the other sections (no max width), its feature grid going from 2 to 4 per row at 900 px. The only intentional width caps left are the login form (420), the phone onboarding carousel (480), the app bar search field (360) and the date/time picker dialog (360).
 
 **Shared components** (`lib/widgets/shared/`):
 

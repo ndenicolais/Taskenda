@@ -36,10 +36,11 @@ class InfoScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.infoTitle)),
+      // Full width like the other sections (no cap on the web).
       body: SafeArea(
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+          child: SizedBox(
+            width: double.infinity,
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
@@ -157,7 +158,8 @@ class _SectionLabel extends StatelessWidget {
 
 typedef _Feature = ({IconData icon, String title, String text});
 
-/// Two-by-two grid of the main features (keep an even count).
+/// Grid of the main features: two by two, one row of four from 900 px
+/// (keep an even count).
 class _FeatureGrid extends StatelessWidget {
   const _FeatureGrid();
 
@@ -187,22 +189,29 @@ class _FeatureGrid extends StatelessWidget {
       ),
     ];
 
-    return Column(
-      children: [
-        for (var i = 0; i < features.length; i += 2) ...[
-          if (i > 0) const SizedBox(height: AppSpacing.md),
-          IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(child: _FeatureCard(features[i])),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(child: _FeatureCard(features[i + 1])),
-              ],
-            ),
-          ),
-        ],
-      ],
+    // Two per row, all four in one row on wide screens (the web).
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final perRow = constraints.maxWidth >= 900 ? features.length : 2;
+        return Column(
+          children: [
+            for (var i = 0; i < features.length; i += perRow) ...[
+              if (i > 0) const SizedBox(height: AppSpacing.md),
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var j = i; j < i + perRow; j++) ...[
+                      if (j > i) const SizedBox(width: AppSpacing.md),
+                      Expanded(child: _FeatureCard(features[j])),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
