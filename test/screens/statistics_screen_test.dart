@@ -71,16 +71,25 @@ void main() {
     expect(find.text('lavoro'), findsOneWidget);
     expect(find.text('Riepilogo'), findsOneWidget);
     expect(find.textContaining('Giorno più attivo'), findsOneWidget);
+    final order =
+        [
+          'Panoramica',
+          'Riepilogo',
+          'Completamento task',
+          'Attività',
+          'Etichette più usate',
+        ].map((t) => tester.getTopLeft(find.text(t)).dy).toList();
+    expect(order, [...order]..sort());
   });
 
   testWidgets('lays out in two columns on a wide screen', (tester) async {
     await _pump(tester, _stats(), const Size(1400, 2000));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+    final summary = tester.getTopLeft(find.text('Riepilogo'));
     final tasks = tester.getTopLeft(find.text('Completamento task'));
-    final activity = tester.getTopLeft(find.text('Attività'));
-    expect(activity.dy, tasks.dy);
-    expect(activity.dx, greaterThan(tasks.dx));
+    expect(tasks.dy, summary.dy);
+    expect(tasks.dx, greaterThan(summary.dx));
   });
 
   testWidgets('shows the empty states', (tester) async {

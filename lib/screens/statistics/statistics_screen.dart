@@ -24,8 +24,8 @@ const _notesColor = AppColors.amber;
 const _tasksColor = AppColors.teal;
 const _eventsColor = AppColors.blue;
 
-/// Overview, tasks, activity over time, most used labels and a summary of
-/// active / archived / trashed items, all from [statisticsProvider]. Uses the
+/// Overview, a summary of active / archived / trashed items, tasks,
+/// activity over time and most used labels, all from [statisticsProvider]. Uses the
 /// full width: from [_twoColumnWidth] the blocks after the overview pair up
 /// in two columns.
 class StatisticsScreen extends ConsumerWidget {
@@ -58,9 +58,9 @@ class StatisticsScreen extends ConsumerWidget {
             children: [
               _OverviewSection(stats),
               gap,
-              pair(_TasksSection(stats), _ActivitySection(stats)),
+              pair(_SummarySection(stats), _TasksSection(stats)),
               gap,
-              pair(_LabelsSection(stats), _SummarySection(stats)),
+              pair(_ActivitySection(stats), _LabelsSection(stats)),
               gap,
             ],
           );
