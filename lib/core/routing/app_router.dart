@@ -8,6 +8,7 @@
 // Contact: ndn21dev@gmail.com
 // GitHub: https://github.com/ndenicolais
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../models/calendar_model.dart';
 import '../../models/note_model.dart';
@@ -117,6 +118,15 @@ abstract final class AppRouter {
     }
     final builder = _builderFor(settings);
     if (builder == null) return null;
+    // On the web pages switch instantly, both ways, as on a website: the
+    // mobile zoom / fade-through transitions look like popups in a browser.
+    if (kIsWeb) {
+      return _InstantMaterialPageRoute(
+        builder: builder,
+        settings: settings,
+        instantPop: true,
+      );
+    }
     if (sectionRoutes.contains(settings.name)) {
       return FadeThroughPageRoute(
         builder: builder,
@@ -130,10 +140,15 @@ abstract final class AppRouter {
   }
 
   static Route<dynamic> onUnknownRoute(RouteSettings settings) {
-    return MaterialPageRoute(
-      builder: (_) => UnknownRouteScreen(routeName: settings.name),
-      settings: settings,
-    );
+    Widget builder(BuildContext _) =>
+        UnknownRouteScreen(routeName: settings.name);
+    return kIsWeb
+        ? _InstantMaterialPageRoute(
+          builder: builder,
+          settings: settings,
+          instantPop: true,
+        )
+        : MaterialPageRoute(builder: builder, settings: settings);
   }
 
   static WidgetBuilder? _builderFor(RouteSettings settings) {
@@ -190,15 +205,23 @@ class InstantRouteArgs {
   final Object? arguments;
 }
 
-/// [MaterialPageRoute] with an instant push and the usual pop.
+/// [MaterialPageRoute] with an instant push and the usual pop, or an
+/// instant pop too with [instantPop] (the web).
 class _InstantMaterialPageRoute<T> extends MaterialPageRoute<T> {
-  _InstantMaterialPageRoute({required super.builder, super.settings});
+  _InstantMaterialPageRoute({
+    required super.builder,
+    super.settings,
+    this.instantPop = false,
+  });
+
+  final bool instantPop;
 
   @override
   Duration get transitionDuration => Duration.zero;
 
   @override
-  Duration get reverseTransitionDuration => const Duration(milliseconds: 300);
+  Duration get reverseTransitionDuration =>
+      instantPop ? Duration.zero : const Duration(milliseconds: 300);
 }
 
 /// Material "fade through": a solid background first fades in over the old
