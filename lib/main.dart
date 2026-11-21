@@ -26,6 +26,7 @@ import 'providers/push_provider.dart';
 import 'providers/sharing_provider.dart';
 import 'providers/tasks_provider.dart';
 import 'providers/settings/locale_provider.dart';
+import 'providers/settings/settings_sync.dart';
 import 'providers/settings/theme_provider.dart';
 import 'providers/settings/ui_provider.dart';
 import 'screens/auth/login_screen.dart';
@@ -80,13 +81,17 @@ class NotesApp extends ConsumerWidget {
     // Reminders live on the device: rebuild them from the account after a
     // sign-in (also on a cold start, when the restored session arrives) and
     // cancel them after a sign-out, so another account's reminders never fire.
+    // Preferences follow the account too (SettingsSync).
     ref.listen(currentUidProvider, (previous, uid) {
       final reminders = ref.read(remindersActionsProvider);
+      final settings = ref.read(settingsSyncProvider);
       if (uid.isNotEmpty) {
+        settings.start(uid);
         reminders.resync();
         // So that items shared with this user reach this device as pushes.
         ref.read(pushMessagingProvider).register(uid);
       } else if (previous != null && previous.isNotEmpty) {
+        settings.stop();
         reminders.cancelAll();
       }
     });

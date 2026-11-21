@@ -222,6 +222,8 @@ The three notifiers mix in `SharedItems<T>` (`providers/shared_items.dart`), one
 
 **user_directory/{email}**: `{uid, email, name}` keyed by the lowercase email, written by `UserDirectory.register` at every sign-in (listener in `NotesApp`), read by `lookup` when adding a collaborator, deleted with the account.
 
+**Settings sync** (`SettingsSync`, `providers/settings/settings_sync.dart`): the user's preferences follow the account. `syncedPreferencesProvider` (`preferences_backup.dart`) watches every preference of `PreferencesBackup` except the device-only ones (`deviceOnly`: automatic backup on/off and frequency, which concern files on that device) and returns them as JSON under the backup's stable keys. `main.dart` calls `start(uid)` on sign-in (including the restored session at a cold start) and `stop()` on sign-out, next to the reminders resync. While started, `users/{uid}/settings/preferences` (`values`, `updatedAt` server timestamp) is listened to in real time: remote values are applied with `PreferencesBackup.restore(…, synced: true)`, so a change on one device shows up on the others (last write wins; a local change still waiting to be uploaded wins over a remote one). Local changes are uploaded after an 800 ms debounce, and only once the account's values are known. The first device on an account (no document on the server) uploads its own preferences; a missing document read from the offline cache is ignored, so device defaults never overwrite the account's. Our own writes coming back (`hasPendingWrites`) and unchanged values are skipped. Signed out, local values stay as they are. Onboarding seen, last changelog seen, last backup time and migration flags stay local. The `settings` collection is wiped with the account (`DataActions._userCollections`); `firestore.rules` already cover `users/{uid}/**`.
+
 **Push** (`PushMessaging`, `providers/push_provider.dart`): at every sign-in each device stores its FCM token in `users/{uid}/fcm_tokens/{token}` (`token`, `lang`, `platform`, `updatedAt`), deleted at sign-out (before `signOut`, while the document is still the user's) and with the account. The Cloud Functions in `functions/index.js` (`notifyNoteCollaborators`, `notifyTaskCollaborators`, `notifyEventCollaborators`: one Firestore `onDocumentWritten` trigger per collection, region `europe-west1` set with `setGlobalOptions`) send each newly added collaborator a message in the language of each token ("Anna shared a task with you", body = title; `data: {type, id}`, channel `taskenda_shared_notes`) and delete the tokens FCM rejects. Android shows it in the background; in the foreground `NotificationService.showShared` does (id range from 3,000,000). Tapping opens the item through `NotificationService.pendingTarget`. The notification permission is asked once per device, the first time the home opens (right after sign-up or sign-in; SharedPreferences flag `notification_permission_asked`), so pushes show on Android 13+ even without reminders. Not on the web. The channel is created at `NotificationService.init` and is the FCM default channel (`AndroidManifest.xml`).
 
 ### Non-persisted models
@@ -233,7 +235,7 @@ The three notifiers mix in `SharedItems<T>` (`providers/shared_items.dart`), one
 
 | Data | Where |
 |---|---|
-| Settings (theme, language, start section, default alert time, layout, sort orders, task options, onboarding, backup settings, last seen changelog) | `SharedPreferences` |
+| Settings (theme, language, start section, default alert time, layout, sort orders, task options, onboarding, backup settings, last seen changelog) | `SharedPreferences`; the user's preferences are also synced with the account in `users/{uid}/settings/preferences` (`SettingsSync`) |
 | Audio recordings | `<documents>/audio_notes/` |
 | Automatic backups | `<documents>/taskenda_backups/`, ZIP files, last 30 kept |
 
@@ -252,6 +254,7 @@ Record of processing (GDPR art. 30) and the source for the data section of `PRIV
 | Owner and collaborators' email and name on shared notes, tasks and events (`owner`, `collaboratorProfiles`), personal fields of the items shared with the user (`shared_note_prefs`, `shared_task_prefs`, `shared_event_prefs`) | Firestore, readable by every member of the item | Showing who is on a shared item; per-user fields | Until the item is unshared or deleted, or the account is deleted (it then leaves the items shared with it) |
 | FCM registration token, app language, platform (`users/{uid}/fcm_tokens`) | Firestore; messages go through Firebase Cloud Messaging (Google) | Push notification when an item is shared with the user | Until sign-out on that device, the token is rejected by FCM, or the account is deleted |
 | Audio recordings (name, duration and file path synced with the note) | `<documents>/audio_notes/` on the device | Audio notes | Until deleted or the app is uninstalled; never uploaded |
+| Preferences (theme, language, start section, layouts, sort orders, task and calendar options, alert times) | Firestore `users/{uid}/settings/preferences` (`values`, `updatedAt`) | Same preferences on every device of the account | Until the account is deleted |
 | Settings, onboarding and changelog seen, backup settings | `SharedPreferences` (browser storage on the web) | App behavior | Until uninstall |
 | Automatic backups | `<documents>/taskenda_backups/` | Local restore | Last 30 kept; removed on account deletion |
 | Scheduled reminders, Home widget data | `flutter_local_notifications`, `home_widget` storage on the device | Reminders and widgets | Until the item changes; reminders are cancelled on sign-out and account deletion and rebuilt from the account at sign-in; the list widgets fall back to their empty state on sign-out, because the data providers reset with the user |
@@ -269,7 +272,7 @@ The rules are versioned in [`firestore.rules`](firestore.rules) and published wi
 
 | Path | Allowed operations | Who |
 |---|---|---|
-| `users/{uid}` and every subcollection (`notes`, `tasks`, `task_lists`, `calendar_events`, `labels`, `shared_note_prefs`, `shared_task_prefs`, `shared_event_prefs`, `fcm_tokens`) | read, write | The signed-in user whose `uid` matches the path |
+| `users/{uid}` and every subcollection (`notes`, `tasks`, `task_lists`, `calendar_events`, `labels`, `shared_note_prefs`, `shared_task_prefs`, `shared_event_prefs`, `fcm_tokens`, `settings`) | read, write | The signed-in user whose `uid` matches the path |
 | `user_directory/{email}` | get (no list) | Any signed-in user |
 | `user_directory/{email}` | create, update / delete | The user whose token email (lowercase) is the document id and whose uid is in it / the user whose uid is in it |
 | `{path=**}/notes/{id}`, `{path=**}/tasks/{id}`, `{path=**}/calendar_events/{id}` (also the collection-group queries) | read | Users listed in the item's `collaborators` |

@@ -237,6 +237,7 @@ class DataActions {
     'shared_task_prefs',
     'shared_event_prefs',
     'fcm_tokens',
+    'settings',
   ];
 
   /// Collections whose items can be shared with other users.

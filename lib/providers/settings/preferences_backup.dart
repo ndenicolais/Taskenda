@@ -18,22 +18,36 @@ import 'locale_provider.dart';
 import 'theme_provider.dart';
 import 'ui_provider.dart';
 
-/// One preference carried by the full backup: how to read its current value
-/// as JSON and how to apply a value read from a backup.
+/// One preference carried by the full backup and synced with the account:
+/// the provider holding it, how to turn its value into JSON and how to
+/// apply a value read back.
 class _BackedUpSetting {
-  const _BackedUpSetting(this.read, this.write);
+  const _BackedUpSetting(
+    this.source,
+    this.toJson,
+    this.write, {
+    this.deviceOnly = false,
+  });
 
-  final Object Function(Ref ref) read;
+  /// Watched by [syncedPreferencesProvider] to notice changes.
+  final ProviderListenable<Object?> source;
+  final Object Function(Object? value) toJson;
 
   /// Ignores values of the wrong type or no longer valid.
   final void Function(Ref ref, Object? value) write;
+
+  /// In the full backup but not synced with the account: it only makes
+  /// sense on the device it was set on (automatic backups are files there).
+  final bool deviceOnly;
+
+  Object read(Ref ref) => toJson(ref.read(source));
 }
 
 _BackedUpSetting _enumSetting<
   N extends PersistedEnumNotifier<T>,
   T extends Enum
 >(NotifierProvider<N, T> provider, List<T> values) =>
-    _BackedUpSetting((ref) => ref.read(provider).name, (ref, value) {
+    _BackedUpSetting(provider, (v) => (v as Enum).name, (ref, value) {
       for (final v in values) {
         if (v.name == value) {
           ref.read(provider.notifier).set(v);
@@ -43,14 +57,23 @@ _BackedUpSetting _enumSetting<
     });
 
 _BackedUpSetting _boolSetting(NotifierProvider<BoolSettingNotifier, bool> p) =>
-    _BackedUpSetting((ref) => ref.read(p), (ref, value) {
+    _BackedUpSetting(p, (v) => v as bool, (ref, value) {
       if (value is bool) ref.read(p.notifier).set(value);
     });
 
-/// The user's preferences (kept only on the device) included in the full
-/// backup under `settings`, keyed by stable names independent of the
-/// SharedPreferences keys. Device bookkeeping (onboarding seen, last backup
-/// time, last changelog seen, migration flags) is left out.
+/// A time of day in minutes (0 – 1439).
+_BackedUpSetting _minutesSetting(
+  ProviderListenable<int> source,
+  void Function(Ref ref, int value) set,
+) => _BackedUpSetting(source, (v) => v as int, (ref, value) {
+  if (value is int && value >= 0 && value < 24 * 60) set(ref, value);
+});
+
+/// The user's preferences included in the full backup under `settings` and
+/// synced with the account ([SettingsSync]), keyed by stable names
+/// independent of the SharedPreferences keys. Device bookkeeping
+/// (onboarding seen, last backup time, last changelog seen, migration
+/// flags) is left out of both.
 class PreferencesBackup {
   PreferencesBackup(this._ref);
 
@@ -74,25 +97,18 @@ class PreferencesBackup {
     'calendarShowHolidays': _boolSetting(calendarShowHolidaysProvider),
     'calendarShowObservances': _boolSetting(calendarShowObservancesProvider),
     // The alerts scheduled on the device are rebuilt by the data restore
-    // that follows.
-    'defaultAlertMinutes': _BackedUpSetting(
-      (ref) => ref.read(defaultAlertTimeProvider),
-      (ref, value) {
-        if (value is int && value >= 0 && value < 24 * 60) {
-          ref.read(defaultAlertTimeProvider.notifier).set(value);
-        }
-      },
+    // that follows (or by the reminders resync after a sign-in).
+    'defaultAlertMinutes': _minutesSetting(
+      defaultAlertTimeProvider,
+      (ref, v) => ref.read(defaultAlertTimeProvider.notifier).set(v),
     ),
-    'dayBeforeAlertMinutes': _BackedUpSetting(
-      (ref) => ref.read(dayBeforeAlertTimeProvider),
-      (ref, value) {
-        if (value is int && value >= 0 && value < 24 * 60) {
-          ref.read(dayBeforeAlertTimeProvider.notifier).set(value);
-        }
-      },
+    'dayBeforeAlertMinutes': _minutesSetting(
+      dayBeforeAlertTimeProvider,
+      (ref, v) => ref.read(dayBeforeAlertTimeProvider.notifier).set(v),
     ),
     'eventAlertOffset': _BackedUpSetting(
-      (ref) => ref.read(eventAlertOffsetProvider),
+      eventAlertOffsetProvider,
+      (v) => v as int,
       (ref, value) {
         if (value is int && (value == noEventAlert || value >= 0)) {
           ref.read(eventAlertOffsetProvider.notifier).set(value);
@@ -100,15 +116,18 @@ class PreferencesBackup {
       },
     ),
     'autoBackupEnabled': _BackedUpSetting(
-      (ref) => ref.read(backupSettingsProvider).enabled,
+      backupSettingsProvider.select((s) => s.enabled),
+      (v) => v as bool,
       (ref, value) {
         if (value is bool) {
           ref.read(backupSettingsProvider.notifier).setEnabled(value);
         }
       },
+      deviceOnly: true,
     ),
     'autoBackupFrequency': _BackedUpSetting(
-      (ref) => ref.read(backupSettingsProvider).frequency.name,
+      backupSettingsProvider.select((s) => s.frequency),
+      (v) => (v as BackupFrequency).name,
       (ref, value) {
         for (final f in BackupFrequency.values) {
           if (f.name == value) {
@@ -116,6 +135,7 @@ class PreferencesBackup {
           }
         }
       },
+      deviceOnly: true,
     ),
   };
 
@@ -125,13 +145,24 @@ class PreferencesBackup {
   };
 
   /// Applies the preferences found in [json]; unknown keys and invalid
-  /// values are skipped, keeping the current value.
-  void restore(Map<String, dynamic> json) {
+  /// values are skipped, keeping the current value. [synced]: values from
+  /// the account, which never carry the device-only ones.
+  void restore(Map<String, dynamic> json, {bool synced = false}) {
     for (final e in _settings.entries) {
+      if (synced && e.value.deviceOnly) continue;
       if (json.containsKey(e.key)) e.value.write(_ref, json[e.key]);
     }
   }
 }
+
+/// The preferences synced with the account (all but the device-only ones),
+/// recomputed whenever one of them changes.
+final syncedPreferencesProvider = Provider<Map<String, Object>>(
+  (ref) => {
+    for (final e in PreferencesBackup._settings.entries)
+      if (!e.value.deviceOnly) e.key: e.value.toJson(ref.watch(e.value.source)),
+  },
+);
 
 final preferencesBackupProvider = Provider<PreferencesBackup>(
   PreferencesBackup.new,
