@@ -176,10 +176,10 @@ class _AppNavRail extends StatelessWidget {
     DrawerSection.tasks,
     DrawerSection.home,
     DrawerSection.labels,
-    DrawerSection.archive,
     DrawerSection.shared,
-    DrawerSection.statistics,
+    DrawerSection.archive,
     DrawerSection.trash,
+    DrawerSection.statistics,
     DrawerSection.settings,
   ];
   static const _railRoutes = <String?>[
@@ -187,10 +187,10 @@ class _AppNavRail extends StatelessWidget {
     AppRoutes.tasks,
     null, // 2: home
     AppRoutes.labels,
-    AppRoutes.archive,
     AppRoutes.shared,
-    AppRoutes.statistics,
+    AppRoutes.archive,
     AppRoutes.trash,
+    AppRoutes.statistics,
     AppRoutes.settings,
   ];
 
@@ -234,24 +234,24 @@ class _AppNavRail extends StatelessWidget {
           label: Text(context.l10n.navLabels),
         ),
         NavigationRailDestination(
-          icon: const Icon(Icons.archive_outlined),
-          selectedIcon: const Icon(Icons.archive),
-          label: Text(context.l10n.navArchive),
-        ),
-        NavigationRailDestination(
           icon: const Icon(Icons.people_outline),
           selectedIcon: const Icon(Icons.people),
           label: Text(context.l10n.navShared),
         ),
         NavigationRailDestination(
-          icon: const Icon(Icons.bar_chart_outlined),
-          selectedIcon: const Icon(Icons.bar_chart),
-          label: Text(context.l10n.statsTitle),
+          icon: const Icon(Icons.archive_outlined),
+          selectedIcon: const Icon(Icons.archive),
+          label: Text(context.l10n.navArchive),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.delete_outline),
           selectedIcon: const Icon(Icons.delete),
           label: Text(context.l10n.navTrash),
+        ),
+        NavigationRailDestination(
+          icon: const Icon(Icons.bar_chart_outlined),
+          selectedIcon: const Icon(Icons.bar_chart),
+          label: Text(context.l10n.statsTitle),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.settings_outlined),

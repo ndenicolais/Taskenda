@@ -164,17 +164,6 @@ class AppDrawer extends ConsumerWidget {
                   ),
             ),
             _DrawerItem(
-              icon: Icons.archive_outlined,
-              label: context.l10n.navArchive,
-              selected: currentSection == DrawerSection.archive,
-              onTap:
-                  () => _navigateTo(
-                    context,
-                    DrawerSection.archive,
-                    AppRoutes.archive,
-                  ),
-            ),
-            _DrawerItem(
               icon: Icons.people_outline,
               label: context.l10n.navShared,
               selected: currentSection == DrawerSection.shared,
@@ -186,14 +175,14 @@ class AppDrawer extends ConsumerWidget {
                   ),
             ),
             _DrawerItem(
-              icon: Icons.bar_chart_outlined,
-              label: context.l10n.statsTitle,
-              selected: currentSection == DrawerSection.statistics,
+              icon: Icons.archive_outlined,
+              label: context.l10n.navArchive,
+              selected: currentSection == DrawerSection.archive,
               onTap:
                   () => _navigateTo(
                     context,
-                    DrawerSection.statistics,
-                    AppRoutes.statistics,
+                    DrawerSection.archive,
+                    AppRoutes.archive,
                   ),
             ),
             _DrawerItem(
@@ -205,6 +194,17 @@ class AppDrawer extends ConsumerWidget {
                     context,
                     DrawerSection.trash,
                     AppRoutes.trash,
+                  ),
+            ),
+            _DrawerItem(
+              icon: Icons.bar_chart_outlined,
+              label: context.l10n.statsTitle,
+              selected: currentSection == DrawerSection.statistics,
+              onTap:
+                  () => _navigateTo(
+                    context,
+                    DrawerSection.statistics,
+                    AppRoutes.statistics,
                   ),
             ),
             _DrawerItem(

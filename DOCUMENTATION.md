@@ -209,7 +209,7 @@ Notes, tasks and events can be shared with other Taskenda users by email, like K
 | Model | Shared content (`sharedKeys`, mirrored in the rules) | Personal fields (`personalJson`), in the collaborator's prefs collection |
 |---|---|---|
 | `NoteModel` | `title`, `content`, `type`, `style`, `checklistItems`, `updatedAt` | `isPinned`, `isArchived`, `reminder?`, `tags`, `deletedAt?` → `shared_note_prefs` |
-| `TaskModel` | `title`, `description`, `isCompleted`, `dueDate`, `recurrence`, `subtasks`, `updatedAt` | `isPinned`, `isSpecial`, `isArchived`, `listId?`, `tags`, `deletedAt?` → `shared_task_prefs` |
+| `TaskModel` | `title`, `description`, `isCompleted`, `dueDate`, `recurrence`, `recurrenceExceptions`, `subtasks`, `updatedAt` | `isPinned`, `isSpecial`, `isArchived`, `listId?`, `tags`, `deletedAt?` → `shared_task_prefs` |
 | `CalendarEventModel` | `title`, `description`, `location`, `color`, `startTime`, `endTime`, `isAllDay`, `isBirthday`, `isNameDay`, `recurrence`, `recurrenceEndDate`, `recurrenceInterval`, `recurrenceWeekdays`, `recurrenceMonthWeek`, `recurrenceExceptions`, `updatedAt` | `isPinned`, `isArchived`, `alertSameDay`, `alertDayBefore`, `alertMinutesBefore`, `tags`, `deletedAt?` → `shared_event_prefs` (the owner's alerts are the starting point) |
 
 The three notifiers mix in `SharedItems<T>` (`providers/shared_items.dart`), one implementation for all:
@@ -425,7 +425,7 @@ The screens (`SettingsScreen`, `BackupDataScreen`) handle dialogs, file pickers 
 
 ### 5.10 Shared behavior
 
-- **Drawer** (`AppDrawer`, `NavScaffold`): Calendar, Tasks, Notes, Labels, Archive, Statistics, Trash, Settings and sign out. Export opens from Settings → Backup and data → Notes, Info from Settings → Info.
+- **Drawer** (`AppDrawer`, `NavScaffold`): Calendar, Tasks, Notes, Labels, Shared, Archive, Trash, Statistics, Settings and sign out (same order in the wide-layout rail). Export opens from Settings → Backup and data → Notes, Info from Settings → Info.
 - **Undo**: trash and archive actions show a snackbar with Undo (`notifyWithUndo`), which still works after the editor pops.
 - **Errors**: fire-and-forget writes go through `notifyOnError`, which shows an error snackbar if the write fails.
 - **Sync status**: `SyncStatusListener` (in `MaterialApp.builder`) shows a banner while writes are queued offline and a snackbar if the server later rejects one.
