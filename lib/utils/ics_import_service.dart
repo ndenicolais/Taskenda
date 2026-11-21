@@ -327,8 +327,17 @@ class IcsImportService {
         if (_triggerMinutesBefore(a) case final m?) m,
     ];
 
+    // When the event was created in the source calendar (Google exports
+    // CREATED in UTC); without it, the time of the import.
+    final createdValue = props['CREATED'];
+    final createdAt =
+        createdValue == null || createdValue.length < 15
+            ? null
+            : _parseIcsDate(createdValue, false);
+
     final event = CalendarEventModel(
       id: uid != null ? _sanitizeId(uid) : null,
+      createdAt: createdAt,
       title: title,
       description: description,
       location: location,

@@ -47,6 +47,18 @@ void main() {
       expect(e.recurrence, RecurrenceType.none);
     });
 
+    test('keeps the creation date of the event (CREATED)', () {
+      final e = _single([
+        'SUMMARY:Old',
+        'DTSTART:20260115T090000Z',
+        'CREATED:20190312T081500Z',
+      ]);
+      expect(e.createdAt, DateTime.utc(2019, 3, 12, 8, 15).toLocal());
+      final now =
+          _single(['SUMMARY:No created', 'DTSTART:20260115T090000Z']).createdAt;
+      expect(DateTime.now().difference(now).inMinutes, 0);
+    });
+
     test('converts UTC times to local', () {
       final e = _single([
         'SUMMARY:Call',
