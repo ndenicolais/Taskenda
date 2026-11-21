@@ -287,7 +287,9 @@ class IcsImportService {
         rawUid == null || recurrenceIdValue == null || recurrenceIdValue.isEmpty
             ? rawUid
             : '${rawUid}_$recurrenceIdValue';
-    final description = _stripHtml(_unescape(props['DESCRIPTION'] ?? ''));
+    final description = _withoutGoogleNotice(
+      _stripHtml(_unescape(props['DESCRIPTION'] ?? '')),
+    );
     final location = _unescape(props['LOCATION'] ?? '').trim();
 
     // An occurrence that replaces one of a series is a single event.
@@ -636,6 +638,24 @@ class IcsImportService {
         .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
         .replaceAll(RegExp(r'<[^>]*>'), '')
         .trim();
+  }
+
+  /// Paragraphs Google Calendar adds to events it creates by itself (e.g.
+  /// from a Gmail message), in the user's language: recognised by their
+  /// closing link.
+  static final _googleNoticeParagraph = RegExp(
+    r'(https://g\.co/calendar|https://mail\.google\.com/mail\?extsrc=cal\S*)$',
+  );
+
+  /// Empty when [description] is only Google's automatic notice, which says
+  /// nothing about the event; unchanged otherwise.
+  static String _withoutGoogleNotice(String description) {
+    if (description.isEmpty) return description;
+    final paragraphs = description
+        .split(RegExp(r'\n\s*\n'))
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty);
+    return paragraphs.every(_googleNoticeParagraph.hasMatch) ? '' : description;
   }
 
   /// Sanitize a UID string for use as a model ID.

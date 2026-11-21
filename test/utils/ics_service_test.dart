@@ -47,6 +47,26 @@ void main() {
       expect(e.recurrence, RecurrenceType.none);
     });
 
+    test('drops the notice of events Google created by itself', () {
+      final e = _single([
+        'SUMMARY:Volo',
+        'DTSTART:20260115T090000Z',
+        // ICS escapes: "\," for a comma, "\n" for a new line.
+        r"DESCRIPTION:Per visualizzare informazioni dettagliate sugli eventi "
+            r"creati automaticamente come questo\, utilizza l'app Google "
+            r'Calendar ufficiale. https://g.co/calendar\n\nQuesto evento è '
+            r"stato creato a partire da un'email che hai ricevuto in Gmail. "
+            'https://mail.google.com/mail?extsrc=cal&plid=ABC123',
+      ]);
+      expect(e.description, isEmpty);
+      final kept = _single([
+        'SUMMARY:Cena',
+        'DTSTART:20260115T090000Z',
+        r'DESCRIPTION:Porta il vino\n\nhttps://g.co/calendar',
+      ]);
+      expect(kept.description, 'Porta il vino\n\nhttps://g.co/calendar');
+    });
+
     test('keeps the creation date of the event (CREATED)', () {
       final e = _single([
         'SUMMARY:Old',
