@@ -376,7 +376,7 @@ The list of active notes and the note editor.
 **Path:** `lib/screens/statistics/`, `lib/screens/export_screen.dart`
 
 **Features:**
-- Statistics: drawer section (below Trash), summary of notes, tasks and events computed by a screen-local provider, charts with `fl_chart`.
+- Statistics: drawer section (below Trash). `statisticsProvider` (`providers/statistics_provider.dart`) feeds the active / archived / trashed lists to the pure `computeStatistics` (`utils/statistics.dart`, unit-tested), which returns a `StatisticsData`. Blocks, top to bottom (max width 840): **Overview** tiles (active notes, open tasks, event occurrences this Monday–Sunday via `occursOn`, items created since Monday); **Task completion** (ring with completed / active tasks, open tasks split into overdue — past due time, or past day when date-only — today, by Sunday, no due date); **Activity** (`ActivityChart`, `fl_chart` stacked bars of notes / tasks / events created per week over the last 12 weeks, labelled every 3 weeks, tooltip with the total, plus the weekday with most items created); **Most used labels** (top 5 by notes + tasks + events carrying them, bars relative to the first); **Summary** table (active / archived / trashed per kind, events · tasks · notes). Activity, weekday and labels skip the trash. Kind colors: notes amber, tasks teal, events blue. Each block has its empty state.
 - Export: active notes as PDF, TXT, JSON, CSV or HTML. File text (labels, headers, date format) is in the UI language; JSON keys are fixed. Mobile saves/shares the file, web downloads it.
 
 ### 5.7 Settings
@@ -445,6 +445,7 @@ Riverpod with `NotifierProvider`, `Provider`, `StreamProvider` and `FutureProvid
 | `PushMessaging` (`pushMessagingProvider`) | `providers/push_provider.dart` | FCM token per device (`register` at sign-in, `unregister` before sign-out), foreground display and taps of the sharing pushes |
 | `UserDirectory` (`userDirectoryProvider`), `currentShareMemberProvider` | `providers/sharing_provider.dart` | Email → uid directory for sharing (`register`, `lookup`, `unregister`); the signed-in user's `ShareMember`; `ShareException`/`ShareError` |
 | `TasksNotifier` (`tasksProvider`) | `providers/tasks_provider.dart` | Tasks CRUD, trash, `clearListReferences`, sharing (`SharedItems`, `leaveTask`); derived active/special/archived/trashed/by-list providers, `ownTasksProvider` |
+| `statisticsProvider` | `providers/statistics_provider.dart` | `StatisticsData` for the Statistics screen, from `computeStatistics` (`utils/statistics.dart`) |
 | `TaskListsNotifier` (`taskListsProvider`) | `providers/tasks_provider.dart` | Task lists; deleting one calls `tasksProvider.notifier.clearListReferences()` |
 | `CalendarNotifier` (`calendarProvider`) | `providers/calendar_provider.dart` | Events CRUD and trash, sharing (`SharedItems`, `leaveEvent`); search and filtered views, `ownEventsProvider` |
 | `LabelsNotifier` (`labelsProvider`) | `providers/labels_provider.dart` | Labels on Firestore: `add`/`addAll` (trim, no empty or duplicate names), `rename` (merges), `delete`; migrates labels stored by older versions in `SharedPreferences` (`custom_labels`) once, then deletes the key |

@@ -1503,13 +1503,64 @@ class AppLocalizationsIt extends AppLocalizations {
   String get statsTitle => 'Statistiche';
 
   @override
-  String get statsNotesActive => 'Attive';
+  String get statsOverview => 'Panoramica';
 
   @override
-  String get statsNotesArchived => 'Archiviate';
+  String get statsOpenTasks => 'Task da fare';
 
   @override
-  String get statsNotesTrashed => 'Eliminate';
+  String get statsEventsThisWeek => 'Eventi questa settimana';
+
+  @override
+  String get statsCreatedThisWeek => 'Creati questa settimana';
+
+  @override
+  String get statsOverdue => 'Scaduti';
+
+  @override
+  String get statsDueToday => 'Oggi';
+
+  @override
+  String get statsDueThisWeek => 'Entro domenica';
+
+  @override
+  String get statsNoDueDate => 'Senza scadenza';
+
+  @override
+  String get statsActivity => 'Attività';
+
+  @override
+  String get statsActivitySubtitle =>
+      'Elementi creati nelle ultime 12 settimane';
+
+  @override
+  String get statsNoActivity =>
+      'Nessun elemento creato nelle ultime 12 settimane';
+
+  @override
+  String statsMostActiveDay(String day) {
+    return 'Giorno più attivo: $day';
+  }
+
+  @override
+  String statsItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count elementi',
+      one: '1 elemento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTopLabels => 'Etichette più usate';
+
+  @override
+  String get statsNoLabelsUsed => 'Nessuna etichetta usata';
+
+  @override
+  String get statsSummary => 'Riepilogo';
 
   @override
   String get statsActive => 'Attivi';
@@ -1521,37 +1572,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get statsTrashed => 'Eliminati';
 
   @override
-  String get statsBirthdays => 'Compleanni';
-
-  @override
-  String get statsNameDays => 'Onomastici';
-
-  @override
-  String get statsTotal => 'Totali';
-
-  @override
-  String get statsNotesDistribution => 'Distribuzione note';
-
-  @override
-  String get statsNoNotes => 'Nessuna nota presente';
-
-  @override
-  String get statsTasksDistribution => 'Distribuzione task';
-
-  @override
   String get statsNoTasks => 'Nessun task presente';
 
   @override
   String get statsTaskCompletion => 'Completamento task';
-
-  @override
-  String get statsNoData => 'Nessun dato';
-
-  @override
-  String get statsNoTasksShort => 'Nessun task';
-
-  @override
-  String get statsTotalSingular => 'Totale';
 
   @override
   String get infoTitle => 'Info su Taskenda';

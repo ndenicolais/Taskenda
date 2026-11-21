@@ -44,7 +44,7 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 | ⏰ **Notifications** | Pick a day and, if you want, a time: tasks and events with a time notify at that time; all-day events can alert the day before and on the day (also when recurring); notes have their own reminder |
 | 🏷️ **Labels** | Organize notes with labels and open all the notes of a label |
 | 🗂️ **Archive and trash** | Archive what you don't need now, restore deleted items within 7 days |
-| 📊 **Statistics** | Overview of notes, tasks and events |
+| 📊 **Statistics** | Overview of the week, task completion, weekly activity and most used labels |
 | 📤 **Export and backup** | Notes as PDF, TXT, CSV, HTML or JSON, full backups and calendar import/export in ICS |
 | 📱 **Home screen widgets** | Scrolling lists of notes, tasks and upcoming calendar entries, and quick actions to create a note, task or event |
 | 🔐 **Authentication** | Sign in with a Google account or email and password |

@@ -2624,23 +2624,101 @@ abstract class AppLocalizations {
   /// **'Statistiche'**
   String get statsTitle;
 
-  /// No description provided for @statsNotesActive.
+  /// No description provided for @statsOverview.
   ///
   /// In it, this message translates to:
-  /// **'Attive'**
-  String get statsNotesActive;
+  /// **'Panoramica'**
+  String get statsOverview;
 
-  /// No description provided for @statsNotesArchived.
+  /// No description provided for @statsOpenTasks.
   ///
   /// In it, this message translates to:
-  /// **'Archiviate'**
-  String get statsNotesArchived;
+  /// **'Task da fare'**
+  String get statsOpenTasks;
 
-  /// No description provided for @statsNotesTrashed.
+  /// No description provided for @statsEventsThisWeek.
   ///
   /// In it, this message translates to:
-  /// **'Eliminate'**
-  String get statsNotesTrashed;
+  /// **'Eventi questa settimana'**
+  String get statsEventsThisWeek;
+
+  /// No description provided for @statsCreatedThisWeek.
+  ///
+  /// In it, this message translates to:
+  /// **'Creati questa settimana'**
+  String get statsCreatedThisWeek;
+
+  /// No description provided for @statsOverdue.
+  ///
+  /// In it, this message translates to:
+  /// **'Scaduti'**
+  String get statsOverdue;
+
+  /// No description provided for @statsDueToday.
+  ///
+  /// In it, this message translates to:
+  /// **'Oggi'**
+  String get statsDueToday;
+
+  /// No description provided for @statsDueThisWeek.
+  ///
+  /// In it, this message translates to:
+  /// **'Entro domenica'**
+  String get statsDueThisWeek;
+
+  /// No description provided for @statsNoDueDate.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza scadenza'**
+  String get statsNoDueDate;
+
+  /// No description provided for @statsActivity.
+  ///
+  /// In it, this message translates to:
+  /// **'Attività'**
+  String get statsActivity;
+
+  /// No description provided for @statsActivitySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Elementi creati nelle ultime 12 settimane'**
+  String get statsActivitySubtitle;
+
+  /// No description provided for @statsNoActivity.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessun elemento creato nelle ultime 12 settimane'**
+  String get statsNoActivity;
+
+  /// No description provided for @statsMostActiveDay.
+  ///
+  /// In it, this message translates to:
+  /// **'Giorno più attivo: {day}'**
+  String statsMostActiveDay(String day);
+
+  /// No description provided for @statsItemsCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 elemento} other{{count} elementi}}'**
+  String statsItemsCount(int count);
+
+  /// No description provided for @statsTopLabels.
+  ///
+  /// In it, this message translates to:
+  /// **'Etichette più usate'**
+  String get statsTopLabels;
+
+  /// No description provided for @statsNoLabelsUsed.
+  ///
+  /// In it, this message translates to:
+  /// **'Nessuna etichetta usata'**
+  String get statsNoLabelsUsed;
+
+  /// No description provided for @statsSummary.
+  ///
+  /// In it, this message translates to:
+  /// **'Riepilogo'**
+  String get statsSummary;
 
   /// No description provided for @statsActive.
   ///
@@ -2660,42 +2738,6 @@ abstract class AppLocalizations {
   /// **'Eliminati'**
   String get statsTrashed;
 
-  /// No description provided for @statsBirthdays.
-  ///
-  /// In it, this message translates to:
-  /// **'Compleanni'**
-  String get statsBirthdays;
-
-  /// No description provided for @statsNameDays.
-  ///
-  /// In it, this message translates to:
-  /// **'Onomastici'**
-  String get statsNameDays;
-
-  /// No description provided for @statsTotal.
-  ///
-  /// In it, this message translates to:
-  /// **'Totali'**
-  String get statsTotal;
-
-  /// No description provided for @statsNotesDistribution.
-  ///
-  /// In it, this message translates to:
-  /// **'Distribuzione note'**
-  String get statsNotesDistribution;
-
-  /// No description provided for @statsNoNotes.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessuna nota presente'**
-  String get statsNoNotes;
-
-  /// No description provided for @statsTasksDistribution.
-  ///
-  /// In it, this message translates to:
-  /// **'Distribuzione task'**
-  String get statsTasksDistribution;
-
   /// No description provided for @statsNoTasks.
   ///
   /// In it, this message translates to:
@@ -2707,24 +2749,6 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Completamento task'**
   String get statsTaskCompletion;
-
-  /// No description provided for @statsNoData.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessun dato'**
-  String get statsNoData;
-
-  /// No description provided for @statsNoTasksShort.
-  ///
-  /// In it, this message translates to:
-  /// **'Nessun task'**
-  String get statsNoTasksShort;
-
-  /// No description provided for @statsTotalSingular.
-  ///
-  /// In it, this message translates to:
-  /// **'Totale'**
-  String get statsTotalSingular;
 
   /// No description provided for @infoTitle.
   ///

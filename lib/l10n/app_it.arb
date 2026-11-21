@@ -528,23 +528,41 @@
   },
   "editorLabelsEmpty": "Nessuna etichetta: scrivi un nome per crearne una.",
   "statsTitle": "Statistiche",
-  "statsNotesActive": "Attive",
-  "statsNotesArchived": "Archiviate",
-  "statsNotesTrashed": "Eliminate",
+  "statsOverview": "Panoramica",
+  "statsOpenTasks": "Task da fare",
+  "statsEventsThisWeek": "Eventi questa settimana",
+  "statsCreatedThisWeek": "Creati questa settimana",
+  "statsOverdue": "Scaduti",
+  "statsDueToday": "Oggi",
+  "statsDueThisWeek": "Entro domenica",
+  "statsNoDueDate": "Senza scadenza",
+  "statsActivity": "Attività",
+  "statsActivitySubtitle": "Elementi creati nelle ultime 12 settimane",
+  "statsNoActivity": "Nessun elemento creato nelle ultime 12 settimane",
+  "statsMostActiveDay": "Giorno più attivo: {day}",
+  "@statsMostActiveDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "statsItemsCount": "{count, plural, =1{1 elemento} other{{count} elementi}}",
+  "@statsItemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsTopLabels": "Etichette più usate",
+  "statsNoLabelsUsed": "Nessuna etichetta usata",
+  "statsSummary": "Riepilogo",
   "statsActive": "Attivi",
   "statsArchived": "Archiviati",
   "statsTrashed": "Eliminati",
-  "statsBirthdays": "Compleanni",
-  "statsNameDays": "Onomastici",
-  "statsTotal": "Totali",
-  "statsNotesDistribution": "Distribuzione note",
-  "statsNoNotes": "Nessuna nota presente",
-  "statsTasksDistribution": "Distribuzione task",
   "statsNoTasks": "Nessun task presente",
   "statsTaskCompletion": "Completamento task",
-  "statsNoData": "Nessun dato",
-  "statsNoTasksShort": "Nessun task",
-  "statsTotalSingular": "Totale",
   "infoTitle": "Info su Taskenda",
   "infoTagline": "Note, attività e promemoria in un unico posto",
   "infoAboutTitle": "Cos'è Taskenda",

@@ -1496,13 +1496,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsTitle => 'Statistics';
 
   @override
-  String get statsNotesActive => 'Active';
+  String get statsOverview => 'Overview';
 
   @override
-  String get statsNotesArchived => 'Archived';
+  String get statsOpenTasks => 'Tasks to do';
 
   @override
-  String get statsNotesTrashed => 'Deleted';
+  String get statsEventsThisWeek => 'Events this week';
+
+  @override
+  String get statsCreatedThisWeek => 'Created this week';
+
+  @override
+  String get statsOverdue => 'Overdue';
+
+  @override
+  String get statsDueToday => 'Today';
+
+  @override
+  String get statsDueThisWeek => 'By Sunday';
+
+  @override
+  String get statsNoDueDate => 'No due date';
+
+  @override
+  String get statsActivity => 'Activity';
+
+  @override
+  String get statsActivitySubtitle => 'Items created in the last 12 weeks';
+
+  @override
+  String get statsNoActivity => 'Nothing created in the last 12 weeks';
+
+  @override
+  String statsMostActiveDay(String day) {
+    return 'Most active day: $day';
+  }
+
+  @override
+  String statsItemsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '1 item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get statsTopLabels => 'Most used labels';
+
+  @override
+  String get statsNoLabelsUsed => 'No labels in use';
+
+  @override
+  String get statsSummary => 'Summary';
 
   @override
   String get statsActive => 'Active';
@@ -1514,37 +1563,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsTrashed => 'Deleted';
 
   @override
-  String get statsBirthdays => 'Birthdays';
-
-  @override
-  String get statsNameDays => 'Name days';
-
-  @override
-  String get statsTotal => 'Total';
-
-  @override
-  String get statsNotesDistribution => 'Notes breakdown';
-
-  @override
-  String get statsNoNotes => 'No notes yet';
-
-  @override
-  String get statsTasksDistribution => 'Tasks breakdown';
-
-  @override
   String get statsNoTasks => 'No tasks yet';
 
   @override
   String get statsTaskCompletion => 'Task completion';
-
-  @override
-  String get statsNoData => 'No data';
-
-  @override
-  String get statsNoTasksShort => 'No tasks';
-
-  @override
-  String get statsTotalSingular => 'Total';
 
   @override
   String get infoTitle => 'About Taskenda';
