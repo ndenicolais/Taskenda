@@ -25,36 +25,46 @@ const _tasksColor = AppColors.teal;
 const _eventsColor = AppColors.blue;
 
 /// Overview, tasks, activity over time, most used labels and a summary of
-/// active / archived / trashed items, all from [statisticsProvider].
+/// active / archived / trashed items, all from [statisticsProvider]. Uses the
+/// full width: from [_twoColumnWidth] the blocks after the overview pair up
+/// in two columns.
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
+
+  static const _twoColumnWidth = 900.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stats = ref.watch(statisticsProvider);
+    const gap = SizedBox(height: AppSpacing.xl, width: AppSpacing.xl);
     return NavScaffold(
       section: DrawerSection.statistics,
       titleWidget: Text(context.l10n.statsTitle),
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 840),
-          child: ListView(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= _twoColumnWidth;
+          Widget pair(Widget a, Widget b) =>
+              wide
+                  ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [Expanded(child: a), gap, Expanded(child: b)],
+                  )
+                  : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [a, gap, b],
+                  );
+          return ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               _OverviewSection(stats),
-              const SizedBox(height: AppSpacing.xl),
-              _TasksSection(stats),
-              const SizedBox(height: AppSpacing.xl),
-              _ActivitySection(stats),
-              const SizedBox(height: AppSpacing.xl),
-              _LabelsSection(stats),
-              const SizedBox(height: AppSpacing.xl),
-              _SummarySection(stats),
-              const SizedBox(height: AppSpacing.xl),
+              gap,
+              pair(_TasksSection(stats), _ActivitySection(stats)),
+              gap,
+              pair(_LabelsSection(stats), _SummarySection(stats)),
+              gap,
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }

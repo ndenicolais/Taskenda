@@ -73,6 +73,16 @@ void main() {
     expect(find.textContaining('Giorno più attivo'), findsOneWidget);
   });
 
+  testWidgets('lays out in two columns on a wide screen', (tester) async {
+    await _pump(tester, _stats(), const Size(1400, 2000));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    final tasks = tester.getTopLeft(find.text('Completamento task'));
+    final activity = tester.getTopLeft(find.text('Attività'));
+    expect(activity.dy, tasks.dy);
+    expect(activity.dx, greaterThan(tasks.dx));
+  });
+
   testWidgets('shows the empty states', (tester) async {
     await _pump(tester, _stats(empty: true), const Size(400, 3000));
     await tester.pumpAndSettle();
