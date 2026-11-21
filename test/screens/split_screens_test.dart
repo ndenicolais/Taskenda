@@ -107,65 +107,70 @@ void main() {
     });
   });
 
-  group('showAppTextInputDialog', () {
-    late String? result;
+  for (final (name, show) in [
+    ('showAppTextInputDialog', showAppTextInputDialog),
+    ('showAppTextInputSheet', showAppTextInputSheet),
+  ]) {
+    group(name, () {
+      late String? result;
 
-    Future<void> open(WidgetTester tester) async {
-      result = 'unset';
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: testLocale,
-          supportedLocales: testSupportedLocales,
-          localizationsDelegates: testLocalizationsDelegates,
-          home: Builder(
-            builder:
-                (context) => TextButton(
-                  onPressed: () async {
-                    result = await showAppTextInputDialog(
-                      context,
-                      title: 'Nuovo Elenco',
-                      hintText: 'Nome elenco',
-                      confirmLabel: 'Crea',
-                    );
-                  },
-                  child: const Text('open'),
-                ),
+      Future<void> open(WidgetTester tester) async {
+        result = 'unset';
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: testLocale,
+            supportedLocales: testSupportedLocales,
+            localizationsDelegates: testLocalizationsDelegates,
+            home: Builder(
+              builder:
+                  (context) => TextButton(
+                    onPressed: () async {
+                      result = await show(
+                        context,
+                        title: 'Nuovo Elenco',
+                        hintText: 'Nome elenco',
+                        confirmLabel: 'Crea',
+                      );
+                    },
+                    child: const Text('open'),
+                  ),
+            ),
           ),
-        ),
-      );
-      await tester.tap(find.text('open'));
-      await tester.pumpAndSettle();
-    }
+        );
+        await tester.tap(find.text('open'));
+        await tester.pumpAndSettle();
+      }
 
-    testWidgets('returns the trimmed text on confirm or submit', (
-      tester,
-    ) async {
-      await open(tester);
-      await tester.enterText(find.byType(TextField), '  Spesa  ');
-      await tester.tap(find.text('Crea'));
-      await tester.pumpAndSettle();
-      expect(result, 'Spesa');
+      testWidgets('returns the trimmed text on confirm or submit', (
+        tester,
+      ) async {
+        await open(tester);
+        await tester.enterText(find.byType(TextField), '  Spesa  ');
+        await tester.tap(find.text('Crea'));
+        await tester.pumpAndSettle();
+        expect(result, 'Spesa');
 
-      await open(tester);
-      await tester.enterText(find.byType(TextField), 'Lavoro');
-      await tester.testTextInput.receiveAction(TextInputAction.done);
-      await tester.pumpAndSettle();
-      expect(result, 'Lavoro');
+        await open(tester);
+        await tester.enterText(find.byType(TextField), 'Lavoro');
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+        expect(result, 'Lavoro');
+      });
+
+      testWidgets('empty text or cancel resolve to null', (tester) async {
+        await open(tester);
+        await tester.enterText(find.byType(TextField), '   ');
+        await tester.tap(find.text('Crea'));
+        await tester.pumpAndSettle();
+        expect(result, isNull);
+
+        await open(tester);
+        await tester.tap(find.text('Annulla'));
+        await tester.pumpAndSettle();
+        expect(result, isNull);
+      });
     });
-
-    testWidgets('empty text or cancel resolve to null', (tester) async {
-      await open(tester);
-      await tester.enterText(find.byType(TextField), '   ');
-      await tester.tap(find.text('Crea'));
-      await tester.pumpAndSettle();
-      expect(result, isNull);
-
-      await open(tester);
-      await tester.tap(find.text('Annulla'));
-      await tester.pumpAndSettle();
-      expect(result, isNull);
-    });
-  });
+  }
 
   group('CalendarEventDetailsSection', () {
     setUpAll(() => initializeDateFormatting('it'));

@@ -24,8 +24,8 @@ import '../widgets/shared/error_feedback.dart';
 class LabelsScreen extends ConsumerWidget {
   const LabelsScreen({super.key});
 
-  Future<void> _showAddLabelDialog(BuildContext context, WidgetRef ref) async {
-    final name = await showAppTextInputDialog(
+  Future<void> _showAddLabelSheet(BuildContext context, WidgetRef ref) async {
+    final name = await showAppTextInputSheet(
       context,
       title: context.l10n.labelsNew,
       hintText: context.l10n.labelsNameHint,
@@ -45,7 +45,7 @@ class LabelsScreen extends ConsumerWidget {
       section: DrawerSection.labels,
       titleWidget: Text(context.l10n.navLabels),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddLabelDialog(context, ref),
+        onPressed: () => _showAddLabelSheet(context, ref),
         tooltip: context.l10n.labelsNew,
         child: const Icon(Icons.add),
       ),
@@ -104,7 +104,7 @@ class _LabelTile extends ConsumerWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () => _showRenameDialog(context, ref),
+            onPressed: () => _showRenameSheet(context, ref),
             tooltip: context.l10n.labelsRename,
           ),
           IconButton(
@@ -117,8 +117,8 @@ class _LabelTile extends ConsumerWidget {
     );
   }
 
-  Future<void> _showRenameDialog(BuildContext context, WidgetRef ref) async {
-    final newName = await showAppTextInputDialog(
+  Future<void> _showRenameSheet(BuildContext context, WidgetRef ref) async {
+    final newName = await showAppTextInputSheet(
       context,
       title: context.l10n.labelsRenameTitle,
       hintText: context.l10n.labelsNameHint,

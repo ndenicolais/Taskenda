@@ -43,7 +43,7 @@ import 'note_checklist_editor.dart';
 import 'note_editor_app_bar.dart';
 import 'note_editor_bottom_bar.dart';
 import 'note_editor_controller.dart';
-import 'note_insert_link_dialog.dart';
+import 'note_insert_link_sheet.dart';
 import 'note_labels_section.dart';
 import 'note_labels_sheet.dart';
 import 'note_link_sheet.dart';
@@ -375,7 +375,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     final value = _contentController.value;
     final sel = value.selection;
     final hasCursor = sel.isValid && !_markdownMode;
-    final link = await showInsertLinkDialog(
+    final link = await showInsertLinkSheet(
       context,
       initialText: hasCursor ? sel.textInside(value.text) : '',
     );

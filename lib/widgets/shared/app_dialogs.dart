@@ -10,6 +10,7 @@
 
 import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
+import '../../theme/app_spacing.dart';
 
 /// [showModalBottomSheet] whose content stays clear of the system
 /// navigation bar: with edge-to-edge (enforced from Android 15) the sheet
@@ -114,6 +115,139 @@ class _TextInputDialogState extends State<_TextInputDialog> {
         ),
         TextButton(onPressed: _submit, child: Text(widget.confirmLabel)),
       ],
+    );
+  }
+}
+
+/// Bottom-sheet counterpart of [showAppTextInputDialog] (same result, no
+/// `obscureText`), shown as a sheet that rises with the keyboard.
+Future<String?> showAppTextInputSheet(
+  BuildContext context, {
+  required String title,
+  required String hintText,
+  required String confirmLabel,
+  String initialValue = '',
+  TextCapitalization textCapitalization = TextCapitalization.none,
+}) {
+  return showAppSheet<String>(
+    context,
+    isScrollControlled: true,
+    builder:
+        (_) => _TextInputSheet(
+          title: title,
+          hintText: hintText,
+          confirmLabel: confirmLabel,
+          initialValue: initialValue,
+          textCapitalization: textCapitalization,
+        ),
+  );
+}
+
+class _TextInputSheet extends StatefulWidget {
+  const _TextInputSheet({
+    required this.title,
+    required this.hintText,
+    required this.confirmLabel,
+    required this.initialValue,
+    required this.textCapitalization,
+  });
+
+  final String title;
+  final String hintText;
+  final String confirmLabel;
+  final String initialValue;
+  final TextCapitalization textCapitalization;
+
+  @override
+  State<_TextInputSheet> createState() => _TextInputSheetState();
+}
+
+class _TextInputSheetState extends State<_TextInputSheet> {
+  late final _controller = TextEditingController(text: widget.initialValue);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final text = _controller.text.trim();
+    Navigator.pop(context, text.isEmpty ? null : text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppFormSheet(
+      title: widget.title,
+      confirmLabel: widget.confirmLabel,
+      onConfirm: _submit,
+      children: [
+        TextField(
+          controller: _controller,
+          autofocus: true,
+          textCapitalization: widget.textCapitalization,
+          decoration: InputDecoration(hintText: widget.hintText),
+          onSubmitted: (_) => _submit(),
+        ),
+      ],
+    );
+  }
+}
+
+/// Layout of a small form in a bottom sheet: bold centered [title], the
+/// [children] fields, then Annulla / [confirmLabel]. Padded by the keyboard
+/// height, so open it with `isScrollControlled: true`.
+class AppFormSheet extends StatelessWidget {
+  const AppFormSheet({
+    super.key,
+    required this.title,
+    required this.confirmLabel,
+    required this.onConfirm,
+    required this.children,
+  });
+
+  final String title;
+  final String confirmLabel;
+  final VoidCallback onConfirm;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.lg,
+        AppSpacing.md + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ...children,
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(context.l10n.commonCancel),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                FilledButton(onPressed: onConfirm, child: Text(confirmLabel)),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
