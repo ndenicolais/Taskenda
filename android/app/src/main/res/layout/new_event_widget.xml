@@ -18,7 +18,7 @@
         <ImageView
             android:layout_width="22dp"
             android:layout_height="22dp"
-            android:src="@drawable/ic_widget_event"
+            android:src="@drawable/ic_widget_add"
             android:importantForAccessibility="no" />
 
         <TextView
