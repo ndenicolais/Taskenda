@@ -68,6 +68,8 @@
   "onboardingCalendarBody": "Pianifica eventi con vista giorno, settimana, mese, anno e programma. Importa ed esporta i tuoi calendari in formato ICS.",
   "onboardingRemindersTitle": "Notifiche e backup",
   "onboardingRemindersBody": "Aggiungi un orario ad attività ed eventi per ricevere una notifica, o un promemoria alle note. Esporta le note e crea backup manuali o automatici dalle Impostazioni.",
+  "onboardingWebSyncTitle": "Sincronizzazione e backup",
+  "onboardingWebSyncBody": "I tuoi dati sono salvati sul tuo account e restano aggiornati su tutti i dispositivi. Dalle Impostazioni puoi esportare le note e scaricare un backup completo. Per le notifiche usa l'app Android.",
   "bootErrorTitle": "Impossibile avviare Taskenda",
   "bootErrorBody": "Si è verificato un problema durante l'avvio. Controlla la connessione e riprova.",
   "unknownRouteTitle": "Pagina non trovata",

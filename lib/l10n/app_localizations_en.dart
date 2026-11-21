@@ -227,6 +227,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add a time to tasks and events to get a notification, or a reminder to notes. Export your notes and create manual or automatic backups from Settings.';
 
   @override
+  String get onboardingWebSyncTitle => 'Sync and backup';
+
+  @override
+  String get onboardingWebSyncBody =>
+      'Your data is saved to your account and stays up to date on all your devices. From Settings you can export your notes and download a full backup. For notifications, use the Android app.';
+
+  @override
   String get bootErrorTitle => 'Unable to start Taskenda';
 
   @override

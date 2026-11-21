@@ -8,6 +8,7 @@
 // Contact: ndn21dev@gmail.com
 // GitHub: https://github.com/ndenicolais
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
@@ -47,15 +48,17 @@ final _pages = [
     (l) => l.onboardingCalendarTitle,
     (l) => l.onboardingCalendarBody,
   ),
+  // The web has no notifications nor automatic backups: sync and manual
+  // backups instead.
   _OnboardingPage(
-    Icons.notifications_active_outlined,
-    (l) => l.onboardingRemindersTitle,
-    (l) => l.onboardingRemindersBody,
+    kIsWeb ? Icons.cloud_sync_outlined : Icons.notifications_active_outlined,
+    (l) => kIsWeb ? l.onboardingWebSyncTitle : l.onboardingRemindersTitle,
+    (l) => kIsWeb ? l.onboardingWebSyncBody : l.onboardingRemindersBody,
   ),
 ];
 
 /// Accent of each feature on the wide layout: notes, tasks, calendar,
-/// reminders.
+/// reminders (sync on the web).
 const _featureColors = [
   AppColors.amber,
   AppColors.teal,
