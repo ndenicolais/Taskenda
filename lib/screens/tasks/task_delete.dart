@@ -46,13 +46,15 @@ Future<TaskDeleteScope?> askTaskDeleteScope(
 }
 
 /// Applies [scope] to [task] with an undo snackbar: moves it to the trash, or
-/// skips just its current occurrence (rescheduling its reminder).
+/// skips just one occurrence (rescheduling its reminder): the one on
+/// [occurrence] when given (opened from that calendar day), else the current.
 void deleteTaskWithUndo(
   BuildContext context,
   WidgetRef ref,
   TaskModel task,
-  TaskDeleteScope scope,
-) {
+  TaskDeleteScope scope, {
+  DateTime? occurrence,
+}) {
   final notifier = ref.read(tasksProvider.notifier);
   final l10n = context.l10n;
   switch (scope) {
@@ -65,7 +67,9 @@ void deleteTaskWithUndo(
       );
     case TaskDeleteScope.thisOccurrence:
       notifyWithUndo(
-        notifier.skipOccurrence(task).then(_rescheduleReminder),
+        notifier
+            .skipOccurrence(task, day: occurrence)
+            .then(_rescheduleReminder),
         context,
         message: l10n.tasksOccurrenceDeleted,
         onUndo: () async {

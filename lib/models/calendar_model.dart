@@ -456,6 +456,7 @@ class TaskCalendarEvent extends CalendarEventModel {
         endTime: task.dueDate!,
         isAllDay: !task.hasDueTime,
         recurrence: task.recurrence,
+        recurrenceExceptions: task.recurrenceExceptions,
         tags: task.tags,
         createdAt: task.createdAt,
         updatedAt: task.updatedAt,

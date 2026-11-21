@@ -211,10 +211,12 @@ class TasksNotifier extends Notifier<List<TaskModel>>
     );
   }
 
-  /// Removes only the current occurrence of the recurring [task]: it moves on
-  /// to the next one. Returns the updated task.
-  Future<TaskModel> skipOccurrence(TaskModel task) async {
-    final next = task.nextOccurrence();
+  /// Removes only one occurrence of the recurring [task]: the one on [day]
+  /// (e.g. opened from the calendar), or the current one, which moves it on
+  /// to the next. Returns the updated task.
+  Future<TaskModel> skipOccurrence(TaskModel task, {DateTime? day}) async {
+    final next =
+        day == null ? task.nextOccurrence() : task.withoutOccurrence(day);
     await updateTask(next);
     return next;
   }

@@ -26,6 +26,9 @@ class TaskModel with Shareable<TaskModel> {
   bool isArchived;
   String? listId;
   RecurrenceType recurrence;
+  // Days left out of the recurrence (date only): occurrences after the
+  // current one deleted on their own from the calendar.
+  List<DateTime> recurrenceExceptions;
   List<String> tags;
   List<SubtaskModel> subtasks;
   final DateTime createdAt;
@@ -49,6 +52,7 @@ class TaskModel with Shareable<TaskModel> {
     this.isArchived = false,
     this.listId,
     this.recurrence = RecurrenceType.none,
+    List<DateTime>? recurrenceExceptions,
     List<String>? tags,
     List<SubtaskModel>? subtasks,
     DateTime? createdAt,
@@ -56,6 +60,7 @@ class TaskModel with Shareable<TaskModel> {
     this.deletedAt,
     this.sharing = Sharing.none,
   }) : id = id ?? const Uuid().v4(),
+       recurrenceExceptions = recurrenceExceptions ?? [],
        tags = tags ?? [],
        subtasks = subtasks ?? [],
        createdAt = createdAt ?? DateTime.now(),
@@ -71,13 +76,40 @@ class TaskModel with Shareable<TaskModel> {
   /// to step from).
   bool get isRecurring => recurrence != RecurrenceType.none && dueDate != null;
 
-  /// This task moved on to its next occurrence: the due date steps forward
-  /// by one recurrence and the task is open again.
-  TaskModel nextOccurrence() => copyWith(
-    dueDate: nextRecurrence(dueDate!, recurrence),
-    isCompleted: false,
-    updatedAt: DateTime.now(),
+  bool _isException(DateTime d) => recurrenceExceptions.any(
+    (e) => e.year == d.year && e.month == d.month && e.day == d.day,
   );
+
+  /// This task moved on to its next occurrence: the due date steps forward
+  /// by one recurrence (past the days left out) and the task is open again.
+  /// Exceptions before the new due date are dropped.
+  TaskModel nextOccurrence() {
+    var next = nextRecurrence(dueDate!, recurrence);
+    for (var i = 0; i < 1000 && _isException(next); i++) {
+      next = nextRecurrence(next, recurrence);
+    }
+    final nextDay = DateTime(next.year, next.month, next.day);
+    return copyWith(
+      dueDate: next,
+      recurrenceExceptions:
+          recurrenceExceptions.where((e) => e.isAfter(nextDay)).toList(),
+      isCompleted: false,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  /// The recurring task without its occurrence on [day]: the current one
+  /// moves the task on to the next occurrence, a later one is left out.
+  TaskModel withoutOccurrence(DateTime day) {
+    final d = DateTime(day.year, day.month, day.day);
+    final due = DateTime(dueDate!.year, dueDate!.month, dueDate!.day);
+    if (!d.isAfter(due)) return nextOccurrence();
+    if (_isException(d)) return this;
+    return copyWith(
+      recurrenceExceptions: [...recurrenceExceptions, d]..sort(),
+      updatedAt: DateTime.now(),
+    );
+  }
 
   TaskModel copyWith({
     String? title,
@@ -91,6 +123,7 @@ class TaskModel with Shareable<TaskModel> {
     String? listId,
     bool clearListId = false,
     RecurrenceType? recurrence,
+    List<DateTime>? recurrenceExceptions,
     List<String>? tags,
     List<SubtaskModel>? subtasks,
     DateTime? updatedAt,
@@ -108,6 +141,7 @@ class TaskModel with Shareable<TaskModel> {
       isArchived: isArchived ?? this.isArchived,
       listId: clearListId ? null : (listId ?? this.listId),
       recurrence: recurrence ?? this.recurrence,
+      recurrenceExceptions: recurrenceExceptions ?? this.recurrenceExceptions,
       tags: tags ?? this.tags,
       subtasks: subtasks ?? this.subtasks,
       createdAt: createdAt,
@@ -131,6 +165,7 @@ class TaskModel with Shareable<TaskModel> {
     isArchived: isArchived,
     listId: listId,
     recurrence: recurrence,
+    recurrenceExceptions: recurrenceExceptions,
     tags: tags,
     subtasks: subtasks,
     createdAt: createdAt,
@@ -147,6 +182,7 @@ class TaskModel with Shareable<TaskModel> {
     'isCompleted',
     'dueDate',
     'recurrence',
+    'recurrenceExceptions',
     'subtasks',
     'updatedAt',
   ];
@@ -155,7 +191,12 @@ class TaskModel with Shareable<TaskModel> {
   List<String> get sharedContentKeys => sharedKeys;
 
   @override
-  List<String> get optionalKeys => const ['dueDate', 'listId', 'deletedAt'];
+  List<String> get optionalKeys => const [
+    'dueDate',
+    'listId',
+    'recurrenceExceptions',
+    'deletedAt',
+  ];
 
   /// Per-user fields, stored by a collaborator in `shared_task_prefs`.
   @override
@@ -182,6 +223,7 @@ class TaskModel with Shareable<TaskModel> {
       isArchived: p['isArchived'] as bool? ?? false,
       listId: p['listId'] as String?,
       recurrence: recurrence,
+      recurrenceExceptions: recurrenceExceptions,
       tags: (p['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       subtasks: subtasks,
       createdAt: createdAt,
@@ -206,6 +248,10 @@ class TaskModel with Shareable<TaskModel> {
     'isArchived': isArchived,
     if (listId != null) 'listId': listId,
     'recurrence': recurrence.toShortString(),
+    if (recurrenceExceptions.isNotEmpty)
+      'recurrenceExceptions': [
+        for (final d in recurrenceExceptions) dateOnlyKey(d),
+      ],
     'tags': tags,
     'subtasks': subtasks.map((s) => s.toJson()).toList(),
     'createdAt': createdAt.toIso8601String(),
@@ -248,6 +294,10 @@ class TaskModel with Shareable<TaskModel> {
     recurrence: recurrenceTypeFromString(
       json['recurrence'] as String? ?? 'none',
     ),
+    recurrenceExceptions:
+        (json['recurrenceExceptions'] as List<dynamic>?)
+            ?.map((e) => DateTime.parse(e as String))
+            .toList(),
     tags:
         (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
         [],

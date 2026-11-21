@@ -69,6 +69,16 @@ class NoteRouteArgs {
   final bool autoOpenRecorder;
 }
 
+/// Arguments of [AppRoutes.taskDetails] when opened from a day of the
+/// calendar: the task and the occurrence tapped (so a recurring task can
+/// delete that occurrence only).
+class TaskDetailsArgs {
+  const TaskDetailsArgs(this.task, {this.occurrence});
+
+  final TaskModel task;
+  final DateTime? occurrence;
+}
+
 /// Arguments of [AppRoutes.eventDetails]: the event and, when opened from
 /// a day of the calendar, the occurrence tapped (so a recurring event can
 /// delete that occurrence only).
@@ -153,6 +163,8 @@ abstract final class AppRouter {
         (_) => CalendarEventEditorScreen(event: args),
       AppRoutes.taskDetails when args is TaskModel =>
         (_) => TaskDetailsScreen(task: args),
+      AppRoutes.taskDetails when args is TaskDetailsArgs =>
+        (_) => TaskDetailsScreen(task: args.task, occurrence: args.occurrence),
       AppRoutes.eventDetails when args is EventDetailsArgs =>
         (_) => CalendarEventDetailsScreen(
           event: args.event,
@@ -281,11 +293,18 @@ abstract final class AppNav {
   }) => _push(context, AppRoutes.event, event, animate);
 
   /// Opens a saved task in read-only view, with a pencil to edit it.
+  /// [occurrence] is the day it was opened from in the calendar.
   static Future<void> viewTask(
     BuildContext context,
     TaskModel task, {
+    DateTime? occurrence,
     bool animate = true,
-  }) => _push(context, AppRoutes.taskDetails, task, animate);
+  }) => _push(
+    context,
+    AppRoutes.taskDetails,
+    occurrence == null ? task : TaskDetailsArgs(task, occurrence: occurrence),
+    animate,
+  );
 
   /// Opens a saved event in read-only view, with a pencil to edit it.
   /// [occurrence] is the day it was opened from in the calendar.
@@ -310,7 +329,7 @@ abstract final class AppNav {
     DateTime? day,
   }) =>
       item is TaskCalendarEvent
-          ? viewTask(context, item.task)
+          ? viewTask(context, item.task, occurrence: day)
           : item is HolidayCalendarEvent
           ? showHolidaySheet(context, item, day ?? item.startTime)
           : viewEvent(context, item, occurrence: day);

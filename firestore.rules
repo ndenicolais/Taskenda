@@ -69,7 +69,7 @@ service cloud.firestore {
       allow read: if isCollaborator();
       allow update: if collaboratorUpdate([
         'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
-        'subtasks', 'updatedAt'
+        'recurrenceExceptions', 'subtasks', 'updatedAt'
       ]);
     }
 

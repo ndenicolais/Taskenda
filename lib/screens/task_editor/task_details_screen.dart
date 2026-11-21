@@ -32,9 +32,12 @@ import '../../theme/app_colors.dart';
 /// Calendar / Tasks): the pencil opens [TaskEditorScreen]. Follows the task
 /// in [tasksProvider], so edits show up on return and the screen closes once
 /// the task is trashed. Completion and subtasks can still be checked here.
+/// [occurrence] is the calendar day it was opened from, so deleting "only
+/// this" occurrence of a recurring task removes that day.
 class TaskDetailsScreen extends ConsumerStatefulWidget {
-  const TaskDetailsScreen({super.key, required this.task});
+  const TaskDetailsScreen({super.key, required this.task, this.occurrence});
   final TaskModel task;
+  final DateTime? occurrence;
 
   @override
   ConsumerState<TaskDetailsScreen> createState() => _TaskDetailsScreenState();
@@ -74,7 +77,13 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
       message: context.l10n.tasksDeleteTaskConfirm,
     );
     if (scope == null || !mounted) return;
-    deleteTaskWithUndo(context, ref, task, scope);
+    deleteTaskWithUndo(
+      context,
+      ref,
+      task,
+      scope,
+      occurrence: widget.occurrence,
+    );
     _close();
   }
 
@@ -107,6 +116,7 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
     final cs = theme.colorScheme;
     final muted = cs.onSurfaceVariant;
     final completedSubtasks = task.subtasks.where((s) => s.isCompleted).length;
+    final dueDate = _shownDueDate(task);
 
     return Scaffold(
       appBar: AppBar(
@@ -162,7 +172,7 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
               iconColor: AppColors.success,
               child: Text(l10n.tasksCompleted),
             ),
-          if (task.dueDate != null)
+          if (dueDate != null)
             DetailRow(
               // The alarm marks a due time, which notifies.
               icon:
@@ -172,7 +182,7 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
                   task.hasDueTime
                       ? 'EEEE d MMMM yyyy, HH:mm'
                       : 'EEEE d MMMM yyyy',
-                ).format(task.dueDate!),
+                ).format(dueDate),
               ),
             ),
           if (task.recurrence != RecurrenceType.none)
@@ -244,6 +254,15 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
         ),
       ),
     );
+  }
+
+  /// The due date of the occurrence opened from the calendar (its day, at
+  /// the task's time), or the task's own.
+  DateTime? _shownDueDate(TaskModel task) {
+    final due = task.dueDate;
+    final day = widget.occurrence;
+    if (due == null || day == null || !task.isRecurring) return due;
+    return DateTime(day.year, day.month, day.day, due.hour, due.minute);
   }
 
   String _listName(WidgetRef ref, String listId, String fallback) {
