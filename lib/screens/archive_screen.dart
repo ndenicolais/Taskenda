@@ -45,17 +45,17 @@ class ArchiveScreen extends ConsumerWidget {
           children: [
             TabBar(
               tabs: [
-                Tab(text: context.l10n.commonTabNotes),
-                Tab(text: context.l10n.commonTabTasks),
                 Tab(text: context.l10n.commonTabEvents),
+                Tab(text: context.l10n.commonTabTasks),
+                Tab(text: context.l10n.commonTabNotes),
               ],
             ),
             Expanded(
               child: TabBarView(
                 children: [
-                  _NoteList(notes: notes, loadError: notesLoadError),
-                  _TaskList(tasks: tasks, loadError: tasksLoadError),
                   _EventList(events: events),
+                  _TaskList(tasks: tasks, loadError: tasksLoadError),
+                  _NoteList(notes: notes, loadError: notesLoadError),
                 ],
               ),
             ),

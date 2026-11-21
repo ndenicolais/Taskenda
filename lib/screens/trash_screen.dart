@@ -64,17 +64,17 @@ class TrashScreen extends ConsumerWidget {
             ),
             TabBar(
               tabs: [
-                Tab(text: context.l10n.commonTabNotes),
-                Tab(text: context.l10n.commonTabTasks),
                 Tab(text: context.l10n.commonTabEvents),
+                Tab(text: context.l10n.commonTabTasks),
+                Tab(text: context.l10n.commonTabNotes),
               ],
             ),
             Expanded(
               child: TabBarView(
                 children: [
-                  _NoteTrashList(items: notes),
-                  _TaskTrashList(items: tasks),
                   _EventTrashList(items: events),
+                  _TaskTrashList(items: tasks),
+                  _NoteTrashList(items: notes),
                 ],
               ),
             ),

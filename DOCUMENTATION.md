@@ -368,15 +368,15 @@ The list of active notes and the note editor.
 
 **Features:**
 - Labels: create, rename (merges into an existing label with the same name), delete; note count per label; tapping a label opens its notes (active, then archived).
-- Archive: three tabs (notes, tasks, events), all as `ItemCard` rows (`_ArchivedRow`) with a menu: "Ripristina" (`toggleArchive`) and "Sposta nel cestino" (`softDelete`), both with Undo; since `softDelete` clears `isArchived`, the trash Undo restores and archives again. Notes also open in the editor on tap; tasks and events have only the menu.
-- Trash: three tabs, restore, delete for good, empty trash; each item shows the days left before the automatic purge.
+- Archive: three tabs (events, tasks, notes), all as `ItemCard` rows (`_ArchivedRow`) with a menu: "Ripristina" (`toggleArchive`) and "Sposta nel cestino" (`softDelete`), both with Undo; since `softDelete` clears `isArchived`, the trash Undo restores and archives again. Notes also open in the editor on tap; tasks and events have only the menu.
+- Trash: three tabs (events, tasks, notes, as in Archive), restore, delete for good, empty trash; each item shows the days left before the automatic purge.
 
 ### 5.6 Statistics and export
 
 **Path:** `lib/screens/statistics/`, `lib/screens/export_screen.dart`
 
 **Features:**
-- Statistics: drawer section (below Archive), summary of notes, tasks and events computed by a screen-local provider, charts with `fl_chart`.
+- Statistics: drawer section (below Trash), summary of notes, tasks and events computed by a screen-local provider, charts with `fl_chart`.
 - Export: active notes as PDF, TXT, JSON, CSV or HTML. File text (labels, headers, date format) is in the UI language; JSON keys are fixed. Mobile saves/shares the file, web downloads it.
 
 ### 5.7 Settings
