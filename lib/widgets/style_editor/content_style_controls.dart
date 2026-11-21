@@ -77,7 +77,8 @@ class ContentStyleControls extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         ColorPickerWidget(
           current: style.fontColor ?? Theme.of(context).colorScheme.onSurface,
-          isDark: true,
+          isDark: Theme.of(context).brightness == Brightness.dark,
+          forText: true,
           onPick: (c) => onChanged(style.copyWith(fontColor: c)),
         ),
       ],

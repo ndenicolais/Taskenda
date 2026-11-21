@@ -59,11 +59,50 @@ void main() {
     });
 
     test('light swatches get dark text, dark swatches get white', () {
-      for (final s in AppColors.noteSwatchesLight) {
+      for (final s in [...AppColors.pastelLight, ...AppColors.pastelMedium]) {
         expect(AppColors.contrastingTextColor(s), Colors.black87, reason: '$s');
       }
-      for (final s in AppColors.noteSwatchesDark) {
+      for (final s in [
+        ...AppColors.pastelDark,
+        ...AppColors.pastelDarkStrong,
+      ]) {
         expect(AppColors.contrastingTextColor(s), Colors.white, reason: '$s');
+      }
+    });
+  });
+
+  group('Text swatches', () {
+    test('family colors are readable on the theme surface (WCAG AA)', () {
+      for (final c in AppColors.textSwatchesLight) {
+        if (c == AppColors.paletteWhite) continue;
+        expect(
+          AppColors.contrastRatio(c, AppColors.surfaceLight),
+          c == AppColors.paletteBlack || AppColors.pastelDeep.contains(c)
+              ? greaterThanOrEqualTo(4.5)
+              : anything,
+          reason: '$c',
+        );
+      }
+      for (final c in AppColors.textSwatchesDark) {
+        if (c == AppColors.paletteBlack) continue;
+        expect(
+          AppColors.contrastRatio(c, AppColors.surfaceDark),
+          greaterThanOrEqualTo(4.5),
+          reason: '$c',
+        );
+      }
+    });
+
+    test('picker lists have two full rows and matching positions', () {
+      for (final list in [
+        AppColors.noteSwatchesLight,
+        AppColors.noteSwatchesDark,
+        AppColors.textSwatchesLight,
+        AppColors.textSwatchesDark,
+      ]) {
+        expect(list.length, AppColors.swatchRowLength * 2);
+        expect(list[0], AppColors.paletteWhite);
+        expect(list[AppColors.swatchRowLength], AppColors.paletteBlack);
       }
     });
   });

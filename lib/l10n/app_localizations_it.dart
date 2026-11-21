@@ -568,9 +568,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get styleResetTitle => 'Ripristina stile titolo';
 
   @override
-  String get styleMaterialColors => 'Colori Material';
-
-  @override
   String get templateChoose => 'Scegli un modello';
 
   @override

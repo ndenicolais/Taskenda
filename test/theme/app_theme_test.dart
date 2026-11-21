@@ -83,11 +83,18 @@ void main() {
   });
 
   group('AppColors.fromStored', () {
-    test('maps Noteep swatches onto the new ones', () {
-      expect(AppColors.fromStored(0xFFFFF9C4), AppColors.noteSwatchesLight[2]);
-      expect(AppColors.fromStored(0xFFF8BBD9), AppColors.noteSwatchesLight[4]);
-      expect(AppColors.fromStored(0xDD000000), AppColors.noteSwatchesDark[0]);
-      expect(AppColors.fromStored(0xFF1A237E), AppColors.noteSwatchesDark[1]);
+    test('maps Noteep swatches onto the pastel ones', () {
+      expect(AppColors.fromStored(0xFFFFF9C4), AppColors.pastelLight[2]);
+      expect(AppColors.fromStored(0xFFF8BBD9), AppColors.pastelLight[8]);
+      expect(AppColors.fromStored(0xDD000000), AppColors.paletteBlack);
+      expect(AppColors.fromStored(0xFF1A237E), AppColors.pastelDark[6]);
+    });
+
+    test('maps the category tints onto the pastel ones', () {
+      expect(AppColors.fromStored(0xFFEEEEFB), AppColors.pastelLight[6]);
+      expect(AppColors.fromStored(0xFFE7F5F3), AppColors.pastelLight[4]);
+      expect(AppColors.fromStored(0xFF1F1F2E), AppColors.paletteBlack);
+      expect(AppColors.fromStored(0xFF4D3038), AppColors.pastelDark[0]);
     });
 
     test('keeps any other color and round-trips the new swatches', () {
@@ -95,6 +102,8 @@ void main() {
       for (final c in [
         ...AppColors.noteSwatchesLight,
         ...AppColors.noteSwatchesDark,
+        ...AppColors.textSwatchesLight,
+        ...AppColors.textSwatchesDark,
       ]) {
         expect(AppColors.fromStored(c.toARGB32()), c);
       }

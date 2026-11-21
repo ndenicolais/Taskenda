@@ -125,20 +125,18 @@ CalendarItemStyle calendarItemStyle(
 Color _festiveEnd(Color color, bool isDark) =>
     isDark ? AppColors.tintDark(color) : AppColors.tintLight(color);
 
-/// A user-picked event color. A note swatch (picked in either theme) maps to
-/// the swatch at the same position in the current theme, with its category
-/// color as accent (neutral grey for the default and neutral swatches); any
-/// other color is the accent itself, on its own light / dark tint.
+/// A user-picked event color. A palette swatch (picked in either theme) maps
+/// to the swatch at the same position in the current theme, with the deep
+/// tone of its family as accent (blue-grey for white and black); any other
+/// color is the accent itself, on its own light / dark tint.
 _Swatch _customSwatch(Color color) {
   var i = AppColors.noteSwatchesLight.indexOf(color);
   if (i < 0) i = AppColors.noteSwatchesDark.indexOf(color);
   if (i < 0) return _category(color);
-  final isCategory = i >= 1 && i <= AppColors.categories.length;
   return (
     light: AppColors.noteSwatchesLight[i],
     dark: AppColors.noteSwatchesDark[i],
-    accent:
-        isCategory ? AppColors.categories[i - 1] : AppColors.textSecondaryDark,
+    accent: AppColors.swatchAccent(i),
   );
 }
 

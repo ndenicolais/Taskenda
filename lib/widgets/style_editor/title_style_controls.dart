@@ -89,7 +89,8 @@ class TitleStyleControls extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         ColorPickerWidget(
           current: effectiveColor,
-          isDark: true,
+          isDark: Theme.of(context).brightness == Brightness.dark,
+          forText: true,
           onPick: (c) => onChanged(style.copyWith(titleFontColor: c)),
         ),
         const SizedBox(height: AppSpacing.lg),

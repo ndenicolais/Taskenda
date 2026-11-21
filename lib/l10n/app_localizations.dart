@@ -1166,12 +1166,6 @@ abstract class AppLocalizations {
   /// **'Ripristina stile titolo'**
   String get styleResetTitle;
 
-  /// No description provided for @styleMaterialColors.
-  ///
-  /// In it, this message translates to:
-  /// **'Colori Material'**
-  String get styleMaterialColors;
-
   /// No description provided for @templateChoose.
   ///
   /// In it, this message translates to:

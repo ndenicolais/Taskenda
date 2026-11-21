@@ -9,130 +9,113 @@
 // GitHub: https://github.com/ndenicolais
 
 import 'package:flutter/material.dart';
-import '../../l10n/l10n.dart';
 
 import '../../theme/app_colors.dart';
 
+/// The pastel palette as two rows of [AppColors.swatchRowLength] circles:
+/// white + light shades, black + darker shades. Background or text colors
+/// of the current theme, depending on [forText].
 class ColorPickerWidget extends StatelessWidget {
   const ColorPickerWidget({
     super.key,
     required this.current,
     required this.onPick,
     this.isDark = false,
+    this.forText = false,
   });
 
   final Color current;
   final ValueChanged<Color> onPick;
   final bool isDark;
 
+  /// Text colors (readable on the theme's backgrounds) instead of
+  /// background colors.
+  final bool forText;
+
+  static const double _maxSize = 36;
+  static const double _gap = 6;
+
   @override
   Widget build(BuildContext context) {
-    final presets =
-        isDark ? AppColors.noteSwatchesDark : AppColors.noteSwatchesLight;
+    final swatches =
+        forText
+            ? (isDark
+                ? AppColors.textSwatchesDark
+                : AppColors.textSwatchesLight)
+            : (isDark
+                ? AppColors.noteSwatchesDark
+                : AppColors.noteSwatchesLight);
+    const perRow = AppColors.swatchRowLength;
     final colorScheme = Theme.of(context).colorScheme;
-    final unselectedBorder = colorScheme.outlineVariant;
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        ...presets.map(
-          (c) => GestureDetector(
-            onTap: () => onPick(c),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: c,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: current == c ? colorScheme.primary : unselectedBorder,
-                  width: current == c ? 3 : 1,
-                ),
-                boxShadow: [
-                  if (current == c)
-                    BoxShadow(color: c.withAlpha(102), blurRadius: 8),
-                ],
-              ),
-            ),
-          ),
-        ),
-        // Pulsante "Custom" che apre una griglia Material semplice
-        GestureDetector(
-          onTap: () => _showSimpleGrid(context),
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: unselectedBorder),
-              gradient: const SweepGradient(
-                colors: [
-                  Colors.red,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.blue,
-                  Colors.purple,
-                  Colors.red,
-                ],
-              ),
-            ),
-            child: Icon(Icons.add, size: 18, color: colorScheme.onSurface),
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showSimpleGrid(BuildContext context) {
-    // Invece del package, usiamo i colori base di Flutter in una GridView
-    final List<Color> materialColors = [...Colors.primaries, ...Colors.accents];
-
-    showDialog(
-      context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(ctx.l10n.styleMaterialColors),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: GridView.builder(
-                shrinkWrap: true,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 5,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                ),
-                itemCount: materialColors.length,
-                itemBuilder: (_, i) {
-                  final color = materialColors[i];
-                  return GestureDetector(
-                    onTap: () {
-                      onPick(color);
-                      Navigator.pop(ctx);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color:
-                              current == color
-                                  ? Theme.of(ctx).colorScheme.onSurface
-                                  : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fit = (constraints.maxWidth - _gap * (perRow - 1)) / perRow;
+        final size = fit.clamp(16.0, _maxSize);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var row = 0; row * perRow < swatches.length; row++) ...[
+              if (row > 0) const SizedBox(height: _gap + 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = row * perRow; i < (row + 1) * perRow; i++) ...[
+                    if (i > row * perRow) const SizedBox(width: _gap),
+                    _Swatch(
+                      color: swatches[i],
+                      size: size,
+                      selected: current == swatches[i],
+                      selectedBorder: colorScheme.primary,
+                      border: colorScheme.outlineVariant,
+                      onTap: () => onPick(swatches[i]),
                     ),
-                  );
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: Text(ctx.l10n.commonClose),
+                  ],
+                ],
               ),
             ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _Swatch extends StatelessWidget {
+  const _Swatch({
+    required this.color,
+    required this.size,
+    required this.selected,
+    required this.selectedBorder,
+    required this.border,
+    required this.onTap,
+  });
+
+  final Color color;
+  final double size;
+  final bool selected;
+  final Color selectedBorder;
+  final Color border;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? selectedBorder : border,
+            width: selected ? 3 : 1,
           ),
+          boxShadow: [
+            if (selected) BoxShadow(color: color.withAlpha(102), blurRadius: 8),
+          ],
+        ),
+      ),
     );
   }
 }

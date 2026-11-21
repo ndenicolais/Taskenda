@@ -112,64 +112,180 @@ class AppColors {
     return Color.alphaBlend(color.withValues(alpha: 0.22), surfaceDark);
   }
 
-  // ─── Note swatches ──────────────────────────────────────────────────────────
+  // ─── Pastel palette ─────────────────────────────────────────────────────────
   //
-  // Same order in both lists, so a swatch maps to the one at the same index
-  // in the other theme: 0 default, 1–6 the tints of [categories], 7 neutral.
-  // Constants (not computed), so a color read back from Firestore as
-  // `Color(int)` is equal to its swatch.
+  // Ten color families, same order in every list: red, peach, yellow, green,
+  // mint, sky, indigo, violet, pink, grey. Constants (not computed), so a
+  // color read back from Firestore as `Color(int)` is equal to its swatch.
 
-  /// Preset note colors offered in [ColorPickerWidget] for light theme notes.
+  /// Pastel of each family, light shade: note backgrounds (light theme),
+  /// text on dark backgrounds.
+  static const List<Color> pastelLight = [
+    Color(0xFFFBDADC),
+    Color(0xFFFDE3CF),
+    Color(0xFFFFF4C7),
+    Color(0xFFDDF1D6),
+    Color(0xFFD3F1EA),
+    Color(0xFFD8EDFB),
+    Color(0xFFDEDFF9),
+    Color(0xFFEBDDF6),
+    Color(0xFFFBDDED),
+    Color(0xFFEDEDF2),
+  ];
+
+  /// Pastel of each family, medium shade.
+  static const List<Color> pastelMedium = [
+    Color(0xFFF5AFB4),
+    Color(0xFFF8C29A),
+    Color(0xFFFBE08E),
+    Color(0xFFB2DEA3),
+    Color(0xFF9DDCCD),
+    Color(0xFFA6D1F2),
+    Color(0xFFB3B6F0),
+    Color(0xFFCDAFEA),
+    Color(0xFFF3AFD3),
+    Color(0xFFCDCDD7),
+  ];
+
+  /// Muted dark tone of each family: note backgrounds in the dark theme.
+  static const List<Color> pastelDark = [
+    Color(0xFF4A2B2F),
+    Color(0xFF4B3426),
+    Color(0xFF49412A),
+    Color(0xFF2D4229),
+    Color(0xFF23413B),
+    Color(0xFF263C4F),
+    Color(0xFF2D2E53),
+    Color(0xFF3A2C4F),
+    Color(0xFF4A2C3F),
+    Color(0xFF2E2E3B),
+  ];
+
+  /// Second, stronger dark tone of each family (dark theme backgrounds).
+  static const List<Color> pastelDarkStrong = [
+    Color(0xFF6E3C42),
+    Color(0xFF6E4A33),
+    Color(0xFF6B5D33),
+    Color(0xFF405E3A),
+    Color(0xFF305D54),
+    Color(0xFF315672),
+    Color(0xFF3E4176),
+    Color(0xFF543E72),
+    Color(0xFF6E3D5A),
+    Color(0xFF47475A),
+  ];
+
+  /// Deep tone of each family: text on light backgrounds (≥ 4.5:1 on white).
+  static const List<Color> pastelDeep = [
+    Color(0xFFB23A48),
+    Color(0xFFB5582A),
+    Color(0xFF8C6D12),
+    Color(0xFF3F7A2E),
+    Color(0xFF23766A),
+    Color(0xFF2B6EA6),
+    Color(0xFF4B4FC0),
+    Color(0xFF7D45B0),
+    Color(0xFFB23F7E),
+    Color(0xFF5A5A6E),
+  ];
+
+  /// White and black of the palette.
+  static const Color paletteWhite = white;
+  static const Color paletteBlack = ink;
+
+  /// Number of swatches in each picker row: white or black + the families.
+  static const int swatchRowLength = 11;
+
+  // Picker lists: two rows of [swatchRowLength], white + light shades, then
+  // black + darker shades. Lists of the same kind share positions, so a
+  // swatch maps to the one at the same index in the other theme.
+
+  /// Note and event backgrounds offered in the light theme.
   static const List<Color> noteSwatchesLight = [
-    surfaceLight,
-    ...categoryTintsLight,
-    borderLight,
+    paletteWhite,
+    ...pastelLight,
+    paletteBlack,
+    ...pastelMedium,
   ];
 
-  /// Preset note colors offered in [ColorPickerWidget] for dark theme notes.
+  /// Note and event backgrounds offered in the dark theme.
   static const List<Color> noteSwatchesDark = [
-    surfaceDark,
-    ...categoryTintsDark,
-    borderDark,
+    paletteWhite,
+    ...pastelDark,
+    paletteBlack,
+    ...pastelDarkStrong,
   ];
 
-  // ─── Colors saved by Noteep ─────────────────────────────────────────────────
+  /// Text colors offered in the light theme: medium pastels and deep tones,
+  /// since light pastels can't be read on light backgrounds.
+  static const List<Color> textSwatchesLight = [
+    paletteWhite,
+    ...pastelMedium,
+    paletteBlack,
+    ...pastelDeep,
+  ];
 
-  /// Swatches of the old palette (Noteep) → index in the new swatch lists.
-  /// Old light swatches map into [noteSwatchesLight], old dark ones into
-  /// [noteSwatchesDark].
-  static const Map<int, int> _legacyLight = {
-    0xFFFFFFFF: 0, // white
-    0xFFFFF9C4: 2, // yellow → amber
-    0xFFB2EBF2: 5, // cyan → blue
-    0xFFDCEDC8: 3, // green → teal
-    0xFFFFCCBC: 4, // orange → coral
-    0xFFE1BEE7: 6, // lilac → violet
-    0xFFCFD8DC: 7, // blue grey → neutral
-    0xFFF8BBD9: 4, // pink → coral
-  };
-  static const Map<int, int> _legacyDark = {
-    0xDD000000: 0, // black87
-    0xFF212121: 7, // grey → neutral
-    0xFF37474F: 5, // blue grey → blue
-    0xFF4A148C: 6, // purple → violet
-    0xFF1A237E: 1, // indigo → indigo
-    0xFF880E4F: 4, // wine → coral
-    0xFF1B5E20: 3, // green → teal
-    0xFFBF360C: 2, // deep orange → amber
+  /// Text colors offered in the dark theme: the pastels.
+  static const List<Color> textSwatchesDark = [
+    paletteWhite,
+    ...pastelLight,
+    paletteBlack,
+    ...pastelMedium,
+  ];
+
+  /// Accent of a [noteSwatchesLight] / [noteSwatchesDark] position: the deep
+  /// tone of its family, blue-grey for white and black.
+  static Color swatchAccent(int index) {
+    final family = index % swatchRowLength - 1;
+    return family < 0 ? textSecondaryDark : pastelDeep[family];
+  }
+
+  // ─── Colors saved by older palettes ─────────────────────────────────────────
+
+  /// Swatches of the earlier palettes (Noteep, then the category tints) →
+  /// the matching pastel swatch.
+  static const Map<int, Color> _legacy = {
+    // Noteep, light theme.
+    0xFFFFF9C4: Color(0xFFFFF4C7), // yellow
+    0xFFB2EBF2: Color(0xFFD8EDFB), // cyan → sky
+    0xFFDCEDC8: Color(0xFFDDF1D6), // green
+    0xFFFFCCBC: Color(0xFFFDE3CF), // orange → peach
+    0xFFE1BEE7: Color(0xFFEBDDF6), // lilac → violet
+    0xFFCFD8DC: Color(0xFFEDEDF2), // blue grey → grey
+    0xFFF8BBD9: Color(0xFFFBDDED), // pink
+    // Noteep, dark theme.
+    0xDD000000: paletteBlack, // black87
+    0xFF212121: Color(0xFF2E2E3B), // grey
+    0xFF37474F: Color(0xFF263C4F), // blue grey → sky
+    0xFF4A148C: Color(0xFF3A2C4F), // purple → violet
+    0xFF1A237E: Color(0xFF2D2E53), // indigo
+    0xFF880E4F: Color(0xFF4A2C3F), // wine → pink
+    0xFF1B5E20: Color(0xFF2D4229), // green
+    0xFFBF360C: Color(0xFF4B3426), // deep orange → peach
+    // Category tints, light theme.
+    0xFFEEEEFB: Color(0xFFDEDFF9), // indigo
+    0xFFFEF6E9: Color(0xFFFFF4C7), // amber → yellow
+    0xFFE7F5F3: Color(0xFFD3F1EA), // teal → mint
+    0xFFFEF0EE: Color(0xFFFBDADC), // coral → red
+    0xFFEBF5FD: Color(0xFFD8EDFB), // blue → sky
+    0xFFF6EEF9: Color(0xFFEBDDF6), // violet
+    0xFFE4E4F0: Color(0xFFEDEDF2), // neutral → grey
+    // Category tints, dark theme.
+    0xFF1F1F2E: paletteBlack, // default surface
+    0xFF2C2C53: Color(0xFF2D2E53), // indigo
+    0xFF4E3C2C: Color(0xFF49412A), // amber → yellow
+    0xFF1B3B42: Color(0xFF23413B), // teal → mint
+    0xFF4D3038: Color(0xFF4A2B2F), // coral → red
+    0xFF253B57: Color(0xFF263C4F), // blue → sky
+    0xFF3D2B50: Color(0xFF3A2C4F), // violet
+    0xFF2E2E42: Color(0xFF2E2E3B), // neutral → grey
   };
 
   /// A color read from storage (`toARGB32()` of a note or event color):
-  /// a swatch of the old palette becomes the matching new swatch, anything
-  /// else (custom Material colors, new swatches) is returned unchanged.
+  /// a swatch of an earlier palette becomes the matching pastel swatch,
+  /// anything else (custom colors, current swatches) is returned unchanged.
   /// Applied when reading, so old data and Noteep backups need no rewrite.
-  static Color fromStored(int argb) {
-    final light = _legacyLight[argb];
-    if (light != null) return noteSwatchesLight[light];
-    final dark = _legacyDark[argb];
-    if (dark != null) return noteSwatchesDark[dark];
-    return Color(argb);
-  }
+  static Color fromStored(int argb) => _legacy[argb] ?? Color(argb);
 
   // ─── Contrast ───────────────────────────────────────────────────────────────
 
