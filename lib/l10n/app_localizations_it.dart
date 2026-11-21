@@ -467,6 +467,12 @@ class AppLocalizationsIt extends AppLocalizations {
   String get editorRedo => 'Ripeti';
 
   @override
+  String get editorShowPreview => 'Anteprima';
+
+  @override
+  String get editorEditText => 'Modifica testo';
+
+  @override
   String get editorFormatHeading => 'Titoletto';
 
   @override

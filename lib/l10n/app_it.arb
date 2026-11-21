@@ -152,6 +152,8 @@
   },
   "editorUndo": "Annulla",
   "editorRedo": "Ripeti",
+  "editorShowPreview": "Anteprima",
+  "editorEditText": "Modifica testo",
   "editorFormatHeading": "Titoletto",
   "editorFormatBulleted": "Elenco puntato",
   "editorFormatNumbered": "Elenco numerato",

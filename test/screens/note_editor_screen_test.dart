@@ -114,16 +114,30 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('opens formatted; a tap edits it with the formatting bar', (
+    testWidgets('opens as text; the toggle shows the preview and back', (
       tester,
     ) async {
       await open(tester, '**bold** text');
-      expect(find.byType(MarkdownBody), findsOneWidget);
-      expect(find.byType(NoteFormatBar), findsNothing);
+      expect(find.byType(MarkdownBody), findsNothing);
+      expect(find.text('**bold** text'), findsOneWidget);
 
+      await tester.tap(find.byTooltip('Anteprima'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarkdownBody), findsOneWidget);
+      // A tap on the preview no longer switches to the text.
       await tester.tap(find.byType(MarkdownBody));
       await tester.pumpAndSettle();
+      expect(find.byType(MarkdownBody), findsOneWidget);
+
+      await tester.tap(find.byTooltip('Modifica testo'));
+      await tester.pumpAndSettle();
       expect(find.byType(MarkdownBody), findsNothing);
+    });
+
+    testWidgets('the formatting bar edits the text', (tester) async {
+      await open(tester, '**bold** text');
+      await tester.tap(find.byType(TextField).last);
+      await tester.pumpAndSettle();
       expect(find.byType(NoteFormatBar), findsOneWidget);
 
       final field = tester.widget<TextField>(find.byType(TextField).last);
@@ -144,6 +158,8 @@ void main() {
 
     testWidgets('ticking a box in the formatted view saves it', (tester) async {
       await open(tester, '- [ ] one\n- [ ] two');
+      await tester.tap(find.byTooltip('Anteprima'));
+      await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.check_box_outline_blank).last);
       await tester.pumpAndSettle();
 

@@ -76,9 +76,9 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   late FocusNode _contentFocusNode;
   bool _isApplyingUndoRedo = false;
 
-  /// Whether the content shows as an editable field; otherwise it shows
-  /// formatted and a tap switches back. Empty content is always editable.
-  late bool _editingContent;
+  /// Whether the content shows as the editable Markdown text (the default)
+  /// or as the formatted, read-only preview chosen with the app bar toggle.
+  bool _editingContent = true;
   String _lastTitle = '';
   String _lastContent = '';
 
@@ -95,7 +95,6 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
 
     _lastTitle = _titleController.text;
     _lastContent = _contentController.text;
-    _editingContent = _note.content.trim().isEmpty;
 
     _titleFocusNode = FocusNode();
     _contentFocusNode = FocusNode();
@@ -140,13 +139,20 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     if (!focused && !_isApplyingUndoRedo) {
       _commitContentChange(_contentController.text);
     }
-    // Rebuilds for the formatting bar; leaving the field shows the
-    // formatted content again.
-    setState(() {
-      if (!focused && _contentController.text.trim().isNotEmpty) {
-        _editingContent = false;
-      }
-    });
+    // Rebuilds for the formatting bar.
+    setState(() {});
+  }
+
+  /// App bar toggle: the formatted preview, or back to the text. Leaving
+  /// the text commits it first.
+  void _togglePreview() {
+    if (_editingContent) {
+      _contentFocusNode.unfocus();
+      _commitContentChange(_contentController.text);
+      setState(() => _editingContent = false);
+    } else {
+      setState(() => _editingContent = true);
+    }
   }
 
   /// Switches the content to the editable field and focuses it, with the
@@ -470,15 +476,13 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     );
   }
 
-  /// The content rendered as Markdown with the note's style: a tap edits
-  /// it (links open instead), task boxes tick in place.
+  /// The content rendered as Markdown with the note's style (preview,
+  /// read-only): links open, task boxes tick in place.
   Widget _formattedContent(BuildContext context) {
     final style = _contentStyle(context);
     // Boxes are built in text order, so the n-th one maps to the n-th task.
     var box = 0;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: _startEditingContent,
+    return SelectionArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
@@ -651,6 +655,8 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
             },
             onShare: _shareNote,
             onCollaborators: _showCollaboratorsSheet,
+            previewing: _note.type == NoteType.note ? !_editingContent : null,
+            onTogglePreview: _togglePreview,
           ),
           body: Column(
             children: [

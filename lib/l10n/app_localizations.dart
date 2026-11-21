@@ -968,6 +968,18 @@ abstract class AppLocalizations {
   /// **'Ripeti'**
   String get editorRedo;
 
+  /// No description provided for @editorShowPreview.
+  ///
+  /// In it, this message translates to:
+  /// **'Anteprima'**
+  String get editorShowPreview;
+
+  /// No description provided for @editorEditText.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica testo'**
+  String get editorEditText;
+
   /// No description provided for @editorFormatHeading.
   ///
   /// In it, this message translates to:

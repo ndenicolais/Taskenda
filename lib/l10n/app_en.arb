@@ -145,6 +145,8 @@
   "noteChecklistMore": "+{count} more",
   "editorUndo": "Undo",
   "editorRedo": "Redo",
+  "editorShowPreview": "Preview",
+  "editorEditText": "Edit text",
   "editorFormatHeading": "Heading",
   "editorFormatBulleted": "Bulleted list",
   "editorFormatNumbered": "Numbered list",

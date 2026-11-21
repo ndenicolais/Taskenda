@@ -15,8 +15,8 @@ import '../../models/note_model.dart';
 import '../../providers/notes_undo_redo_provider.dart';
 import '../../theme/app_spacing.dart';
 
-/// App bar for [NoteEditorScreen]: undo/redo, insert link, markdown toggle and the
-/// labels/share/collaborators/pin/archive overflow menu.
+/// App bar for [NoteEditorScreen]: preview toggle (text notes), undo/redo
+/// and the labels/share/collaborators/pin/archive overflow menu.
 class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const NoteEditorAppBar({
     super.key,
@@ -31,7 +31,14 @@ class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onArchive,
     required this.onShare,
     required this.onCollaborators,
+    this.previewing,
+    this.onTogglePreview,
   });
+
+  /// Whether the formatted preview is shown; null hides the toggle
+  /// (checklists have no Markdown).
+  final bool? previewing;
+  final VoidCallback? onTogglePreview;
 
   final NoteModel note;
   final Color effectiveBg;
@@ -64,6 +71,17 @@ class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 : const SizedBox(height: AppSpacing.xxs),
       ),
       actions: [
+        if (previewing != null)
+          IconButton(
+            icon: Icon(
+              previewing! ? Icons.edit_outlined : Icons.visibility_outlined,
+            ),
+            onPressed: onTogglePreview,
+            tooltip:
+                previewing!
+                    ? context.l10n.editorEditText
+                    : context.l10n.editorShowPreview,
+          ),
         IconButton(
           icon: const Icon(Icons.undo),
           onPressed: history.canUndo ? onUndo : null,

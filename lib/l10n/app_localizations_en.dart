@@ -466,6 +466,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get editorRedo => 'Redo';
 
   @override
+  String get editorShowPreview => 'Preview';
+
+  @override
+  String get editorEditText => 'Edit text';
+
+  @override
   String get editorFormatHeading => 'Heading';
 
   @override
