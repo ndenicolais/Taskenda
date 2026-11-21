@@ -163,10 +163,6 @@ class NoteCard extends ConsumerWidget {
       fontFamily: s.fontFamily,
       fontSize: s.fontSize,
       color: s.fontColor ?? autoFg,
-      fontWeight: s.isBold ? FontWeight.bold : FontWeight.normal,
-      fontStyle: s.isItalic ? FontStyle.italic : FontStyle.normal,
-      decoration: s.isStrikethrough ? TextDecoration.lineThrough : null,
-      decorationColor: s.fontColor ?? autoFg,
     );
     final titleStyle = TextStyle(
       fontFamily: s.titleFontFamily ?? s.fontFamily,

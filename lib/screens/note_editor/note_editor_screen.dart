@@ -27,6 +27,7 @@ import '../../theme/app_font_sizes.dart';
 import '../../theme/app_spacing.dart';
 import '../../utils/audio_service.dart';
 import '../../utils/link_utils.dart';
+import '../../utils/markdown_format.dart';
 import '../../utils/picker_defaults.dart';
 import '../../widgets/reminder_banner.dart';
 import '../../widgets/shared/app_dialogs.dart';
@@ -43,7 +44,9 @@ import 'note_checklist_editor.dart';
 import 'note_editor_app_bar.dart';
 import 'note_editor_bottom_bar.dart';
 import 'note_editor_controller.dart';
+import 'note_format_bar.dart';
 import 'note_insert_link_sheet.dart';
+import 'note_markdown_style.dart';
 import 'note_labels_section.dart';
 import 'note_labels_sheet.dart';
 import 'note_link_sheet.dart';
@@ -72,7 +75,10 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   late FocusNode _titleFocusNode;
   late FocusNode _contentFocusNode;
   bool _isApplyingUndoRedo = false;
-  bool _markdownMode = false;
+
+  /// Whether the content shows as an editable field; otherwise it shows
+  /// formatted and a tap switches back. Empty content is always editable.
+  late bool _editingContent;
   String _lastTitle = '';
   String _lastContent = '';
 
@@ -89,6 +95,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
 
     _lastTitle = _titleController.text;
     _lastContent = _contentController.text;
+    _editingContent = _note.content.trim().isEmpty;
 
     _titleFocusNode = FocusNode();
     _contentFocusNode = FocusNode();
@@ -129,9 +136,45 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   }
 
   void _onContentFocusChanged() {
-    if (!_contentFocusNode.hasFocus && !_isApplyingUndoRedo) {
+    final focused = _contentFocusNode.hasFocus;
+    if (!focused && !_isApplyingUndoRedo) {
       _commitContentChange(_contentController.text);
     }
+    // Rebuilds for the formatting bar; leaving the field shows the
+    // formatted content again.
+    setState(() {
+      if (!focused && _contentController.text.trim().isNotEmpty) {
+        _editingContent = false;
+      }
+    });
+  }
+
+  /// Switches the content to the editable field and focuses it, with the
+  /// cursor at [offset] (the end by default).
+  void _startEditingContent([int? offset]) {
+    setState(() => _editingContent = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final text = _contentController.text;
+      _contentController.selection = TextSelection.collapsed(
+        offset: (offset ?? text.length).clamp(0, text.length),
+      );
+      _contentFocusNode.requestFocus();
+    });
+  }
+
+  /// Commits and saves a content edit made by the formatting bar or by
+  /// ticking a box in the formatted view.
+  void _onContentEdited() {
+    _commitContentChange(_contentController.text);
+    _save();
+  }
+
+  void _toggleTaskItem(int index) {
+    final text = toggleTaskItem(_contentController.text, index);
+    if (text == _contentController.text) return;
+    setState(() => _contentController.text = text);
+    _onContentEdited();
   }
 
   void _onTitleTextChanged() {
@@ -374,7 +417,7 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
   Future<void> _insertLink() async {
     final value = _contentController.value;
     final sel = value.selection;
-    final hasCursor = sel.isValid && !_markdownMode;
+    final hasCursor = sel.isValid && _editingContent;
     final link = await showInsertLinkSheet(
       context,
       initialText: hasCursor ? sel.textInside(value.text) : '',
@@ -385,12 +428,11 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     final start = hasCursor ? sel.start : text.length;
     final end = hasCursor ? sel.end : text.length;
     final newText = text.replaceRange(start, end, link);
-    _contentController.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: start + link.length),
-    );
+    _contentController.text = newText;
     _commitContentChange(newText);
     _save();
+    // The sheet took the focus: go back to editing after the link.
+    _startEditingContent(start + link.length);
   }
 
   Future<void> _openLink(String? href) async {
@@ -425,12 +467,43 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
       color: effectiveFg,
       fontFamily: s.fontFamily,
       fontSize: s.fontSize,
-      fontWeight: s.isBold ? FontWeight.bold : FontWeight.normal,
-      fontStyle: s.isItalic ? FontStyle.italic : FontStyle.normal,
-      decoration:
-          s.isStrikethrough ? TextDecoration.lineThrough : TextDecoration.none,
-      decorationColor: s.isStrikethrough ? effectiveFg : null,
-      decorationThickness: s.isStrikethrough ? 2.0 : null,
+    );
+  }
+
+  /// The content rendered as Markdown with the note's style: a tap edits
+  /// it (links open instead), task boxes tick in place.
+  Widget _formattedContent(BuildContext context) {
+    final style = _contentStyle(context);
+    // Boxes are built in text order, so the n-th one maps to the n-th task.
+    var box = 0;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _startEditingContent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        child: MarkdownBody(
+          data: _contentController.text,
+          styleSheet: noteMarkdownStyleSheet(style),
+          onTapLink: (_, href, _) => _openLink(href),
+          checkboxBuilder: (checked) {
+            final index = box++;
+            return GestureDetector(
+              onTap: () => _toggleTaskItem(index),
+              child: Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                child: Icon(
+                  checked ? Icons.check_box : Icons.check_box_outline_blank,
+                  size: (style.fontSize ?? 14) * 1.3,
+                  color: style.color,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 
@@ -562,10 +635,6 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
             effectiveBg: effectiveBg,
             uiFg: uiFg,
             isSaving: _controller.isSaving,
-            markdownMode: _markdownMode,
-            onToggleMarkdown:
-                () => setState(() => _markdownMode = !_markdownMode),
-            onInsertLink: _insertLink,
             onUndo: _performUndo,
             onRedo: _performRedo,
             onLabels: _showLabelsSheet,
@@ -630,19 +699,8 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                           _save();
                         },
                       )
-                    else if (_markdownMode)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                        ),
-                        child: MarkdownBody(
-                          data: _contentController.text,
-                          styleSheet: MarkdownStyleSheet.fromTheme(
-                            Theme.of(context),
-                          ).copyWith(p: _contentStyle(context)),
-                          onTapLink: (_, href, _) => _openLink(href),
-                        ),
-                      )
+                    else if (!_editingContent)
+                      _formattedContent(context)
                     else
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -681,22 +739,30 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
                   ],
                 ),
               ),
-              // Footer con data ultima modifica
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: 6,
-                ),
-                child: Text(
-                  context.l10n.commonLastModified(
-                    DateFormat('dd MMM, HH:mm').format(_note.updatedAt),
+              if (_note.type == NoteType.note && _contentFocusNode.hasFocus)
+                NoteFormatBar(
+                  controller: _contentController,
+                  color: uiFg,
+                  background: effectiveBg,
+                  onChanged: _onContentEdited,
+                  onInsertLink: _insertLink,
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: 6,
                   ),
-                  style: TextStyle(
-                    fontSize: AppFontSizes.sm,
-                    color: effectiveFg.withAlpha(150),
+                  child: Text(
+                    context.l10n.commonLastModified(
+                      DateFormat('dd MMM, HH:mm').format(_note.updatedAt),
+                    ),
+                    style: TextStyle(
+                      fontSize: AppFontSizes.sm,
+                      color: effectiveFg.withAlpha(150),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           bottomNavigationBar: NoteEditorBottomBar(

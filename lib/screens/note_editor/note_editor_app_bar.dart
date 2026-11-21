@@ -24,9 +24,6 @@ class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.effectiveBg,
     required this.uiFg,
     this.isSaving = false,
-    required this.markdownMode,
-    required this.onToggleMarkdown,
-    required this.onInsertLink,
     required this.onUndo,
     required this.onRedo,
     required this.onLabels,
@@ -40,9 +37,6 @@ class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final Color effectiveBg;
   final Color uiFg;
   final bool isSaving;
-  final bool markdownMode;
-  final VoidCallback onToggleMarkdown;
-  final VoidCallback onInsertLink;
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final VoidCallback onLabels;
@@ -80,23 +74,6 @@ class NoteEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: history.canRedo ? onRedo : null,
           tooltip: context.l10n.editorRedo,
         ),
-        if (note.type == NoteType.note)
-          IconButton(
-            icon: const Icon(Icons.add_link),
-            tooltip: context.l10n.editorInsertLink,
-            onPressed: onInsertLink,
-          ),
-        if (note.type == NoteType.note)
-          IconButton(
-            icon: Icon(
-              markdownMode ? Icons.edit_outlined : Icons.preview_outlined,
-            ),
-            tooltip:
-                markdownMode
-                    ? context.l10n.editorEdit
-                    : context.l10n.editorMarkdownPreview,
-            onPressed: onToggleMarkdown,
-          ),
         PopupMenuButton<String>(
           onSelected: (v) {
             switch (v) {

@@ -36,7 +36,7 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 
 | | |
 |---|---|
-| 📝 **Notes** | Text notes with Markdown preview and checklists, each with its own font and colors, in a grid or a list |
+| 📝 **Notes** | Text notes with a formatting bar (bold, headings, lists, checkboxes, links) and checklists, each with its own font and colors, in a grid or a list |
 | 👥 **Sharing** | Add other Taskenda users to a note, task or event by email so you can edit it together, with live updates, a Shared section and a push notification when something is shared with you; pins, archive, reminders and labels stay personal |
 | 🎙️ **Audio notes** | Record voice notes and play them back inside a note |
 | ✅ **Tasks** | Custom lists, subtasks, due dates with an optional time, recurrence, starred and pinned tasks, grouped by day and opened in a detail view |

@@ -453,13 +453,19 @@ class AppLocalizationsIt extends AppLocalizations {
   String get editorRedo => 'Ripeti';
 
   @override
+  String get editorFormatHeading => 'Titoletto';
+
+  @override
+  String get editorFormatBulleted => 'Elenco puntato';
+
+  @override
+  String get editorFormatNumbered => 'Elenco numerato';
+
+  @override
+  String get editorFormatCheckbox => 'Casella di spunta';
+
+  @override
   String get editorInsertLink => 'Inserisci link';
-
-  @override
-  String get editorEdit => 'Modifica';
-
-  @override
-  String get editorMarkdownPreview => 'Anteprima Markdown';
 
   @override
   String get editorShare => 'Condividi';

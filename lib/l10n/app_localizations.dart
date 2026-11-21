@@ -944,23 +944,35 @@ abstract class AppLocalizations {
   /// **'Ripeti'**
   String get editorRedo;
 
+  /// No description provided for @editorFormatHeading.
+  ///
+  /// In it, this message translates to:
+  /// **'Titoletto'**
+  String get editorFormatHeading;
+
+  /// No description provided for @editorFormatBulleted.
+  ///
+  /// In it, this message translates to:
+  /// **'Elenco puntato'**
+  String get editorFormatBulleted;
+
+  /// No description provided for @editorFormatNumbered.
+  ///
+  /// In it, this message translates to:
+  /// **'Elenco numerato'**
+  String get editorFormatNumbered;
+
+  /// No description provided for @editorFormatCheckbox.
+  ///
+  /// In it, this message translates to:
+  /// **'Casella di spunta'**
+  String get editorFormatCheckbox;
+
   /// No description provided for @editorInsertLink.
   ///
   /// In it, this message translates to:
   /// **'Inserisci link'**
   String get editorInsertLink;
-
-  /// No description provided for @editorEdit.
-  ///
-  /// In it, this message translates to:
-  /// **'Modifica'**
-  String get editorEdit;
-
-  /// No description provided for @editorMarkdownPreview.
-  ///
-  /// In it, this message translates to:
-  /// **'Anteprima Markdown'**
-  String get editorMarkdownPreview;
 
   /// No description provided for @editorShare.
   ///

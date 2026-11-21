@@ -48,28 +48,7 @@ class ContentStyleControls extends StatelessWidget {
           value: style.fontSize,
           onChanged: (v) => onChanged(style.copyWith(fontSize: v)),
         ),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            FilterChip(
-              label: Text(l10n.commonBold),
-              selected: style.isBold,
-              onSelected: (v) => onChanged(style.copyWith(isBold: v)),
-            ),
-            FilterChip(
-              label: Text(l10n.commonItalic),
-              selected: style.isItalic,
-              onSelected: (v) => onChanged(style.copyWith(isItalic: v)),
-            ),
-            FilterChip(
-              label: Text(l10n.styleStrikethrough),
-              selected: style.isStrikethrough,
-              onSelected: (v) => onChanged(style.copyWith(isStrikethrough: v)),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.sm),
         Text(
           l10n.styleTextColor,
           style: Theme.of(context).textTheme.labelLarge,

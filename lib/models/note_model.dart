@@ -50,9 +50,6 @@ class NoteStyle {
   final double fontSize;
   final Color? backgroundColor;
   final Color? fontColor;
-  final bool isBold;
-  final bool isItalic;
-  final bool isStrikethrough;
   final Color? titleFontColor;
   final String? titleFontFamily;
   final double? titleFontSize;
@@ -68,9 +65,6 @@ class NoteStyle {
     this.fontSize = 16.0,
     this.backgroundColor,
     this.fontColor,
-    this.isBold = false,
-    this.isItalic = false,
-    this.isStrikethrough = false,
     this.titleFontColor,
     this.titleFontFamily,
     this.titleFontSize,
@@ -83,9 +77,6 @@ class NoteStyle {
     double? fontSize,
     Color? backgroundColor,
     Color? fontColor,
-    bool? isBold,
-    bool? isItalic,
-    bool? isStrikethrough,
     Color? titleFontColor,
     String? titleFontFamily,
     double? titleFontSize,
@@ -102,9 +93,6 @@ class NoteStyle {
       fontSize: fontSize ?? this.fontSize,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       fontColor: fontColor ?? this.fontColor,
-      isBold: isBold ?? this.isBold,
-      isItalic: isItalic ?? this.isItalic,
-      isStrikethrough: isStrikethrough ?? this.isStrikethrough,
       titleFontColor:
           clearTitleFontColor ? null : (titleFontColor ?? this.titleFontColor),
       titleFontFamily:
@@ -124,9 +112,6 @@ class NoteStyle {
     'fontSize': fontSize,
     if (backgroundColor != null) 'backgroundColor': backgroundColor!.toARGB32(),
     if (fontColor != null) 'fontColor': fontColor!.toARGB32(),
-    'isBold': isBold,
-    'isItalic': isItalic,
-    'isStrikethrough': isStrikethrough,
     if (titleFontColor != null) 'titleFontColor': titleFontColor!.toARGB32(),
     if (titleFontFamily != null) 'titleFontFamily': titleFontFamily,
     if (titleFontSize != null) 'titleFontSize': titleFontSize,
@@ -145,9 +130,6 @@ class NoteStyle {
         json['fontColor'] != null
             ? AppColors.fromStored(json['fontColor'] as int)
             : null,
-    isBold: json['isBold'] as bool? ?? false,
-    isItalic: json['isItalic'] as bool? ?? false,
-    isStrikethrough: json['isStrikethrough'] as bool? ?? false,
     titleFontColor:
         json['titleFontColor'] != null
             ? AppColors.fromStored(json['titleFontColor'] as int)

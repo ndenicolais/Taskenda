@@ -10,11 +10,13 @@
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskenda/models/note_model.dart';
 import 'package:taskenda/providers/notes_provider.dart';
 import 'package:taskenda/screens/note_editor/note_editor_screen.dart';
+import 'package:taskenda/screens/note_editor/note_format_bar.dart';
 import '../helpers/test_container.dart';
 
 import '../helpers/l10n.dart';
@@ -101,5 +103,55 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(notifier.state.single.isPinned, isTrue);
+  });
+
+  group('formatted content', () {
+    Future<void> open(WidgetTester tester, String content) async {
+      final note = NoteModel(title: 'T', content: content);
+      await notifier.addNote(note);
+      await tester.pumpWidget(wrap(note));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('opens formatted; a tap edits it with the formatting bar', (
+      tester,
+    ) async {
+      await open(tester, '**bold** text');
+      expect(find.byType(MarkdownBody), findsOneWidget);
+      expect(find.byType(NoteFormatBar), findsNothing);
+
+      await tester.tap(find.byType(MarkdownBody));
+      await tester.pumpAndSettle();
+      expect(find.byType(MarkdownBody), findsNothing);
+      expect(find.byType(NoteFormatBar), findsOneWidget);
+
+      final field = tester.widget<TextField>(find.byType(TextField).last);
+      field.controller!.selection = const TextSelection(
+        baseOffset: 9,
+        extentOffset: 13,
+      );
+      await tester.tap(find.byIcon(Icons.format_italic));
+      await tester.pump();
+      expect(field.controller!.text, '**bold** _text_');
+      expect(find.byType(NoteFormatBar), findsOneWidget);
+    });
+
+    testWidgets('an empty note opens in the editable field', (tester) async {
+      await open(tester, '');
+      expect(find.byType(MarkdownBody), findsNothing);
+    });
+
+    testWidgets('ticking a box in the formatted view saves it', (tester) async {
+      await open(tester, '- [ ] one\n- [ ] two');
+      await tester.tap(find.byIcon(Icons.check_box_outline_blank).last);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MarkdownBody), findsOneWidget);
+      expect(find.byIcon(Icons.check_box), findsOneWidget);
+      Navigator.pop(tester.element(find.byType(NoteEditorScreen)));
+      await tester.pumpAndSettle();
+      expect(notifier.state.single.content, '- [ ] one\n- [x] two');
+    });
   });
 }
