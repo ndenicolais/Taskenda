@@ -405,7 +405,7 @@ The screens (`SettingsScreen`, `BackupDataScreen`) handle dialogs, file pickers 
 **Path:** `lib/screens/info_screen.dart`, `lib/screens/privacy_policy_screen.dart`, `lib/widgets/changelog_dialog.dart`
 
 **Features:**
-- Info: logo, name, tagline, version (without build number), "What is Taskenda", feature grid, links (project page on the portfolio `uriProjectPage`, share Taskenda — system share sheet via `share_plus` with `infoShareText` + `uriProjectPage`, source code, GitHub profile, email — external; onboarding, full changelog, privacy policy, open-source licenses — internal), credits. Max width 600. External links that fail to open show a snackbar.
+- Info: logo, name, tagline, version (without build number), "What is Taskenda", feature grid, links (project page on the portfolio `uriProjectPage`, web version `uriWebApp` — hidden on the web — share Taskenda — system share sheet via `share_plus` with `infoShareText` + `uriProjectPage`, source code, GitHub profile, email — external; onboarding, full changelog, privacy policy, open-source licenses — internal), credits. Max width 600. External links that fail to open show a snackbar.
 - Privacy policy: native localized copy of `PRIVACY.md`, with the last-updated date from `privacyPolicyUpdatedAt` and a link to the online version (`uriPrivacyPolicy`: the portfolio page `https://ndenicolais.github.io/taskenda/privacy/`).
 - Changelog dialog: one block per version with sections Added / Improved / Fixed / Security (empty ones hidden).
 

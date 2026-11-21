@@ -4,17 +4,17 @@
 
 # Taskenda
 
-**Calendar, tasks and notes in one Android app, built with Flutter.**
+**Calendar, tasks and notes for Android and the web, built with Flutter.**
 
 Your agenda, to-dos and notes in one place: calendar events, tasks with subtasks and recurrence, notes with checklists and audio, all with reminders.<br>
 Synced to your account with Firebase, with backups, PDF export, Home screen widgets, Italian and English, light and dark theme.
 
 [![Release](https://img.shields.io/github/v/release/ndenicolais/Taskenda?style=flat-square&color=5B5BD6&label=release)](https://github.com/ndenicolais/Taskenda/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-Android%207.0%2B-1B1B2F?style=flat-square&logo=android&logoColor=white)](#requirements)
+[![Platform](https://img.shields.io/badge/platform-Android%207.0%2B%20%7C%20Web-1B1B2F?style=flat-square&logo=android&logoColor=white)](#requirements)
 [![Flutter](https://img.shields.io/badge/Flutter-3.44%2B-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![License](https://img.shields.io/badge/license-source--available%2C%20non--commercial-1B1B2F?style=flat-square)](LICENSE)
 
-[**📥 Download the APK**](#download) · [Features](#features) · [Documentation](DOCUMENTATION.md) · [Privacy](PRIVACY.md)
+[**📥 Download the APK**](#download) · [**🌍 Open the web app**](https://taskenda21.web.app) · [Features](#features) · [Documentation](DOCUMENTATION.md) · [Privacy](PRIVACY.md)
 
 <br>
 
@@ -49,6 +49,7 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 | 📱 **Home screen widgets** | Scrolling lists of notes, tasks and upcoming calendar entries, and quick actions to create a note, task or event |
 | 🔐 **Authentication** | Sign in with a Google account or email and password |
 | ☁️ **Sync** | Notes, tasks, lists, labels and events are stored on Cloud Firestore, and changes made offline sync later |
+| 🌍 **Web app** | The same account in the browser at [taskenda21.web.app](https://taskenda21.web.app), without reminders, voice recording, widgets and automatic backups |
 | 🌍 **Multilingual** | Italian and English |
 | 🌗 **Theme** | System / Light / Dark theme |
 | ⚙️ **Settings** | Choose the section the app opens on and the time of all-day, birthday and name day alerts |
@@ -67,6 +68,10 @@ Taskenda is distributed as an APK on [GitHub Releases](https://github.com/ndenic
 
 > [!NOTE]
 > **"App blocked to protect your device" (Google Play Protect).** Play Protect shows this warning for apps that are not distributed through the Play Store and whose developer it does not know yet. Tap **More details → Install anyway** to continue. The source code of every release is available in this repository.
+
+### Web
+
+Open [taskenda21.web.app](https://taskenda21.web.app) in a recent browser and sign in with the same account: notes, tasks and events are the same as on your phone. The web version has no reminders or notifications, no voice recording (existing recordings play back), no Home screen widgets and no automatic backups; exports are downloaded by the browser.
 
 ---
 
@@ -87,6 +92,7 @@ Taskenda is distributed as an APK on [GitHub Releases](https://github.com/ndenic
 | Home screen widgets | home_widget + native Kotlin widgets |
 | Place suggestions | Google Places API (New) Autocomplete, via the `searchPlaces` Cloud Function |
 | Export | pdf, printing, share_plus, archive |
+| Web hosting | Firebase Hosting |
 
 <details>
 <summary><b>Project structure</b></summary>
@@ -131,9 +137,17 @@ flutter pub get
 
 # Run the app
 flutter run
+flutter run -d chrome --web-port 5000   # web (port 5000 is the authorized OAuth origin)
 ```
 
 Release builds are signed with the keystore set in `android/key.properties` (see [DOCUMENTATION.md](DOCUMENTATION.md)); without it, they fall back to the debug key.
+
+The web app is published on Firebase Hosting (`hosting` in `firebase.json`, site `taskenda21`) with the [Firebase CLI](https://firebase.google.com/docs/cli):
+
+```bash
+flutter build web --release
+firebase deploy --only hosting
+```
 
 ---
 
