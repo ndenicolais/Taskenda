@@ -186,6 +186,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingStart => 'Get started';
 
   @override
+  String get onboardingTagline => 'Calendar · Tasks · Notes';
+
+  @override
+  String get onboardingFeaturesTitle => 'Everything you need, in one place';
+
+  @override
   String get onboardingWelcomeTitle => 'Welcome to Taskenda';
 
   @override

@@ -56,6 +56,8 @@
   "onboardingSkip": "Skip",
   "onboardingNext": "Next",
   "onboardingStart": "Get started",
+  "onboardingTagline": "Calendar · Tasks · Notes",
+  "onboardingFeaturesTitle": "Everything you need, in one place",
   "onboardingWelcomeTitle": "Welcome to Taskenda",
   "onboardingWelcomeBody": "Notes, tasks and calendar in one place, synced to your account and available on all your devices.",
   "onboardingNotesTitle": "Notes",

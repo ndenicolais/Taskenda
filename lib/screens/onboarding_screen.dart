@@ -12,8 +12,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
 import '../providers/settings/ui_provider.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/shared/app_logo.dart';
+import 'onboarding_wide.dart';
 
 class _OnboardingPage {
   const _OnboardingPage(this.icon, this.title, this.body);
@@ -52,8 +54,19 @@ final _pages = [
   ),
 ];
 
+/// Accent of each feature on the wide layout: notes, tasks, calendar,
+/// reminders.
+const _featureColors = [
+  AppColors.amber,
+  AppColors.teal,
+  AppColors.blue,
+  AppColors.violet,
+];
+
 /// Swipeable introduction to the app. Shown before the login on first
 /// launch; [replay] opens it from Info app, where finishing just pops it.
+/// From [_wideWidth] (the web on a desktop) it is a landing page instead
+/// ([OnboardingWide]).
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key, this.replay = false});
 
@@ -64,6 +77,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+  static const _wideWidth = 900.0;
+
   final _controller = PageController();
   int _index = 0;
 
@@ -97,6 +112,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (MediaQuery.sizeOf(context).width >= _wideWidth) {
+      final l = context.l10n;
+      return OnboardingWide(
+        onStart: _finish,
+        features: [
+          for (final (i, page) in _pages.skip(1).indexed)
+            OnboardingFeature(
+              page.icon!,
+              _featureColors[i % _featureColors.length],
+              page.title(l),
+              page.body(l),
+            ),
+        ],
+      );
+    }
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(

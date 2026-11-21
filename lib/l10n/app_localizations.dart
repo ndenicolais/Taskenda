@@ -434,6 +434,18 @@ abstract class AppLocalizations {
   /// **'Inizia'**
   String get onboardingStart;
 
+  /// No description provided for @onboardingTagline.
+  ///
+  /// In it, this message translates to:
+  /// **'Calendario · Attività · Note'**
+  String get onboardingTagline;
+
+  /// No description provided for @onboardingFeaturesTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Tutto quello che ti serve, in un unico posto'**
+  String get onboardingFeaturesTitle;
+
   /// No description provided for @onboardingWelcomeTitle.
   ///
   /// In it, this message translates to:
