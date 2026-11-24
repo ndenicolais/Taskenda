@@ -16,6 +16,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- "Share" sheet of other apps: text and links become a new note,
+                 task or event (MainActivity.kt, SharedTextLaunchHandler). -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
         </activity>
         <meta-data android:name="flutterEmbedding" android:value="2" />
         <!-- Push messages of sharing (firebase_messaging): status bar icon and

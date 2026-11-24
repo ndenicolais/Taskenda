@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/home_widget_launch_handler.dart';
+import 'core/routing/shared_text_launch_handler.dart';
 import 'core/routing/notification_launch_handler.dart';
 import 'core/routing/start_section_launcher.dart';
 import 'l10n/l10n.dart';
@@ -151,7 +152,7 @@ class NotesApp extends ConsumerWidget {
                       child: StartSectionLauncher(
                         child: NotificationLaunchHandler(
                           child: const HomeWidgetLaunchHandler(
-                            child: HomeScreen(),
+                            child: SharedTextLaunchHandler(child: HomeScreen()),
                           ),
                         ),
                       ),

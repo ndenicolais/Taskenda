@@ -47,6 +47,7 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 | 📊 **Statistics** | Overview of the week, task completion, weekly activity and most used labels |
 | 📤 **Export and backup** | Notes as PDF, TXT, CSV, HTML or JSON, full backups and calendar import/export in ICS |
 | 📱 **Home screen widgets** | Scrolling lists of notes, tasks and upcoming calendar entries, and quick actions to create a note, task or event |
+| 📤 **Share to Taskenda** | Taskenda appears in Android's "Share" sheet: text and links from other apps become a new note, task or event |
 | 🔐 **Authentication** | Sign in with a Google account or email and password |
 | 🔒 **End-to-end encryption** | Notes, tasks, events, labels and lists are encrypted on your device before they are saved: nobody else can read them, not even the developer, and a shared item can be read only by the people you add |
 | ☁️ **Sync** | Notes, tasks, lists, labels and events are stored encrypted on Cloud Firestore, and changes made offline sync later |
