@@ -4279,6 +4279,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Il codice di recupero attuale smetterà di funzionare'**
   String get securityNewRecoveryKeySubtitle;
+
+  /// No description provided for @calendarParticipants.
+  ///
+  /// In it, this message translates to:
+  /// **'Partecipanti'**
+  String get calendarParticipants;
+
+  /// No description provided for @calendarParticipantsAdd.
+  ///
+  /// In it, this message translates to:
+  /// **'Invita tramite email'**
+  String get calendarParticipantsAdd;
+
+  /// No description provided for @sharedTextTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva in Taskenda come'**
+  String get sharedTextTitle;
+
+  /// No description provided for @sharedTextAsNote.
+  ///
+  /// In it, this message translates to:
+  /// **'Nota'**
+  String get sharedTextAsNote;
 }
 
 class _AppLocalizationsDelegate

@@ -205,7 +205,10 @@ class _CollaboratorsSheetState extends ConsumerState<CollaboratorsSheet> {
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               Text(
-                l10n.shareCollaboratorsTitle,
+                // Events have participants, like the guests of a calendar.
+                widget.kind == ShareKind.event
+                    ? l10n.calendarParticipants
+                    : l10n.shareCollaboratorsTitle,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: AppSpacing.md),

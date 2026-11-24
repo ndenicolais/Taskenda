@@ -13,6 +13,7 @@ import '../../l10n/l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../models/calendar_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/calendar_provider.dart';
 import '../../providers/settings/ui_provider.dart';
 import '../../theme/app_font_sizes.dart';
@@ -21,12 +22,14 @@ import '../../utils/focus_after_transition.dart';
 import '../../utils/notification_service.dart';
 import '../../utils/picker_defaults.dart';
 import '../../widgets/shared/app_dialogs.dart';
+import '../../widgets/shared/collaborators_sheet.dart';
 import '../../widgets/shared/error_feedback.dart';
 import '../../widgets/shared/date_time_picker_dialog.dart';
 import 'calendar_event_details_section.dart';
 import 'calendar_event_editor_bars.dart';
 import 'calendar_location_field.dart';
 import 'calendar_new_entry.dart';
+import 'calendar_participants_tile.dart';
 
 class CalendarEventEditorScreen extends ConsumerStatefulWidget {
   const CalendarEventEditorScreen({super.key, required this.event});
@@ -108,9 +111,24 @@ class _CalendarEventEditorScreenState
     );
   }
 
-  void _save() {
+  /// Opens the participants (collaborators) sheet. Sharing needs the event
+  /// on the server, so a new one is saved first, even if still empty.
+  void _showParticipants() {
+    _save(force: true);
+    showCollaboratorsSheet(
+      context,
+      kind: ShareKind.event,
+      itemId: _event.id,
+      onLeft: () {
+        _softDeleted = true; // Left the shared event: nothing to save.
+        Navigator.maybePop(context);
+      },
+    );
+  }
+
+  void _save({bool force = false}) {
     if (_softDeleted) return;
-    if (_isNew && _isEmpty()) return;
+    if (_isNew && _isEmpty() && !force) return;
 
     final updated = _event.copyWith(
       title: _titleController.text.trim(),
@@ -248,6 +266,8 @@ class _CalendarEventEditorScreenState
             _save();
             Navigator.pop(context);
           },
+          // Back saves too (PopScope): this is the explicit way.
+          onSave: () => Navigator.pop(context),
         ),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -291,6 +311,14 @@ class _CalendarEventEditorScreenState
               onPickEndTime: _pickEndTime,
               onClearEndTime: _clearEndTime,
               onChanged: (e) => setState(() => _event = e),
+            ),
+            CalendarParticipantsTile(
+              members:
+                  ref
+                      .watch(eventsByIdProvider.select((m) => m[_event.id]))
+                      ?.membersExcept(ref.watch(currentUidProvider)) ??
+                  const [],
+              onTap: _showParticipants,
             ),
             const SizedBox(height: AppSpacing.lg),
 

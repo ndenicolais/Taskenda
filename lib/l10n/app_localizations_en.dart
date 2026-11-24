@@ -2444,4 +2444,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get securityNewRecoveryKeySubtitle =>
       'Your current recovery code will stop working';
+
+  @override
+  String get calendarParticipants => 'Participants';
+
+  @override
+  String get calendarParticipantsAdd => 'Invite by email';
+
+  @override
+  String get sharedTextTitle => 'Save to Taskenda as';
+
+  @override
+  String get sharedTextAsNote => 'Note';
 }

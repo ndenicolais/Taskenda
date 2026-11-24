@@ -10,6 +10,7 @@
 
 import '../../core/routing/app_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../../l10n/l10n.dart';
 import 'package:intl/intl.dart';
 import '../../models/calendar_model.dart';
@@ -29,9 +30,13 @@ class CalendarScheduleView extends StatelessWidget {
     super.key,
     required this.allEvents,
     this.controller,
+    this.tracker,
   });
 
   final List<CalendarEventModel> allEvents;
+
+  /// Tells which day is scrolled to the top (where "+" starts an entry).
+  final ScheduleDayTracker? tracker;
 
   /// Offset 0 is today (the start of the centered forward sliver), so the
   /// "Today" button scrolls this back to 0.
@@ -102,6 +107,7 @@ class CalendarScheduleView extends StatelessWidget {
                 month: currentMonth,
                 days: pastThisMonth,
                 today: today,
+                tracker: tracker,
               );
             }
             final month = DateTime(currentMonth.year, currentMonth.month - i);
@@ -112,6 +118,7 @@ class CalendarScheduleView extends StatelessWidget {
                 DateTime(month.year, month.month + 1),
               ),
               today: today,
+              tracker: tracker,
             );
           }, childCount: _monthRange + 1),
         ),
@@ -127,6 +134,7 @@ class CalendarScheduleView extends StatelessWidget {
                   days: _daysWithItems(today, nextMonth),
                   today: today,
                   showBanner: pastThisMonth.isEmpty,
+                  tracker: tracker,
                 );
               }
               final month = DateTime(currentMonth.year, currentMonth.month + i);
@@ -137,6 +145,7 @@ class CalendarScheduleView extends StatelessWidget {
                   DateTime(month.year, month.month + 1),
                 ),
                 today: today,
+                tracker: tracker,
               );
             }, childCount: _monthRange + 1),
           ),
@@ -153,12 +162,14 @@ class _ScheduleMonth extends StatelessWidget {
     required this.days,
     required this.today,
     this.showBanner = true,
+    this.tracker,
   });
 
   final DateTime month;
   final List<(DateTime, List<CalendarEventModel>)> days;
   final DateTime today;
   final bool showBanner;
+  final ScheduleDayTracker? tracker;
 
   @override
   Widget build(BuildContext context) {
@@ -171,6 +182,7 @@ class _ScheduleMonth extends StatelessWidget {
             day: day,
             items: items,
             isToday: day.isAtSameMomentAs(today),
+            tracker: tracker,
           ),
       ],
     );
@@ -206,19 +218,48 @@ class _MonthBanner extends StatelessWidget {
 
 /// One day: weekday (3 letters) and day number on the left, today
 /// highlighted, and the day's entry cards on the right.
-class _ScheduleDayRow extends StatelessWidget {
+class _ScheduleDayRow extends StatefulWidget {
   const _ScheduleDayRow({
     required this.day,
     required this.items,
     required this.isToday,
+    this.tracker,
   });
 
   final DateTime day;
   final List<CalendarEventModel> items;
   final bool isToday;
+  final ScheduleDayTracker? tracker;
+
+  @override
+  State<_ScheduleDayRow> createState() => _ScheduleDayRowState();
+}
+
+class _ScheduleDayRowState extends State<_ScheduleDayRow> {
+  @override
+  void initState() {
+    super.initState();
+    widget.tracker?._rows[this] = widget.day;
+  }
+
+  @override
+  void didUpdateWidget(_ScheduleDayRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.tracker?._rows.remove(this);
+    widget.tracker?._rows[this] = widget.day;
+  }
+
+  @override
+  void dispose() {
+    widget.tracker?._rows.remove(this);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final day = widget.day;
+    final items = widget.items;
+    final isToday = widget.isToday;
     final colorScheme = Theme.of(context).colorScheme;
     final weekday = DateFormat('EEE').format(day).replaceAll('.', '');
     return Padding(
@@ -293,5 +334,35 @@ class _ScheduleDayRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Which day is at the top of a [CalendarScheduleView]: the day rows built
+/// (on screen or in the cache around it) register here, and [topDay] looks
+/// for the first one still in view only when asked.
+class ScheduleDayTracker {
+  final _rows = <State, DateTime>{};
+
+  /// The first day whose row is (at least partly) in view, or null when
+  /// there is none (an empty schedule).
+  DateTime? topDay() {
+    DateTime? best;
+    double? bestTop;
+    for (final MapEntry(key: row, value: day) in _rows.entries) {
+      if (!row.mounted) continue;
+      final box = row.context.findRenderObject();
+      if (box is! RenderBox || !box.attached || !box.hasSize) continue;
+      final RenderObject? viewport = RenderAbstractViewport.maybeOf(box);
+      if (viewport is! RenderBox) continue;
+      final viewportTop = viewport.localToGlobal(Offset.zero).dy;
+      final top = box.localToGlobal(Offset.zero).dy;
+      // Rows scrolled past the top (kept in the cache) don't count.
+      if (top + box.size.height <= viewportTop) continue;
+      if (bestTop == null || top < bestTop) {
+        best = day;
+        bestTop = top;
+      }
+    }
+    return best;
   }
 }

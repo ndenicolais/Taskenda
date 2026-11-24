@@ -742,5 +742,9 @@
   "securityCurrentPassphrase": "Current encryption code",
   "securityPassphraseChanged": "Encryption code changed",
   "securityNewRecoveryKey": "New recovery code",
-  "securityNewRecoveryKeySubtitle": "Your current recovery code will stop working"
+  "securityNewRecoveryKeySubtitle": "Your current recovery code will stop working",
+  "calendarParticipants": "Participants",
+  "calendarParticipantsAdd": "Invite by email",
+  "sharedTextTitle": "Save to Taskenda as",
+  "sharedTextAsNote": "Note"
 }

@@ -950,5 +950,9 @@
   "securityCurrentPassphrase": "Codice di cifratura attuale",
   "securityPassphraseChanged": "Codice di cifratura cambiato",
   "securityNewRecoveryKey": "Nuovo codice di recupero",
-  "securityNewRecoveryKeySubtitle": "Il codice di recupero attuale smetterà di funzionare"
+  "securityNewRecoveryKeySubtitle": "Il codice di recupero attuale smetterà di funzionare",
+  "calendarParticipants": "Partecipanti",
+  "calendarParticipantsAdd": "Invita tramite email",
+  "sharedTextTitle": "Salva in Taskenda come",
+  "sharedTextAsNote": "Nota"
 }

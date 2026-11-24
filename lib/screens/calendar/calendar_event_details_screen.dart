@@ -172,13 +172,13 @@ class _CalendarEventDetailsScreenState
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_alt_1_outlined),
-            tooltip: l10n.shareCollaboratorsTitle,
+            tooltip: l10n.calendarParticipants,
             onPressed: () => _showCollaborators(event),
           ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.commonEdit,
-            onPressed: () => AppNav.openEvent(context, event),
+            onPressed: () => AppNav.editEvent(context, event),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),

@@ -13,14 +13,20 @@ import '../../core/routing/app_router.dart';
 import '../../l10n/l10n.dart';
 import '../../models/calendar_model.dart';
 import '../../models/task_model.dart';
+import '../../providers/calendar_provider.dart';
 import '../../widgets/shared/app_dialogs.dart';
 
 /// What the calendar "+" creates, switchable in the new entry's editor
 /// like in Google Calendar.
 enum CalendarEntryType { event, task }
 
-/// Asks whether to create an event or a task, then opens its editor.
-Future<void> showNewCalendarEntrySheet(BuildContext context) async {
+/// Asks whether to create an event or a task, then opens its editor on
+/// [day] (the day the calendar is showing, like in Google Calendar): an
+/// event at the current time of day, a task due that day.
+Future<void> showNewCalendarEntrySheet(
+  BuildContext context, {
+  required DateTime day,
+}) async {
   final type = await showAppSheet<CalendarEntryType>(
     context,
     builder:
@@ -38,18 +44,64 @@ Future<void> showNewCalendarEntrySheet(BuildContext context) async {
   );
   if (type == null || !context.mounted) return;
   final now = DateTime.now();
+  final start = DateTime(
+    day.year,
+    day.month,
+    day.day,
+    now.hour,
+    now.minute,
+    now.second,
+  );
   switch (type) {
     case CalendarEntryType.event:
       AppNav.openEvent(
         context,
-        CalendarEventModel(startTime: now, endTime: now),
+        CalendarEventModel(startTime: start, endTime: start),
       );
     case CalendarEntryType.task:
-      // Day-only due date: the task shows up in the calendar today.
+      // Day-only due date: the task shows up in the calendar on that day.
       AppNav.openTask(
         context,
-        TaskModel(dueDate: DateTime(now.year, now.month, now.day)),
+        TaskModel(dueDate: DateTime(day.year, day.month, day.day)),
       );
+  }
+}
+
+/// The day a new entry starts on in [mode]: the day shown in the day view;
+/// today if the week, month or year shown contains it, otherwise its first
+/// day; in the schedule the day scrolled to the top ([scheduleTop]).
+DateTime newEntryDay(
+  CalendarViewMode mode, {
+  required DateTime focusedDay,
+  required DateTime focusedMonth,
+  DateTime? scheduleTop,
+  DateTime? now,
+}) {
+  final n = now ?? DateTime.now();
+  final today = DateTime(n.year, n.month, n.day);
+  DateTime orToday(DateTime first, DateTime endExclusive) =>
+      !today.isBefore(first) && today.isBefore(endExclusive) ? today : first;
+  switch (mode) {
+    case CalendarViewMode.day:
+      return DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
+    case CalendarViewMode.week:
+      final first = DateTime(
+        focusedDay.year,
+        focusedDay.month,
+        focusedDay.day - (focusedDay.weekday - 1),
+      );
+      return orToday(first, DateTime(first.year, first.month, first.day + 7));
+    case CalendarViewMode.sevenDays:
+      final first = DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
+      return orToday(first, DateTime(first.year, first.month, first.day + 7));
+    case CalendarViewMode.month:
+      final first = DateTime(focusedMonth.year, focusedMonth.month);
+      return orToday(first, DateTime(first.year, first.month + 1));
+    case CalendarViewMode.year:
+      final first = DateTime(focusedMonth.year);
+      return orToday(first, DateTime(first.year + 1));
+    case CalendarViewMode.schedule:
+      return scheduleTop ?? today;
   }
 }
 

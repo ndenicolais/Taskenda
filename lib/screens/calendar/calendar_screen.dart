@@ -53,6 +53,18 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
 
   /// The schedule view ignores [_focusedDay]: "Today" scrolls it instead.
   final _scheduleController = ScrollController();
+  final _scheduleTracker = ScheduleDayTracker();
+
+  /// The day at the top of the schedule, or null (today) when it is still
+  /// at its start or not shown.
+  DateTime? _scheduleTopDay() {
+    if (_currentView != CalendarViewMode.schedule) return null;
+    if (!_scheduleController.hasClients ||
+        _scheduleController.offset.abs() < 1) {
+      return null;
+    }
+    return _scheduleTracker.topDay();
+  }
 
   @override
   void dispose() {
@@ -254,7 +266,16 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
                 : _buildCurrentView(allEvents),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => showNewCalendarEntrySheet(context),
+        onPressed:
+            () => showNewCalendarEntrySheet(
+              context,
+              day: newEntryDay(
+                _currentView,
+                focusedDay: _focusedDay,
+                focusedMonth: _focusedMonth,
+                scheduleTop: _scheduleTopDay(),
+              ),
+            ),
         child: const Icon(Icons.add),
       ),
     );
@@ -343,6 +364,7 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
         return CalendarScheduleView(
           allEvents: allEvents,
           controller: _scheduleController,
+          tracker: _scheduleTracker,
         );
       case CalendarViewMode.sevenDays:
         return CalendarMultiDayView(
