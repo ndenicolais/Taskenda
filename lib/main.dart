@@ -33,6 +33,7 @@ import 'providers/settings/ui_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/boot_error_screen.dart';
 import 'screens/crypto/crypto_gate.dart';
+import 'screens/debug/passkey_probe_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'theme/app_spacing.dart';
@@ -62,6 +63,11 @@ Future<void> _start() async {
     runApp(BootErrorApp(error: e, onRetry: _start));
   }
 }
+
+/// PROTOTYPE: `--dart-define=PASSKEY_PROBE=true` builds an app that opens
+/// the passkey PRF diagnostic right after sign-in, without the encryption
+/// gate: the data notifiers stay locked and nothing is read or written.
+const _passkeyProbeBuild = bool.fromEnvironment('PASSKEY_PROBE');
 
 class NotesApp extends ConsumerWidget {
   const NotesApp({super.key});
@@ -134,7 +140,9 @@ class NotesApp extends ConsumerWidget {
         error: (_, __) => const LoginScreen(),
         data:
             (user) =>
-                user != null
+                user != null && _passkeyProbeBuild
+                    ? const PasskeyProbeScreen()
+                    : user != null
                     // The app only once the encryption keys are unlocked.
                     ? CryptoGate(
                       loading: const _SplashScreen(),
