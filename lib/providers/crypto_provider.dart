@@ -82,6 +82,16 @@ class CryptoOfflineException implements Exception {
 
 // ─── Providers ────────────────────────────────────────────────────────────────
 
+/// Whether this build has end-to-end encryption: `--dart-define=E2EE=true`.
+/// Off by default until unlocking with a passkey replaces the encryption
+/// code (guides/E2EE_PLAN.md): an app without it keeps working like before
+/// (documents in clear, no unlock screen), compatible with the devices
+/// still on the previous version.
+const e2eeBuildFlag = bool.fromEnvironment('E2EE');
+
+/// [e2eeBuildFlag], overridden by the tests.
+final e2eeEnabledProvider = Provider<bool>((ref) => e2eeBuildFlag);
+
 final cryptoServiceProvider = Provider<CryptoService>((ref) => CryptoService());
 
 /// Tests override it with fewer PBKDF2 iterations.
@@ -110,6 +120,9 @@ final unlockedKeysProvider = Provider<UnlockedKeys?>((ref) {
 /// documents in clear.
 final itemCipherProvider = Provider<ItemCipher?>((ref) {
   final uid = ref.watch(currentUidProvider);
+  if (!ref.watch(e2eeEnabledProvider)) {
+    return uid.isEmpty ? null : const ClearItemCipher();
+  }
   final keys = ref.watch(unlockedKeysProvider);
   if (uid.isEmpty || keys == null) return null;
   return EncryptingItemCipher(
@@ -194,6 +207,8 @@ class CryptoNotifier extends Notifier<CryptoState> {
 
   @override
   CryptoState build() {
+    // Without end-to-end encryption no keys are looked up.
+    if (!ref.watch(e2eeEnabledProvider)) return const CryptoSignedOut();
     final uid = ref.watch(currentUidProvider);
     _uid = uid;
     if (uid.isEmpty) return const CryptoSignedOut();

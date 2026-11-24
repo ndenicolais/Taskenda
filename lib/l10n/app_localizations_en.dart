@@ -2456,4 +2456,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedTextAsNote => 'Note';
+
+  @override
+  String get infoDescriptionClear =>
+      'Taskenda brings together notes, checklists, tasks and calendar events, synced to your account and available on every device.';
+
+  @override
+  String get infoFeatureSyncTitleClear => 'Sync and backup';
+
+  @override
+  String get infoFeatureSyncTextClear =>
+      'Data on your account, backups and export to PDF, TXT, JSON, CSV and HTML';
+
+  @override
+  String get policy_section_data_text_clear =>
+      '• Account: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.\n• Content: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels.\n• Audio notes: recordings stay on your device only; just the file name, duration and path are synced with the note.\n• Sharing: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.\n• Preferences: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.\n• On your device: a copy of your preferences, intro guide and what\'s new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.';
+
+  @override
+  String get policy_section_storage_text_clear =>
+      'Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service. The developer does not look at your content and does not share it with anyone.\n\nWhile you type the location of an event, the typed text, the app language and the country set on the device go through Taskenda\'s server (Firebase Cloud Functions) to Google\'s Places service to suggest places and addresses: nothing else is sent, neither your position nor your account data, and Google does not receive your IP address. If you tap the location to open it in Maps, the search is handed to the Google Maps app or website.';
+
+  @override
+  String policy_section_retention_text_clear(String email) {
+    return 'Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from Settings > Account > Delete account: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from Settings > Backup and data > Full backup. Any residual copies in Google\'s systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. You can also ask for deletion by writing to $email.';
+  }
 }

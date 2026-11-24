@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../core/constants/app_info.dart';
 import '../l10n/l10n.dart';
+import '../providers/crypto_provider.dart' show e2eeBuildFlag;
 import '../theme/app_spacing.dart';
 import '../utils/link_utils.dart';
 
@@ -24,14 +25,27 @@ class PrivacyPolicyScreen extends StatelessWidget {
       l.policy_section_controller_title,
       l.policy_section_controller_text(developerName, developerEmail),
     ),
-    (l.policy_section_data_title, l.policy_section_data_text),
+    // Without end-to-end encryption in this build: the previous texts.
+    (
+      l.policy_section_data_title,
+      e2eeBuildFlag
+          ? l.policy_section_data_text
+          : l.policy_section_data_text_clear,
+    ),
     (l.policy_section_use_title, l.policy_section_use_text),
-    (l.policy_section_storage_title, l.policy_section_storage_text),
+    (
+      l.policy_section_storage_title,
+      e2eeBuildFlag
+          ? l.policy_section_storage_text
+          : l.policy_section_storage_text_clear,
+    ),
     (l.policy_section_device_title, l.policy_section_device_text),
     (l.policy_section_permissions_title, l.policy_section_permissions_text),
     (
       l.policy_section_retention_title,
-      l.policy_section_retention_text(developerEmail),
+      e2eeBuildFlag
+          ? l.policy_section_retention_text(developerEmail)
+          : l.policy_section_retention_text_clear(developerEmail),
     ),
     (
       l.policy_section_rights_title,

@@ -343,6 +343,81 @@ class EncryptingItemCipher implements ItemCipher {
       _itemKeys.remove(_cacheKey(collection, id));
 }
 
+/// The [ItemCipher] of a build without end-to-end encryption (and of the
+/// tests): documents stay in clear, so the sharing code takes its clear
+/// paths ([keyVersion] is always null).
+class ClearItemCipher implements ItemCipher {
+  const ClearItemCipher();
+
+  @override
+  bool get encrypts => false;
+
+  @override
+  Future<Map<String, dynamic>> decode(
+    String collection,
+    String id,
+    Map<String, dynamic> data,
+  ) async => data;
+
+  @override
+  Future<Map<String, dynamic>> encodeItem(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+  }) async => json;
+
+  @override
+  Future<Map<String, dynamic>> encodeNamed(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+  }) async => json;
+
+  @override
+  void forget(String collection, String id) {}
+
+  @override
+  int? keyVersion(String collection, String id) => null;
+
+  @override
+  Future<Map<String, dynamic>> encodeContent(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+  }) => throw UnsupportedError('Not encrypted');
+
+  @override
+  Future<Map<String, dynamic>> encryptSharedContent(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+  }) => throw UnsupportedError('Not encrypted');
+
+  @override
+  Future<Map<String, dynamic>> sealItemKey(
+    String collection,
+    String id, {
+    required String recipientUid,
+    required List<int> publicKey,
+  }) => throw UnsupportedError('Not encrypted');
+
+  @override
+  Future<Map<String, dynamic>> rotate(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+    required Map<String, List<int>> recipients,
+  }) => throw UnsupportedError('Not encrypted');
+}
+
 /// Thrown when a collaborator has no public key yet (they haven't set up
 /// encryption, e.g. an old app version): nothing can be sealed for them.
 class MissingPublicKeyException extends CryptoException {

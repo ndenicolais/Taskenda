@@ -28,6 +28,7 @@ import 'settings_misc_sections.dart';
 import 'settings_notes_prefs_section.dart';
 import 'settings_notifications_section.dart';
 import 'settings_security_section.dart';
+import '../../providers/crypto_provider.dart' show e2eeEnabledProvider;
 import 'settings_start_screen_section.dart';
 import 'settings_tasks_prefs_section.dart';
 
@@ -94,7 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             (v) => ref.read(eventAlertOffsetProvider.notifier).set(v),
       ),
       const SettingsBackupDataSection(),
-      const SettingsSecuritySection(),
+      if (ref.watch(e2eeEnabledProvider)) const SettingsSecuritySection(),
       SettingsAccountSection(onDeleteAccount: () => _deleteAccount(context)),
       const SettingsInfoSection(),
     ];

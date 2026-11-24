@@ -144,19 +144,14 @@ class NotesApp extends ConsumerWidget {
                 user != null && _passkeyProbeBuild
                     ? const PasskeyProbeScreen()
                     : user != null
-                    // The app only once the encryption keys are unlocked.
-                    ? CryptoGate(
-                      loading: const _SplashScreen(),
-                      // Outermost, so the start section is pushed before
-                      // anything a notification or widget tap opens.
-                      child: StartSectionLauncher(
-                        child: NotificationLaunchHandler(
-                          child: const HomeWidgetLaunchHandler(
-                            child: SharedTextLaunchHandler(child: HomeScreen()),
-                          ),
-                        ),
-                      ),
-                    )
+                    // With end-to-end encryption, the app only once the
+                    // keys are unlocked.
+                    ? (ref.watch(e2eeEnabledProvider)
+                        ? CryptoGate(
+                          loading: const _SplashScreen(),
+                          child: _signedInHome,
+                        )
+                        : _signedInHome)
                     : ref.watch(onboardingSeenProvider)
                     ? const LoginScreen()
                     : const OnboardingScreen(),
@@ -165,6 +160,16 @@ class NotesApp extends ConsumerWidget {
       onUnknownRoute: AppRouter.onUnknownRoute,
     );
   }
+
+  // Outermost, so the start section is pushed before anything a
+  // notification or widget tap opens.
+  static final Widget _signedInHome = StartSectionLauncher(
+    child: NotificationLaunchHandler(
+      child: const HomeWidgetLaunchHandler(
+        child: SharedTextLaunchHandler(child: HomeScreen()),
+      ),
+    ),
+  );
 
   void _syncHomeWidget(WidgetRef ref) {
     WidgetService.instance.scheduleSync(

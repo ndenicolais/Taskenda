@@ -15,6 +15,7 @@ import '../l10n/l10n.dart';
 import '../core/constants/app_info.dart';
 import '../core/constants/app_version.dart';
 import '../core/routing/app_router.dart';
+import '../providers/crypto_provider.dart' show e2eeBuildFlag;
 import '../theme/app_spacing.dart';
 import '../utils/link_utils.dart';
 import '../widgets/changelog_dialog.dart';
@@ -62,7 +63,9 @@ class InfoScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          context.l10n.infoDescription,
+                          e2eeBuildFlag
+                              ? context.l10n.infoDescription
+                              : context.l10n.infoDescriptionClear,
                           style: tt.bodyMedium?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -188,8 +191,14 @@ class _FeatureGrid extends StatelessWidget {
       ),
       (
         icon: Icons.cloud_sync_outlined,
-        title: l10n.infoFeatureSyncTitle,
-        text: l10n.infoFeatureSyncText,
+        title:
+            e2eeBuildFlag
+                ? l10n.infoFeatureSyncTitle
+                : l10n.infoFeatureSyncTitleClear,
+        text:
+            e2eeBuildFlag
+                ? l10n.infoFeatureSyncText
+                : l10n.infoFeatureSyncTextClear,
       ),
     ];
 

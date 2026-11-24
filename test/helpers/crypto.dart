@@ -27,8 +27,10 @@ class MemoryKeyStorage extends DeviceKeyStorage {
   Future<void> delete(String uid) async => values.remove(uid);
 }
 
-/// Overrides for [cryptoProvider]: [storage] and a fast key manager.
+/// Overrides for [cryptoProvider]: encryption on, [storage] and a fast key
+/// manager.
 List<Override> cryptoOverrides(MemoryKeyStorage storage) => [
+  e2eeEnabledProvider.overrideWithValue(true),
   deviceKeyStorageProvider.overrideWithValue(storage),
   userKeyManagerProvider.overrideWithValue(
     UserKeyManager(CryptoService(), iterations: 1000),
@@ -45,77 +47,6 @@ Future<CryptoState> settledCrypto(ProviderContainer container) async {
   return container.read(cryptoProvider);
 }
 
-/// An [ItemCipher] that stores documents in clear, so the data notifier
-/// tests can read and seed Firestore documents as plain model JSON.
-class PlainItemCipher implements ItemCipher {
-  const PlainItemCipher();
-
-  @override
-  bool get encrypts => false;
-
-  @override
-  Future<Map<String, dynamic>> decode(
-    String collection,
-    String id,
-    Map<String, dynamic> data,
-  ) async => data;
-
-  @override
-  Future<Map<String, dynamic>> encodeItem(
-    String collection,
-    String id,
-    Map<String, dynamic> json, {
-    required List<String> contentKeys,
-    List<String> privateKeys = const [],
-  }) async => json;
-
-  @override
-  Future<Map<String, dynamic>> encodeNamed(
-    String collection,
-    String id,
-    Map<String, dynamic> json, {
-    required List<String> contentKeys,
-  }) async => json;
-
-  @override
-  void forget(String collection, String id) {}
-
-  /// Never encrypted: the sharing code takes its clear paths.
-  @override
-  int? keyVersion(String collection, String id) => null;
-
-  @override
-  Future<Map<String, dynamic>> encodeContent(
-    String collection,
-    String id,
-    Map<String, dynamic> json, {
-    required List<String> contentKeys,
-    List<String> privateKeys = const [],
-  }) => throw UnsupportedError('Plain cipher');
-
-  @override
-  Future<Map<String, dynamic>> encryptSharedContent(
-    String collection,
-    String id,
-    Map<String, dynamic> json, {
-    required List<String> contentKeys,
-  }) => throw UnsupportedError('Plain cipher');
-
-  @override
-  Future<Map<String, dynamic>> sealItemKey(
-    String collection,
-    String id, {
-    required String recipientUid,
-    required List<int> publicKey,
-  }) => throw UnsupportedError('Plain cipher');
-
-  @override
-  Future<Map<String, dynamic>> rotate(
-    String collection,
-    String id,
-    Map<String, dynamic> json, {
-    required List<String> contentKeys,
-    List<String> privateKeys = const [],
-    required Map<String, List<int>> recipients,
-  }) => throw UnsupportedError('Plain cipher');
-}
+/// Documents in clear for the data notifier tests, which seed and read
+/// plain model JSON: the same cipher as a build without encryption.
+typedef PlainItemCipher = ClearItemCipher;
