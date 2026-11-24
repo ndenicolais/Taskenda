@@ -147,6 +147,24 @@ void main() {
       expect(e.description, 'uno\ndue');
     });
 
+    test('decodes HTML entities in the description', () {
+      final e = _single([
+        'SUMMARY:X',
+        'DESCRIPTION:&lt;3 Tom &amp; Jerry &quot;ok&quot; l&#39;ora &#x2764;',
+        'DTSTART;VALUE=DATE:20260115',
+      ]);
+      expect(e.description, '<3 Tom & Jerry "ok" l\'ora ❤');
+    });
+
+    test('decodes entities once and keeps unknown ones', () {
+      final e = _single([
+        'SUMMARY:X',
+        'DESCRIPTION:&amp;lt;b&amp;gt; &lt;i&gt;x&lt;/i&gt; &foo; &#0;',
+        'DTSTART;VALUE=DATE:20260115',
+      ]);
+      expect(e.description, '&lt;b&gt; <i>x</i> &foo; &#0;');
+    });
+
     test('flags birthdays from CATEGORIES', () {
       final e = _single([
         'SUMMARY:Mario',
@@ -718,7 +736,7 @@ void main() {
     test('reads X-WR-CALNAME, unfolded and unescaped', () {
       const ics =
           'BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'
-          'X-WR-CALNAME:Motordule · F1\, F2\r\n \, F3\r\nEND:VCALENDAR\r\n';
+          'X-WR-CALNAME:Motordule · F1\\, F2\r\n \\, F3\r\nEND:VCALENDAR\r\n';
       expect(IcsImportService.calendarName(ics), 'Motordule · F1, F2, F3');
     });
 

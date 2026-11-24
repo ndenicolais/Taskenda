@@ -644,12 +644,48 @@ class IcsImportService {
     });
   }
 
-  /// Strip HTML tags and convert <br> to newlines.
+  /// Strip HTML tags, convert <br> to newlines and decode the HTML entities
+  /// (Google Calendar exports descriptions as HTML: "<3" arrives as
+  /// "&lt;3"). Entities are decoded after the tags are stripped, so an
+  /// encoded tag (`&lt;b&gt;`) stays as text.
   static String _stripHtml(String s) {
-    return s
-        .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
-        .replaceAll(RegExp(r'<[^>]*>'), '')
-        .trim();
+    return _decodeHtmlEntities(
+      s
+          .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '\n')
+          .replaceAll(RegExp(r'<[^>]*>'), ''),
+    ).trim();
+  }
+
+  static const _htmlEntities = {
+    'amp': '&',
+    'lt': '<',
+    'gt': '>',
+    'quot': '"',
+    'apos': "'",
+    'nbsp': ' ',
+  };
+
+  /// Named ([_htmlEntities]) and numeric (`&#39;`, `&#x27;`) entities, in a
+  /// single pass so `&amp;lt;` becomes the literal text `&lt;`. Unknown or
+  /// invalid ones are kept as they are.
+  static String _decodeHtmlEntities(String s) {
+    return s.replaceAllMapped(
+      RegExp(r'&(#[xX][0-9a-fA-F]{1,6}|#[0-9]{1,7}|[a-zA-Z]+);'),
+      (m) {
+        final entity = m.group(1)!;
+        if (!entity.startsWith('#')) {
+          return _htmlEntities[entity.toLowerCase()] ?? m.group(0)!;
+        }
+        final hex = entity.length > 1 && (entity[1] == 'x' || entity[1] == 'X');
+        final code = int.tryParse(
+          entity.substring(hex ? 2 : 1),
+          radix: hex ? 16 : 10,
+        );
+        if (code == null || code == 0 || code > 0x10FFFF) return m.group(0)!;
+        if (code >= 0xD800 && code <= 0xDFFF) return m.group(0)!;
+        return String.fromCharCode(code);
+      },
+    );
   }
 
   /// Paragraphs Google Calendar adds to events it creates by itself (e.g.
