@@ -51,6 +51,7 @@ import 'note_labels_section.dart';
 import 'note_labels_sheet.dart';
 import 'note_link_sheet.dart';
 import 'note_linked_notes_section.dart';
+import 'note_markdown_controller.dart';
 
 class NoteEditorScreen extends ConsumerStatefulWidget {
   const NoteEditorScreen({
@@ -90,14 +91,18 @@ class _NoteEditorScreenState extends ConsumerState<NoteEditorScreen> {
     _controller = NoteEditorController(ref: ref, initialNote: widget.note);
     _controller.addListener(_onControllerChanged);
 
+    _titleFocusNode = FocusNode();
+    _contentFocusNode = FocusNode();
+
     _titleController = TextEditingController(text: _note.title);
-    _contentController = TextEditingController(text: _note.content);
+    // Shows the Markdown already formatted while editing.
+    _contentController = NoteMarkdownController(
+      text: _note.content,
+      focusNode: _contentFocusNode,
+    );
 
     _lastTitle = _titleController.text;
     _lastContent = _contentController.text;
-
-    _titleFocusNode = FocusNode();
-    _contentFocusNode = FocusNode();
 
     _titleFocusNode.addListener(_onTitleFocusChanged);
     _contentFocusNode.addListener(_onContentFocusChanged);
