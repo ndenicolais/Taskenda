@@ -4003,6 +4003,228 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Condivisi da me'**
   String get sharedByMeSection;
+
+  /// No description provided for @cryptoSetupTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Proteggi i tuoi dati'**
+  String get cryptoSetupTitle;
+
+  /// No description provided for @cryptoSetupBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Scegli un codice di cifratura: ti servirà per vedere i tuoi dati su un nuovo dispositivo.'**
+  String get cryptoSetupBody;
+
+  /// No description provided for @cryptoSetupWarning.
+  ///
+  /// In it, this message translates to:
+  /// **'Il codice di cifratura non è la password dell\'account e nessuno può reimpostarlo. Se lo dimentichi ti servirà il codice di recupero che ti mostriamo subito dopo.'**
+  String get cryptoSetupWarning;
+
+  /// No description provided for @cryptoPassphraseLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di cifratura'**
+  String get cryptoPassphraseLabel;
+
+  /// No description provided for @cryptoPassphraseConfirmLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Conferma il codice'**
+  String get cryptoPassphraseConfirmLabel;
+
+  /// No description provided for @cryptoPassphraseEmpty.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci il codice di cifratura'**
+  String get cryptoPassphraseEmpty;
+
+  /// No description provided for @cryptoPassphraseTooShort.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa almeno {min} caratteri'**
+  String cryptoPassphraseTooShort(int min);
+
+  /// No description provided for @cryptoPassphraseMismatch.
+  ///
+  /// In it, this message translates to:
+  /// **'I codici non coincidono'**
+  String get cryptoPassphraseMismatch;
+
+  /// No description provided for @cryptoSetupSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Attiva la cifratura'**
+  String get cryptoSetupSubmit;
+
+  /// No description provided for @cryptoUnlockTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Sblocca i tuoi dati'**
+  String get cryptoUnlockTitle;
+
+  /// No description provided for @cryptoUnlockBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci il codice di cifratura che hai scelto quando hai attivato la cifratura.'**
+  String get cryptoUnlockBody;
+
+  /// No description provided for @cryptoUnlockSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Sblocca'**
+  String get cryptoUnlockSubmit;
+
+  /// No description provided for @cryptoUnlockWrong.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di cifratura errato'**
+  String get cryptoUnlockWrong;
+
+  /// No description provided for @cryptoRememberBrowser.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricorda su questo browser'**
+  String get cryptoRememberBrowser;
+
+  /// No description provided for @cryptoRememberBrowserHint.
+  ///
+  /// In it, this message translates to:
+  /// **'Se non lo attivi, il codice ti verrà chiesto di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.'**
+  String get cryptoRememberBrowserHint;
+
+  /// No description provided for @cryptoForgotPassphrase.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho dimenticato il codice'**
+  String get cryptoForgotPassphrase;
+
+  /// No description provided for @cryptoRecoverTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa il codice di recupero'**
+  String get cryptoRecoverTitle;
+
+  /// No description provided for @cryptoRecoverBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Inserisci il codice di recupero che hai salvato quando hai attivato la cifratura, poi scegli un nuovo codice di cifratura.'**
+  String get cryptoRecoverBody;
+
+  /// No description provided for @cryptoRecoveryKeyLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di recupero'**
+  String get cryptoRecoveryKeyLabel;
+
+  /// No description provided for @cryptoRecoveryKeyInvalid.
+  ///
+  /// In it, this message translates to:
+  /// **'Il codice di recupero non è valido: controlla di averlo copiato per intero'**
+  String get cryptoRecoveryKeyInvalid;
+
+  /// No description provided for @cryptoRecoveryKeyWrong.
+  ///
+  /// In it, this message translates to:
+  /// **'Questo codice di recupero non appartiene al tuo account'**
+  String get cryptoRecoveryKeyWrong;
+
+  /// No description provided for @cryptoNewPassphraseLabel.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuovo codice di cifratura'**
+  String get cryptoNewPassphraseLabel;
+
+  /// No description provided for @cryptoRecoverSubmit.
+  ///
+  /// In it, this message translates to:
+  /// **'Recupera i dati'**
+  String get cryptoRecoverSubmit;
+
+  /// No description provided for @cryptoBackToUnlock.
+  ///
+  /// In it, this message translates to:
+  /// **'Ricordo il codice di cifratura'**
+  String get cryptoBackToUnlock;
+
+  /// No description provided for @cryptoNoRecoveryKey.
+  ///
+  /// In it, this message translates to:
+  /// **'Non ho il codice di recupero'**
+  String get cryptoNoRecoveryKey;
+
+  /// No description provided for @cryptoResetTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Reimpostare la cifratura?'**
+  String get cryptoResetTitle;
+
+  /// No description provided for @cryptoResetBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Senza codice di cifratura e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con un nuovo codice.'**
+  String get cryptoResetBody;
+
+  /// No description provided for @cryptoResetConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'Reimposta'**
+  String get cryptoResetConfirm;
+
+  /// No description provided for @cryptoRecoveryShowTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Salva il codice di recupero'**
+  String get cryptoRecoveryShowTitle;
+
+  /// No description provided for @cryptoRecoveryShowBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Se dimentichi il codice di cifratura, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.'**
+  String get cryptoRecoveryShowBody;
+
+  /// No description provided for @cryptoRecoveryCopy.
+  ///
+  /// In it, this message translates to:
+  /// **'Copia'**
+  String get cryptoRecoveryCopy;
+
+  /// No description provided for @cryptoRecoveryCopied.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di recupero copiato'**
+  String get cryptoRecoveryCopied;
+
+  /// No description provided for @cryptoRecoverySavedCheck.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho salvato il codice di recupero'**
+  String get cryptoRecoverySavedCheck;
+
+  /// No description provided for @cryptoContinue.
+  ///
+  /// In it, this message translates to:
+  /// **'Continua'**
+  String get cryptoContinue;
+
+  /// No description provided for @cryptoLoadErrorTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Impossibile verificare la cifratura'**
+  String get cryptoLoadErrorTitle;
+
+  /// No description provided for @cryptoLoadErrorBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Al primo accesso su questo dispositivo serve una connessione a internet. Controlla la connessione e riprova.'**
+  String get cryptoLoadErrorBody;
+
+  /// No description provided for @cryptoNeedsConnection.
+  ///
+  /// In it, this message translates to:
+  /// **'Serve una connessione a internet. Controlla la connessione e riprova.'**
+  String get cryptoNeedsConnection;
 }
 
 class _AppLocalizationsDelegate

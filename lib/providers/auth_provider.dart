@@ -12,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../l10n/app_localizations.dart';
+import 'crypto_provider.dart';
 import 'push_provider.dart';
 import 'settings/data_actions.dart';
 
@@ -117,6 +118,8 @@ class AuthNotifier extends Notifier<AsyncValue<void>> {
   Future<void> signOut() async {
     // While still signed in: the token document is the user's.
     await ref.read(pushMessagingProvider).unregister();
+    // The next user of this device must not find the keys unlocked.
+    await ref.read(cryptoProvider.notifier).forget();
     await _googleSignIn.signOut();
     await _auth.signOut();
     state = const AsyncValue.data(null);
@@ -155,6 +158,7 @@ class AuthNotifier extends Notifier<AsyncValue<void>> {
 
     final actions = ref.read(dataActionsProvider);
     await actions.wipeRemoteData();
+    await ref.read(cryptoProvider.notifier).forget();
     await user.delete();
     await actions.wipeLocalData();
     await _googleSignIn.signOut();

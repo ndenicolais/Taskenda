@@ -1,9 +1,10 @@
 rules_version = '2';
 
 // All app data lives under users/{uid}/ (notes, tasks, task_lists,
-// calendar_events, labels, shared_*_prefs, fcm_tokens). Each signed-in user
-// has full access to their own branch. On top of that:
+// calendar_events, labels, shared_*_prefs, fcm_tokens, settings, crypto).
+// Each signed-in user has full access to their own branch. On top of that:
 // - user_directory maps an email to a uid, so items can be shared by email;
+// - public_keys holds each user's encryption public key;
 // - a note, task or event can be shared: its collaborators (uids in
 //   `collaborators`) may read it, edit its shared content and remove
 //   themselves from it.
@@ -53,6 +54,15 @@ service cloud.firestore {
         && email == request.auth.token.email.lower()
         && request.resource.data.uid == request.auth.uid;
       allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // End-to-end encryption: each user's X25519 public key, so others can
+    // seal item keys for them when sharing. Readable one at a time by any
+    // signed-in user, written only by its owner. The private keys stay in
+    // users/{uid}/crypto/keys, wrapped (covered by the rule above).
+    match /public_keys/{uid} {
+      allow get: if signedIn();
+      allow write: if signedIn() && request.auth.uid == uid;
     }
 
     // Shared items, for collaborators (the owner is covered above). Also

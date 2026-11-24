@@ -31,6 +31,7 @@ import 'providers/settings/theme_provider.dart';
 import 'providers/settings/ui_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/boot_error_screen.dart';
+import 'screens/crypto/crypto_gate.dart';
 import 'screens/home_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'theme/app_spacing.dart';
@@ -129,12 +130,16 @@ class NotesApp extends ConsumerWidget {
         data:
             (user) =>
                 user != null
-                    // Outermost, so the start section is pushed before
-                    // anything a notification or widget tap opens.
-                    ? StartSectionLauncher(
-                      child: NotificationLaunchHandler(
-                        child: const HomeWidgetLaunchHandler(
-                          child: HomeScreen(),
+                    // The app only once the encryption keys are unlocked.
+                    ? CryptoGate(
+                      loading: const _SplashScreen(),
+                      // Outermost, so the start section is pushed before
+                      // anything a notification or widget tap opens.
+                      child: StartSectionLauncher(
+                        child: NotificationLaunchHandler(
+                          child: const HomeWidgetLaunchHandler(
+                            child: HomeScreen(),
+                          ),
                         ),
                       ),
                     )

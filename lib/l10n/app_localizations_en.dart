@@ -2289,4 +2289,128 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedByMeSection => 'Shared by me';
+
+  @override
+  String get cryptoSetupTitle => 'Protect your data';
+
+  @override
+  String get cryptoSetupBody =>
+      'Notes, tasks and events are encrypted on your device before they are saved: nobody else can read them, not even the people who run Taskenda. Choose an encryption code: you will need it to see your data on a new device.';
+
+  @override
+  String get cryptoSetupWarning =>
+      'The encryption code is not your account password and nobody can reset it. If you forget it, you will need the recovery code we show you next.';
+
+  @override
+  String get cryptoPassphraseLabel => 'Encryption code';
+
+  @override
+  String get cryptoPassphraseConfirmLabel => 'Confirm the code';
+
+  @override
+  String get cryptoPassphraseEmpty => 'Enter the encryption code';
+
+  @override
+  String cryptoPassphraseTooShort(int min) {
+    return 'Use at least $min characters';
+  }
+
+  @override
+  String get cryptoPassphraseMismatch => 'The codes don\'t match';
+
+  @override
+  String get cryptoSetupSubmit => 'Turn on encryption';
+
+  @override
+  String get cryptoUnlockTitle => 'Unlock your data';
+
+  @override
+  String get cryptoUnlockBody =>
+      'Enter the encryption code you chose when you turned on encryption.';
+
+  @override
+  String get cryptoUnlockSubmit => 'Unlock';
+
+  @override
+  String get cryptoUnlockWrong => 'Wrong encryption code';
+
+  @override
+  String get cryptoRememberBrowser => 'Remember on this browser';
+
+  @override
+  String get cryptoRememberBrowserHint =>
+      'Otherwise you will be asked for the code again when you close the tab. Don\'t turn it on on a shared computer.';
+
+  @override
+  String get cryptoForgotPassphrase => 'I forgot the code';
+
+  @override
+  String get cryptoRecoverTitle => 'Use the recovery code';
+
+  @override
+  String get cryptoRecoverBody =>
+      'Enter the recovery code you saved when you turned on encryption, then choose a new encryption code.';
+
+  @override
+  String get cryptoRecoveryKeyLabel => 'Recovery code';
+
+  @override
+  String get cryptoRecoveryKeyInvalid =>
+      'The recovery code is not valid: check that you copied all of it';
+
+  @override
+  String get cryptoRecoveryKeyWrong =>
+      'This recovery code doesn\'t belong to your account';
+
+  @override
+  String get cryptoNewPassphraseLabel => 'New encryption code';
+
+  @override
+  String get cryptoRecoverSubmit => 'Recover my data';
+
+  @override
+  String get cryptoBackToUnlock => 'I remember the encryption code';
+
+  @override
+  String get cryptoNoRecoveryKey => 'I don\'t have the recovery code';
+
+  @override
+  String get cryptoResetTitle => 'Reset encryption?';
+
+  @override
+  String get cryptoResetBody =>
+      'Without the encryption code and the recovery code, nobody can read your encrypted data any more. Resetting encryption loses it, and you can start again with a new code.';
+
+  @override
+  String get cryptoResetConfirm => 'Reset';
+
+  @override
+  String get cryptoRecoveryShowTitle => 'Save your recovery code';
+
+  @override
+  String get cryptoRecoveryShowBody =>
+      'If you forget the encryption code, this is the only way to get your data back. Keep it somewhere safe, such as a password manager: we won\'t show it again.';
+
+  @override
+  String get cryptoRecoveryCopy => 'Copy';
+
+  @override
+  String get cryptoRecoveryCopied => 'Recovery code copied';
+
+  @override
+  String get cryptoRecoverySavedCheck => 'I saved the recovery code';
+
+  @override
+  String get cryptoContinue => 'Continue';
+
+  @override
+  String get cryptoLoadErrorTitle => 'Can\'t check encryption';
+
+  @override
+  String get cryptoLoadErrorBody =>
+      'The first sign-in on this device needs an internet connection. Check your connection and try again.';
+
+  @override
+  String get cryptoNeedsConnection =>
+      'An internet connection is needed. Check your connection and try again.';
 }

@@ -2308,4 +2308,128 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get sharedByMeSection => 'Condivisi da me';
+
+  @override
+  String get cryptoSetupTitle => 'Proteggi i tuoi dati';
+
+  @override
+  String get cryptoSetupBody =>
+      'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Scegli un codice di cifratura: ti servirà per vedere i tuoi dati su un nuovo dispositivo.';
+
+  @override
+  String get cryptoSetupWarning =>
+      'Il codice di cifratura non è la password dell\'account e nessuno può reimpostarlo. Se lo dimentichi ti servirà il codice di recupero che ti mostriamo subito dopo.';
+
+  @override
+  String get cryptoPassphraseLabel => 'Codice di cifratura';
+
+  @override
+  String get cryptoPassphraseConfirmLabel => 'Conferma il codice';
+
+  @override
+  String get cryptoPassphraseEmpty => 'Inserisci il codice di cifratura';
+
+  @override
+  String cryptoPassphraseTooShort(int min) {
+    return 'Usa almeno $min caratteri';
+  }
+
+  @override
+  String get cryptoPassphraseMismatch => 'I codici non coincidono';
+
+  @override
+  String get cryptoSetupSubmit => 'Attiva la cifratura';
+
+  @override
+  String get cryptoUnlockTitle => 'Sblocca i tuoi dati';
+
+  @override
+  String get cryptoUnlockBody =>
+      'Inserisci il codice di cifratura che hai scelto quando hai attivato la cifratura.';
+
+  @override
+  String get cryptoUnlockSubmit => 'Sblocca';
+
+  @override
+  String get cryptoUnlockWrong => 'Codice di cifratura errato';
+
+  @override
+  String get cryptoRememberBrowser => 'Ricorda su questo browser';
+
+  @override
+  String get cryptoRememberBrowserHint =>
+      'Se non lo attivi, il codice ti verrà chiesto di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.';
+
+  @override
+  String get cryptoForgotPassphrase => 'Ho dimenticato il codice';
+
+  @override
+  String get cryptoRecoverTitle => 'Usa il codice di recupero';
+
+  @override
+  String get cryptoRecoverBody =>
+      'Inserisci il codice di recupero che hai salvato quando hai attivato la cifratura, poi scegli un nuovo codice di cifratura.';
+
+  @override
+  String get cryptoRecoveryKeyLabel => 'Codice di recupero';
+
+  @override
+  String get cryptoRecoveryKeyInvalid =>
+      'Il codice di recupero non è valido: controlla di averlo copiato per intero';
+
+  @override
+  String get cryptoRecoveryKeyWrong =>
+      'Questo codice di recupero non appartiene al tuo account';
+
+  @override
+  String get cryptoNewPassphraseLabel => 'Nuovo codice di cifratura';
+
+  @override
+  String get cryptoRecoverSubmit => 'Recupera i dati';
+
+  @override
+  String get cryptoBackToUnlock => 'Ricordo il codice di cifratura';
+
+  @override
+  String get cryptoNoRecoveryKey => 'Non ho il codice di recupero';
+
+  @override
+  String get cryptoResetTitle => 'Reimpostare la cifratura?';
+
+  @override
+  String get cryptoResetBody =>
+      'Senza codice di cifratura e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con un nuovo codice.';
+
+  @override
+  String get cryptoResetConfirm => 'Reimposta';
+
+  @override
+  String get cryptoRecoveryShowTitle => 'Salva il codice di recupero';
+
+  @override
+  String get cryptoRecoveryShowBody =>
+      'Se dimentichi il codice di cifratura, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.';
+
+  @override
+  String get cryptoRecoveryCopy => 'Copia';
+
+  @override
+  String get cryptoRecoveryCopied => 'Codice di recupero copiato';
+
+  @override
+  String get cryptoRecoverySavedCheck => 'Ho salvato il codice di recupero';
+
+  @override
+  String get cryptoContinue => 'Continua';
+
+  @override
+  String get cryptoLoadErrorTitle => 'Impossibile verificare la cifratura';
+
+  @override
+  String get cryptoLoadErrorBody =>
+      'Al primo accesso su questo dispositivo serve una connessione a internet. Controlla la connessione e riprova.';
+
+  @override
+  String get cryptoNeedsConnection =>
+      'Serve una connessione a internet. Controlla la connessione e riprova.';
 }

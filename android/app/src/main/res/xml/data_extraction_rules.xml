@@ -7,9 +7,13 @@
     <cloud-backup>
         <exclude domain="sharedpref" path="com.google.firebase.auth.api.Store.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
         <exclude domain="sharedpref" path="com.google.firebase.auth.api.crypto.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="com.google.firebase.auth.api.Store.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
         <exclude domain="sharedpref" path="com.google.firebase.auth.api.crypto.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+        <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
     </device-transfer>
 </data-extraction-rules>

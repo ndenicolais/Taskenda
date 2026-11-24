@@ -8,8 +8,13 @@
     when the app process restarts. The file names are
     "<prefix>.<base64("[DEFAULT]")>+<base64(mobilesdk_app_id)>.xml": update them
     if the Firebase app id in google-services.json changes.
+    Same for flutter_secure_storage (FlutterSecureStorage.xml, its Keystore
+    wrapped key in FlutterSecureKeyStorage.xml), which holds the unlocked
+    end-to-end encryption keys: they must never leave the device in a backup.
 -->
 <full-backup-content>
     <exclude domain="sharedpref" path="com.google.firebase.auth.api.Store.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
     <exclude domain="sharedpref" path="com.google.firebase.auth.api.crypto.W0RFRkFVTFRd+MToyOTUwMjg4MTE0OTg6YW5kcm9pZDoxOGQ3OTdmNDM1YjJlZGRlM2FkOTkz.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureStorage.xml" />
+    <exclude domain="sharedpref" path="FlutterSecureKeyStorage.xml" />
 </full-backup-content>

@@ -36,7 +36,7 @@ class LoginForm extends StatelessWidget {
         children: [
           _EmailField(controller: emailCtrl),
           const SizedBox(height: 14),
-          _PasswordField(
+          PasswordField(
             controller: passCtrl,
             label: l10n.commonPassword,
             validator: (v) => validatePassword(l10n, v),
@@ -91,13 +91,13 @@ class RegisterForm extends StatelessWidget {
         children: [
           _EmailField(controller: emailCtrl),
           const SizedBox(height: 14),
-          _PasswordField(
+          PasswordField(
             controller: passCtrl,
             label: l10n.commonPassword,
             validator: (v) => validatePassword(l10n, v),
           ),
           const SizedBox(height: 14),
-          _PasswordField(
+          PasswordField(
             controller: confirmPassCtrl,
             label: l10n.loginConfirmPassword,
             validator:
@@ -136,9 +136,10 @@ class _EmailField extends StatelessWidget {
 
 /// Obscured password field with a show/hide toggle. With [onSubmitted] it
 /// is the last field of its form (keyboard "done" submits); otherwise the
-/// keyboard moves to the next field.
-class _PasswordField extends StatefulWidget {
-  const _PasswordField({
+/// keyboard moves to the next field. Also used by the encryption screens.
+class PasswordField extends StatefulWidget {
+  const PasswordField({
+    super.key,
     required this.controller,
     required this.label,
     required this.validator,
@@ -151,10 +152,10 @@ class _PasswordField extends StatefulWidget {
   final VoidCallback? onSubmitted;
 
   @override
-  State<_PasswordField> createState() => _PasswordFieldState();
+  State<PasswordField> createState() => _PasswordFieldState();
 }
 
-class _PasswordFieldState extends State<_PasswordField> {
+class _PasswordFieldState extends State<PasswordField> {
   bool _visible = false;
 
   @override

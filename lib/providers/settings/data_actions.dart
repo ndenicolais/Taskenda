@@ -238,6 +238,7 @@ class DataActions {
     'shared_event_prefs',
     'fcm_tokens',
     'settings',
+    'crypto',
   ];
 
   /// Collections whose items can be shared with other users.
@@ -248,8 +249,8 @@ class DataActions {
   /// the server rather than from provider state, so documents not loaded
   /// locally are deleted too, and it fails offline instead of leaving data
   /// behind. The user also leaves the notes, tasks and events other users
-  /// shared with them and is removed from the user directory, so nobody can
-  /// share with the deleted account any more.
+  /// shared with them and is removed from the user directory and
+  /// `public_keys`, so nobody can share with the deleted account any more.
   Future<void> wipeRemoteData() async {
     final uid = _ref.read(currentUidProvider);
     if (uid.isEmpty) throw StateError('No signed-in user');
@@ -273,6 +274,7 @@ class DataActions {
     }
     final me = _ref.read(currentShareMemberProvider);
     if (me != null) await _ref.read(userDirectoryProvider).unregister(me);
+    await db.collection('public_keys').doc(uid).delete();
 
     final refs = <DocumentReference>[];
     for (final name in _userCollections) {
