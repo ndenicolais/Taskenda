@@ -88,12 +88,11 @@ void main() {
           final navigator = tester.state<NavigatorState>(
             find.byType(Navigator),
           );
+          // The editor took the read-only view's place: one back returns
+          // to the calendar.
           await navigator.maybePop();
           await tester.pumpAndSettle();
-          // Back on the view, which follows the edit.
-          expect(find.text('New'), findsOneWidget);
-          await navigator.maybePop();
-          await tester.pumpAndSettle();
+          expect(find.byIcon(Icons.edit_outlined), findsNothing);
 
           expect(find.textContaining('New'), findsOneWidget);
           expect(find.textContaining('Old'), findsNothing);

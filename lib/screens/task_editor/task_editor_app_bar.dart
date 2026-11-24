@@ -15,7 +15,8 @@ import '../../models/task_model.dart';
 import '../../providers/tasks_undo_redo_provider.dart';
 import '../../theme/app_spacing.dart';
 
-/// App bar for [TaskEditorScreen]: undo/redo, pin, archive and share menu.
+/// App bar for [TaskEditorScreen]: undo/redo, pin, save, and a menu with
+/// archive and share.
 class TaskEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const TaskEditorAppBar({
     super.key,
@@ -25,6 +26,7 @@ class TaskEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onTogglePin,
     required this.onArchive,
     required this.onShare,
+    required this.onSave,
   });
 
   final TaskModel task;
@@ -33,6 +35,7 @@ class TaskEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onTogglePin;
   final VoidCallback onArchive;
   final VoidCallback onShare;
+  final VoidCallback onSave;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -64,21 +67,36 @@ class TaskEditorAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   : context.l10n.taskEditorPin,
         ),
         IconButton(
-          icon: Icon(
-            task.isArchived ? Icons.unarchive : Icons.archive_outlined,
-          ),
-          tooltip:
-              task.isArchived
-                  ? context.l10n.commonUnarchive
-                  : context.l10n.commonArchive,
-          onPressed: onArchive,
+          icon: const Icon(Icons.check),
+          tooltip: context.l10n.commonSave,
+          onPressed: onSave,
         ),
+        // Archive sits in the menu: the bar has no room left beside save.
         PopupMenuButton<String>(
           onSelected: (v) {
+            if (v == 'archive') onArchive();
             if (v == 'share') onShare();
           },
           itemBuilder:
               (_) => [
+                PopupMenuItem(
+                  value: 'archive',
+                  child: Row(
+                    children: [
+                      Icon(
+                        task.isArchived
+                            ? Icons.unarchive
+                            : Icons.archive_outlined,
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Text(
+                        task.isArchived
+                            ? context.l10n.commonUnarchive
+                            : context.l10n.commonArchive,
+                      ),
+                    ],
+                  ),
+                ),
                 PopupMenuItem(
                   value: 'share',
                   child: Row(

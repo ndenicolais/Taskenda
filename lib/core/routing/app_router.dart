@@ -320,6 +320,21 @@ abstract final class AppNav {
     bool animate = true,
   }) => _push(context, AppRoutes.event, event, animate);
 
+  /// The pencil of the task details: the editor takes the details' place,
+  /// so saving (or back) returns straight to the list it was opened from.
+  static Future<void> editTask(BuildContext context, TaskModel task) =>
+      Navigator.pushReplacementNamed(context, AppRoutes.task, arguments: task);
+
+  /// The pencil of the event details, like [editTask].
+  static Future<void> editEvent(
+    BuildContext context,
+    CalendarEventModel event,
+  ) => Navigator.pushReplacementNamed(
+    context,
+    AppRoutes.event,
+    arguments: event,
+  );
+
   /// Opens a saved task in read-only view, with a pencil to edit it.
   /// [occurrence] is the day it was opened from in the calendar.
   static Future<void> viewTask(

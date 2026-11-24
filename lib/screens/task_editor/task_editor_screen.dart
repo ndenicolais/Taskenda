@@ -401,6 +401,8 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
             Navigator.pop(context);
           },
           onShare: _shareTask,
+          // Back saves too (PopScope): this is the explicit way.
+          onSave: () => Navigator.pop(context),
         ),
         body: Column(
           children: [
