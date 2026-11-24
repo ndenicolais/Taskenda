@@ -16,6 +16,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/crypto/crypto_service.dart';
+import '../core/crypto/item_cipher.dart';
+import '../core/crypto/item_codec.dart';
 import '../core/crypto/user_keys.dart';
 import '../utils/device_key_storage.dart';
 import 'auth_provider.dart';
@@ -101,6 +103,30 @@ final unlockedKeysProvider = Provider<UnlockedKeys?>((ref) {
   final state = ref.watch(cryptoProvider);
   return state is CryptoUnlocked ? state.keys : null;
 });
+
+/// How the data notifiers encrypt and decrypt their documents; null while
+/// the keys are locked or nobody is signed in, and the notifiers don't load
+/// anything meanwhile. Tests override it with a cipher that keeps the
+/// documents in clear.
+final itemCipherProvider = Provider<ItemCipher?>((ref) {
+  final uid = ref.watch(currentUidProvider);
+  final keys = ref.watch(unlockedKeysProvider);
+  if (uid.isEmpty || keys == null) return null;
+  return EncryptingItemCipher(
+    uid: uid,
+    keys: keys,
+    codec: ItemCodec(ref.watch(cryptoServiceProvider)),
+  );
+});
+
+/// The collections under `users/{uid}/` whose documents are encrypted.
+const encryptedCollections = [
+  'notes',
+  'tasks',
+  'calendar_events',
+  'labels',
+  'task_lists',
+];
 
 // ─── Notifier ─────────────────────────────────────────────────────────────────
 
@@ -298,16 +324,32 @@ class CryptoNotifier extends Notifier<CryptoState> {
     }
   }
 
-  /// For a user who lost both the code and the recovery key: deletes the
-  /// account's keys so new ones can be created. Whatever was encrypted
-  /// with the old keys can't be read any more.
+  /// For a user who lost both the code and the recovery key: deletes what
+  /// was encrypted with the old keys (it can't be read any more), then the
+  /// keys, so new ones can be created. Items still in clear (shared ones)
+  /// are kept. Needs a connection.
   Future<void> reset() async {
     final uid = _uid;
-    final batch =
-        _db.batch()
-          ..delete(_bundleDoc(uid))
-          ..delete(_publicKeyDoc(uid));
-    await batch.commit();
+    final refs = <DocumentReference>[];
+    for (final name in encryptedCollections) {
+      final snap = await _db
+          .collection('users')
+          .doc(uid)
+          .collection(name)
+          .where(ItemCodec.versionField, isEqualTo: ItemCodec.schemaVersion)
+          .get(const GetOptions(source: Source.server));
+      refs.addAll(snap.docs.map((d) => d.reference));
+    }
+    refs
+      ..add(_bundleDoc(uid))
+      ..add(_publicKeyDoc(uid));
+    for (var i = 0; i < refs.length; i += 500) {
+      final batch = _db.batch();
+      for (final r in refs.skip(i).take(500)) {
+        batch.delete(r);
+      }
+      await batch.commit();
+    }
     await _storage.delete(uid);
     _set(uid, const CryptoNeedsSetup());
   }

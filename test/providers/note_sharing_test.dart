@@ -298,5 +298,21 @@ void main() {
 
       expect(bob.read(notesProvider), isEmpty);
     });
+
+    test('a note no longer shared stays for the owner after an edit', () async {
+      await alice.read(notesProvider.notifier).initialLoad;
+      final note = await sharedNote();
+      final notifier = alice.read(notesProvider.notifier);
+      await notifier.removeCollaborator(note.id, 'bob');
+      await pumpEventQueue();
+
+      // Saved as a plain note: it leaves the live query of shared notes.
+      await notifier.updateNote(
+        alice.read(notesProvider).single.copyWith(title: 'Dopo'),
+      );
+      await pumpEventQueue();
+
+      expect(alice.read(notesProvider).single.title, 'Dopo');
+    });
   });
 }

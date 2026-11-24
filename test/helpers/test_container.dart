@@ -14,14 +14,24 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:taskenda/providers/auth_provider.dart';
 import 'package:taskenda/models/share_member.dart';
 import 'package:taskenda/providers/core_providers.dart';
+import 'package:taskenda/providers/crypto_provider.dart';
 import 'package:taskenda/providers/sharing_provider.dart';
 
+import 'crypto.dart';
+
 /// Points the data notifiers at [db] for user [uid], bypassing Firebase
-/// Auth and the real Firestore instance.
+/// Auth and the real Firestore instance. The documents are kept in clear
+/// ([PlainItemCipher]) unless [encrypted]: then [itemCipherProvider] is the
+/// real one, and the test must unlock keys (see `cryptoOverrides`).
 List<Override> firestoreOverrides(
   FirebaseFirestore db, {
   String uid = 'test-uid',
+  bool encrypted = false,
 }) => [
+  if (!encrypted)
+    itemCipherProvider.overrideWithValue(
+      uid.isEmpty ? null : const PlainItemCipher(),
+    ),
   firestoreProvider.overrideWithValue(db),
   currentUidProvider.overrideWithValue(uid),
   currentShareMemberProvider.overrideWithValue(
@@ -34,10 +44,14 @@ List<Override> firestoreOverrides(
 ProviderContainer createTestContainer(
   FirebaseFirestore db, {
   String uid = 'test-uid',
+  bool encrypted = false,
   List<Override> overrides = const [],
 }) {
   final container = ProviderContainer(
-    overrides: [...firestoreOverrides(db, uid: uid), ...overrides],
+    overrides: [
+      ...firestoreOverrides(db, uid: uid, encrypted: encrypted),
+      ...overrides,
+    ],
   );
   addTearDown(container.dispose);
   return container;

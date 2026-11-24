@@ -44,8 +44,8 @@ class RemindersActions {
   Future<void> resync() async {
     if (kIsWeb) return;
     try {
-      // Called from the listener of the uid change, before the data
-      // notifiers have rebuilt for the new account: their initialLoad would
+      // Called from the listener of the keys being unlocked, before the
+      // data notifiers have rebuilt for the new account: their initialLoad would
       // still be the signed-out one (completed with false) and nothing would
       // be scheduled. Waiting for the change to settle, then reading their
       // state, rebuilds them, so the futures below belong to this account.

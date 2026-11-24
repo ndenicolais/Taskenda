@@ -14,11 +14,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../l10n/l10n.dart';
+import '../core/crypto/item_cipher.dart';
 import '../models/calendar_model.dart';
 import '../utils/holiday_names.dart';
 import '../utils/italian_holidays.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'crypto_provider.dart';
 import 'reminders_actions.dart';
 import 'settings/locale_provider.dart';
 import 'settings/ui_provider.dart';
@@ -54,7 +56,9 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
 
   @override
   List<CalendarEventModel> build() {
-    _uid = ref.watch(currentUidProvider);
+    // Nothing loads until the keys are unlocked: as if signed out.
+    _cipher = ref.watch(itemCipherProvider);
+    _uid = _cipher == null ? '' : ref.watch(currentUidProvider);
     ref.watch(firestoreProvider);
     _initialLoad = Completer<bool>();
     _cacheSeeded = Completer<void>();
@@ -84,6 +88,14 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
   @override
   CalendarEventModel sharedFromJson(Map<String, dynamic> json) =>
       CalendarEventModel.fromJson(json);
+
+  @override
+  List<String> get privateKeys => const ['tags'];
+
+  ItemCipher? _cipher;
+
+  @override
+  ItemCipher get cipher => _cipher!;
 
   CollectionReference<Map<String, dynamic>> get _col => ownCollection;
 
@@ -126,7 +138,7 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
       if (!ready.isCompleted) ready.complete(false);
       return;
     }
-    final events = [...snap.docs.map(_parse), ...shared];
+    final events = [...await parseDocs(snap.docs, _parse), ...shared];
     startSharedListeners(uid);
     if (replace) {
       state = events;
@@ -138,16 +150,16 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
     if (!ready.isCompleted) ready.complete(true);
     // Not awaited: offline the deletes stay queued.
     _purgeOldTrashFirestore().ignore();
+    encryptLegacyDocs(snap.docs).ignore();
   }
 
   static String _id(CalendarEventModel e) => e.id;
 
-  static CalendarEventModel _parse(
+  Future<CalendarEventModel?> _parse(
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
-    final data = Map<String, dynamic>.from(doc.data());
-    data['id'] = doc.id;
-    return CalendarEventModel.fromJson(data);
+  ) async {
+    final data = await decodeDoc(doc);
+    return data == null ? null : CalendarEventModel.fromJson(data);
   }
 
   Future<void> _saveDoc(CalendarEventModel event) => saveItem(event);
@@ -300,9 +312,7 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
     await mutate(
       (current) => [...newEvents, ...current],
       () => commitInChunks(
-        newEvents
-            .map((e) => (WriteBatch b) => b.set(_col.doc(e.id), e.toJson()))
-            .toList(),
+        newEvents.map((e) => (WriteBatch b) => writeItem(b, e)).toList(),
       ),
     );
   }

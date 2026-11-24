@@ -14,6 +14,8 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/crypto/item_cipher.dart';
+import '../core/crypto/item_codec.dart';
 import '../models/share_member.dart';
 import '../models/sharing.dart';
 import 'core_providers.dart';
@@ -41,7 +43,10 @@ final sharedWithMeQueryProvider = Provider<
 /// - deleting one of them for good removes this user from its collaborators
 ///   instead (the item stays with its owner);
 /// - after the first load the shared items are live (see
-///   [startSharedListeners]), unlike the rest of the state.
+///   [startSharedListeners]), unlike the rest of the state;
+/// - the documents go through [cipher]: an item neither shared by nor with
+///   this user is encrypted, the shared ones stay in clear until sharing is
+///   end-to-end encrypted too (phase 4 of `guides/E2EE_PLAN.md`).
 mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   /// The signed-in user's uid.
   String get sharingUid;
@@ -58,7 +63,67 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
 
   T sharedFromJson(Map<String, dynamic> json);
 
+  /// Encrypts and decrypts the documents; set while the keys are unlocked
+  /// (the notifiers load nothing otherwise).
+  ItemCipher get cipher;
+
+  /// [toJson] keys that are only the owner's but still sensitive (labels,
+  /// audio notes), encrypted apart from the shared content.
+  List<String> get privateKeys;
+
   final _sharedSubs = <StreamSubscription<Object?>>[];
+
+  /// Live snapshots are decrypted (async) one after the other, in order.
+  Future<void> _liveQueue = Future.value();
+
+  /// The document data for an own [item] that isn't shared: encrypted.
+  Future<Map<String, dynamic>> encodeItem(T item) => cipher.encodeItem(
+    sharedCollection,
+    item.id,
+    item.toJson(),
+    contentKeys: ItemCodec.contentKeys(item.sharedContentKeys),
+    privateKeys: privateKeys,
+  );
+
+  /// The model JSON of a document of [sharedCollection] (decrypted), with
+  /// its id; null if it can't be decrypted with this user's keys.
+  Future<Map<String, dynamic>?> decodeDoc(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    try {
+      final data = Map<String, dynamic>.from(
+        await cipher.decode(sharedCollection, doc.id, doc.data()!),
+      );
+      data['id'] = doc.id;
+      return data;
+    } catch (e) {
+      if (kDebugMode) debugPrint('$sharedCollection/${doc.id} unreadable: $e');
+      return null;
+    }
+  }
+
+  /// Writes again, encrypted, the own items of [docs] still stored in clear
+  /// (written before end-to-end encryption) that aren't shared. Best effort,
+  /// not awaited by the loads: it is retried at the next load.
+  Future<void> encryptLegacyDocs(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
+    if (!cipher.encrypts) return;
+    final legacy = <T>[];
+    for (final doc in docs) {
+      if (ItemCodec.isEncrypted(doc.data())) continue;
+      final item = itemById(doc.id);
+      if (item != null && isPlainItem(item)) legacy.add(item);
+    }
+    if (legacy.isEmpty) return;
+    try {
+      await commitInChunks([
+        for (final item in legacy) (WriteBatch b) => writeItem(b, item),
+      ]);
+    } catch (e) {
+      if (kDebugMode) debugPrint('$sharedCollection not encrypted yet: $e');
+    }
+  }
 
   CollectionReference<Map<String, dynamic>> get ownCollection =>
       db.collection('users').doc(sharingUid).collection(sharedCollection);
@@ -101,9 +166,11 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   ///   (the only fields the rules let a collaborator change) and its
   ///   personal fields in [sharedPrefsCollection];
   /// - own and shared: an update leaving the sharing fields alone, so a
-  ///   collaborator who left meanwhile is not added back;
-  /// - any other: the whole document, as before sharing existed.
-  void writeItem(WriteBatch b, T item) {
+  ///   collaborator who left meanwhile is not added back; in clear, so
+  ///   the encrypted fields of a document shared after it was encrypted
+  ///   are removed;
+  /// - any other: the whole document, encrypted.
+  Future<void> writeItem(WriteBatch b, T item) async {
     if (item.isForeignTo(sharingUid)) {
       b.update(docOf(item), {
         for (final e in item.sharedContentJson().entries)
@@ -116,15 +183,17 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         ...json,
         for (final k in item.optionalKeys)
           if (!json.containsKey(k)) k: FieldValue.delete(),
+        if (cipher.encrypts) ...ItemCipher.clearCodecFields,
       });
     } else {
-      b.set(ownCollection.doc(item.id), item.toJson());
+      b.set(ownCollection.doc(item.id), await encodeItem(item));
     }
   }
 
   /// Adds to [b] the writes deleting [item] for good; for an item shared
   /// with this user, removes them from its collaborators instead.
   void removeItem(WriteBatch b, T item) {
+    cipher.forget(sharedCollection, item.id);
     if (item.isForeignTo(sharingUid)) {
       b.update(docOf(item), _leaveData(sharingUid));
       b.delete(prefsCollection.doc(item.id));
@@ -140,16 +209,17 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
 
   Future<void> saveItem(T item) async {
     if (isPlainItem(item)) {
-      await ownCollection.doc(item.id).set(item.toJson());
+      await ownCollection.doc(item.id).set(await encodeItem(item));
       return;
     }
     final batch = db.batch();
-    writeItem(batch, item);
+    await writeItem(batch, item);
     await batch.commit();
   }
 
   /// [item] is read before the optimistic removal (null if unknown).
   Future<void> deleteItemDoc(String id, T? item) async {
+    cipher.forget(sharedCollection, id);
     if (item == null || isPlainItem(item)) {
       await ownCollection.doc(id).delete();
       return;
@@ -161,9 +231,12 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
 
   // ── Load ──────────────────────────────────────────────────────────────────
 
-  T _parseShared(DocumentSnapshot<Map<String, dynamic>> doc, String ownerId) {
-    final data = Map<String, dynamic>.from(doc.data()!);
-    data['id'] = doc.id;
+  Future<T?> _parseShared(
+    DocumentSnapshot<Map<String, dynamic>> doc,
+    String ownerId,
+  ) async {
+    final data = await decodeDoc(doc);
+    if (data == null) return null;
     data['ownerId'] = ownerId;
     return sharedFromJson(data);
   }
@@ -188,9 +261,9 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         final ownerId = doc.reference.parent.parent?.id;
         if (ownerId == null || ownerId == uid) continue;
         sharedIds.add(doc.id);
-        final item = _parseShared(doc, ownerId);
+        final item = await _parseShared(doc, ownerId);
         // Trashed by the owner: gone for the collaborators too.
-        if (item.deletedAt != null) continue;
+        if (item == null || item.deletedAt != null) continue;
         items.add(item.asSharedWithMe(prefs[doc.id]));
       }
       // Preferences of items their owner deleted or stopped sharing.
@@ -220,18 +293,30 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
       if (kDebugMode) debugPrint('Shared $sharedCollection listener: $e');
     }
 
+    // Snapshots are decrypted in order: a later one must not be applied
+    // before an earlier one still being decrypted.
+    void enqueue(Future<void> Function() handle) {
+      _liveQueue = _liveQueue.then((_) => handle()).catchError(onError);
+    }
+
     _sharedSubs
       ..add(
         ref
             .read(sharedWithMeQueryProvider)(sharedCollection, uid)
             .snapshots()
-            .listen((snap) => _onSharedWithMe(uid, snap), onError: onError),
+            .listen(
+              (snap) => enqueue(() => _onSharedWithMe(uid, snap)),
+              onError: onError,
+            ),
       )
       ..add(
         ownCollection
             .where('ownerId', isEqualTo: uid)
             .snapshots()
-            .listen((snap) => _onOwnShared(uid, snap), onError: onError),
+            .listen(
+              (snap) => enqueue(() => _onOwnShared(uid, snap)),
+              onError: onError,
+            ),
       );
   }
 
@@ -267,7 +352,10 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         b.collaborators.map((c) => c.uid).toList(),
       );
 
-  void _onSharedWithMe(String uid, QuerySnapshot<Map<String, dynamic>> snap) {
+  Future<void> _onSharedWithMe(
+    String uid,
+    QuerySnapshot<Map<String, dynamic>> snap,
+  ) async {
     if (sharingDisposed || uid != sharingUid) return;
     final updates = <String, T?>{};
     for (final change in snap.docChanges) {
@@ -283,7 +371,8 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
       }
       // This user's own edit, already in the state.
       if (doc.metadata.hasPendingWrites) continue;
-      final item = _parseShared(doc, ownerId);
+      final item = await _parseShared(doc, ownerId);
+      if (item == null) continue;
       if (item.deletedAt != null) {
         if (current != null) updates[doc.id] = null;
         continue;
@@ -292,23 +381,30 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
       // Personal fields stay this user's (defaults for a new item).
       updates[doc.id] = item.asSharedWithMe(current?.personalJson());
     }
+    if (sharingDisposed || uid != sharingUid) return;
     _applyLive(updates);
   }
 
-  void _onOwnShared(String uid, QuerySnapshot<Map<String, dynamic>> snap) {
+  Future<void> _onOwnShared(
+    String uid,
+    QuerySnapshot<Map<String, dynamic>> snap,
+  ) async {
     if (sharingDisposed || uid != sharingUid) return;
     final updates = <String, T?>{};
     for (final change in snap.docChanges) {
       final doc = change.doc;
       final current = itemById(doc.id);
       if (change.type == DocumentChangeType.removed) {
-        // Deleted from another device.
-        if (current != null) updates[doc.id] = null;
+        // Deleted from another device. A document also leaves this query
+        // when an item no longer shared is saved as a plain one (without
+        // `ownerId`): that item stays, like every unshared item, which is
+        // not live.
+        if (current != null && current.isShared) updates[doc.id] = null;
         continue;
       }
       if (doc.metadata.hasPendingWrites) continue;
-      final data = Map<String, dynamic>.from(doc.data()!);
-      data['id'] = doc.id;
+      final data = await decodeDoc(doc);
+      if (data == null) continue;
       final item = sharedFromJson(data);
       if (current != null &&
           _sameShared(current, item) &&
@@ -317,6 +413,7 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
       }
       updates[doc.id] = item;
     }
+    if (sharingDisposed || uid != sharingUid) return;
     _applyLive(updates);
   }
 
@@ -358,6 +455,12 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     await mutate(
       (list) => [for (final i in list) i.id == id ? updated : i],
       () => ownCollection.doc(id).update({
+        // Shared items are in clear for now: the content is written again
+        // without the encrypted fields.
+        if (cipher.encrypts && !current.isShared) ...{
+          ...current.toJson(),
+          ...ItemCipher.clearCodecFields,
+        },
         'ownerId': uid,
         'owner': me.toProfileJson(),
         'collaborators': FieldValue.arrayUnion([member.uid]),

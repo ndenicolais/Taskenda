@@ -13,11 +13,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/crypto/item_cipher.dart';
+import '../core/crypto/item_codec.dart';
 import '../models/task_model.dart';
 import '../models/task_list_model.dart';
 import '../utils/notification_service.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'crypto_provider.dart';
 import 'reminders_actions.dart';
 import 'shared_items.dart';
 import 'sync_provider.dart';
@@ -40,7 +43,9 @@ class TasksNotifier extends Notifier<List<TaskModel>>
 
   @override
   List<TaskModel> build() {
-    _uid = ref.watch(currentUidProvider);
+    // Nothing loads until the keys are unlocked: as if signed out.
+    _cipher = ref.watch(itemCipherProvider);
+    _uid = _cipher == null ? '' : ref.watch(currentUidProvider);
     ref.watch(firestoreProvider);
     _initialLoad = Completer<bool>();
     _disposed = false;
@@ -70,14 +75,23 @@ class TasksNotifier extends Notifier<List<TaskModel>>
   TaskModel sharedFromJson(Map<String, dynamic> json) =>
       TaskModel.fromJson(json);
 
+  @override
+  List<String> get privateKeys => const ['tags'];
+
+  ItemCipher? _cipher;
+
+  @override
+  ItemCipher get cipher => _cipher!;
+
   CollectionReference<Map<String, dynamic>> get _col => ownCollection;
 
   static String _id(TaskModel t) => t.id;
 
-  static TaskModel _parse(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = Map<String, dynamic>.from(doc.data());
-    data['id'] = doc.id;
-    return TaskModel.fromJson(data);
+  Future<TaskModel?> _parse(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    final data = await decodeDoc(doc);
+    return data == null ? null : TaskModel.fromJson(data);
   }
 
   void _onLoadError(Object? error) =>
@@ -121,7 +135,7 @@ class TasksNotifier extends Notifier<List<TaskModel>>
         if (!ready.isCompleted) ready.complete(false);
         return;
       }
-      final tasks = [...snap.docs.map(_parse), ...shared];
+      final tasks = [...await parseDocs(snap.docs, _parse), ...shared];
       if (replace) {
         state = tasks;
       } else {
@@ -135,6 +149,7 @@ class TasksNotifier extends Notifier<List<TaskModel>>
       // Not awaited: offline the deletes stay queued and must not hold up
       // the loading flag.
       _purgeOldTrashFirestore().ignore();
+      encryptLegacyDocs(snap.docs).ignore();
     } catch (e) {
       if (!_disposed) _onLoadError(e);
     } finally {
@@ -374,9 +389,16 @@ class TaskListsNotifier extends Notifier<List<TaskListModel>>
     with FirestoreListMutations<TaskListModel> {
   late String _uid;
 
+  ItemCipher? _cipher;
+
+  static const _collection = 'task_lists';
+  static const _encryptedKeys = ['name'];
+
   @override
   List<TaskListModel> build() {
-    _uid = ref.watch(currentUidProvider);
+    // Nothing loads until the keys are unlocked: as if signed out.
+    _cipher = ref.watch(itemCipherProvider);
+    _uid = _cipher == null ? '' : ref.watch(currentUidProvider);
     ref.watch(firestoreProvider);
     _load().ignore();
     return [];
@@ -399,28 +421,64 @@ class TaskListsNotifier extends Notifier<List<TaskListModel>>
             : await seedFromCache(_col, _parseList, _listId, () => uid != _uid);
     final snap = await _col.get();
     if (uid != _uid) return;
-    final lists = snap.docs.map(_parseList).toList();
+    final lists = await parseDocs(snap.docs, _parseList);
     state = replace ? lists : reconcileInitialLoad(lists, seeded, _listId);
+    _encryptLegacy(snap.docs).ignore();
   }
 
   static String _listId(TaskListModel l) => l.id;
 
-  static TaskListModel _parseList(
+  Future<TaskListModel?> _parseList(
     QueryDocumentSnapshot<Map<String, dynamic>> doc,
-  ) {
-    final data = Map<String, dynamic>.from(doc.data());
-    data['id'] = doc.id;
-    return TaskListModel.fromJson(data);
+  ) async {
+    try {
+      final data = Map<String, dynamic>.from(
+        await _cipher!.decode(_collection, doc.id, doc.data()),
+      );
+      data['id'] = doc.id;
+      return TaskListModel.fromJson(data);
+    } catch (e) {
+      if (kDebugMode) debugPrint('$_collection/${doc.id} unreadable: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> _encode(TaskListModel l) => _cipher!.encodeNamed(
+    _collection,
+    l.id,
+    l.toJson(),
+    contentKeys: _encryptedKeys,
+  );
+
+  /// Writes again, encrypted, the lists of [docs] still stored in clear.
+  Future<void> _encryptLegacy(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
+    if (!_cipher!.encrypts) return;
+    final legacy = [
+      for (final l in state)
+        if (docs.any((d) => d.id == l.id && !ItemCodec.isEncrypted(d.data())))
+          l,
+    ];
+    if (legacy.isEmpty) return;
+    try {
+      await commitInChunks([
+        for (final l in legacy)
+          (WriteBatch b) async => b.set(_col.doc(l.id), await _encode(l)),
+      ]);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Task lists not encrypted yet: $e');
+    }
   }
 
   Future<void> addList(TaskListModel taskList) => mutate(
     (current) => [...current, taskList],
-    () => _col.doc(taskList.id).set(taskList.toJson()),
+    () async => _col.doc(taskList.id).set(await _encode(taskList)),
   );
 
   Future<void> updateList(TaskListModel updated) => mutate(
     (current) => current.map((l) => l.id == updated.id ? updated : l).toList(),
-    () => _col.doc(updated.id).set(updated.toJson()),
+    () async => _col.doc(updated.id).set(await _encode(updated)),
   );
 
   Future<void> deleteList(String id) async {
@@ -447,7 +505,7 @@ class TaskListsNotifier extends Notifier<List<TaskListModel>>
       () => commitInChunks([
         for (final id in stale) (WriteBatch b) => b.delete(_col.doc(id)),
         for (final l in lists)
-          (WriteBatch b) => b.set(_col.doc(l.id), l.toJson()),
+          (WriteBatch b) async => b.set(_col.doc(l.id), await _encode(l)),
       ]),
     );
   }

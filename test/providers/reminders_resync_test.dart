@@ -10,12 +10,14 @@ import 'package:taskenda/models/task_model.dart';
 import 'package:taskenda/providers/auth_provider.dart';
 import 'package:taskenda/providers/calendar_provider.dart';
 import 'package:taskenda/providers/core_providers.dart';
+import 'package:taskenda/providers/crypto_provider.dart';
 import 'package:taskenda/providers/notes_provider.dart';
 import 'package:taskenda/providers/reminders_actions.dart';
 import 'package:taskenda/providers/tasks_provider.dart';
 import 'package:taskenda/utils/event_alerts.dart';
 import 'package:taskenda/utils/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../helpers/crypto.dart';
 import '../helpers/test_container.dart';
 
 /// Records what would be scheduled or cancelled, without the plugin.
@@ -172,7 +174,7 @@ void main() {
   test('resync after a sign-in schedules the new account reminders', () async {
     // The data notifiers are already built signed out (as in the app, where
     // the home widget listeners read them at startup), then the user signs
-    // in and resync runs from the uid listener.
+    // in, the keys are unlocked and resync runs from the cipher listener.
     final at = DateTime(later.year, later.month, later.day, 10, 30);
     final task = TaskModel(title: 'Task', dueDate: at);
     await put('tasks', task.id, task.toJson());
@@ -181,6 +183,12 @@ void main() {
       overrides: [
         firestoreProvider.overrideWithValue(firestore),
         currentUidProvider.overrideWith((ref) => ref.watch(uid)),
+        itemCipherProvider.overrideWith(
+          (ref) =>
+              ref.watch(currentUidProvider).isEmpty
+                  ? null
+                  : const PlainItemCipher(),
+        ),
         notificationServiceProvider.overrideWithValue(notifications),
         sharedPreferencesProvider.overrideWithValue(basePrefs),
       ],
@@ -192,14 +200,14 @@ void main() {
       ..read(calendarProvider);
     await pumpEventQueue();
     Future<void>? resync;
-    container.listen<String>(currentUidProvider, (_, next) {
-      if (next.isNotEmpty) {
+    container.listen(itemCipherProvider, (previous, next) {
+      if (next != null && previous == null) {
         resync = container.read(remindersActionsProvider).resync();
       }
     });
 
     container.read(uid.notifier).state = 'test-uid';
-    container.read(currentUidProvider);
+    container.read(itemCipherProvider);
     await resync;
 
     expect(notifications.cancelAllCalls, 1);

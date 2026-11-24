@@ -20,6 +20,7 @@ import 'l10n/l10n.dart';
 import 'providers/auth_provider.dart';
 import 'providers/calendar_provider.dart';
 import 'providers/core_providers.dart';
+import 'providers/crypto_provider.dart';
 import 'providers/notes_provider.dart';
 import 'providers/reminders_actions.dart';
 import 'providers/push_provider.dart';
@@ -79,16 +80,20 @@ class NotesApp extends ConsumerWidget {
     ref.listen(appLanguageProvider, (_, _) => _syncHomeWidget(ref));
     // The list widgets follow the app theme.
     ref.listen(themeModeProvider, (_, _) => _syncHomeWidget(ref));
-    // Reminders live on the device: rebuild them from the account after a
-    // sign-in (also on a cold start, when the restored session arrives) and
-    // cancel them after a sign-out, so another account's reminders never fire.
+    // Reminders live on the device: rebuild them from the account once its
+    // data can be read (keys unlocked, also on a cold start) and cancel them
+    // after a sign-out, so another account's reminders never fire.
     // Preferences follow the account too (SettingsSync).
+    ref.listen(itemCipherProvider, (previous, cipher) {
+      if (cipher != null && previous == null) {
+        ref.read(remindersActionsProvider).resync();
+      }
+    });
     ref.listen(currentUidProvider, (previous, uid) {
       final reminders = ref.read(remindersActionsProvider);
       final settings = ref.read(settingsSyncProvider);
       if (uid.isNotEmpty) {
         settings.start(uid);
-        reminders.resync();
         // So that items shared with this user reach this device as pushes.
         ref.read(pushMessagingProvider).register(uid);
       } else if (previous != null && previous.isNotEmpty) {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskenda/core/crypto/crypto_service.dart';
+import 'package:taskenda/core/crypto/item_cipher.dart';
 import 'package:taskenda/core/crypto/user_keys.dart';
 import 'package:taskenda/providers/crypto_provider.dart';
 import 'package:taskenda/utils/device_key_storage.dart';
@@ -42,4 +43,40 @@ Future<CryptoState> settledCrypto(ProviderContainer container) async {
     await Future<void>.delayed(Duration.zero);
   }
   return container.read(cryptoProvider);
+}
+
+/// An [ItemCipher] that stores documents in clear, so the data notifier
+/// tests can read and seed Firestore documents as plain model JSON.
+class PlainItemCipher implements ItemCipher {
+  const PlainItemCipher();
+
+  @override
+  bool get encrypts => false;
+
+  @override
+  Future<Map<String, dynamic>> decode(
+    String collection,
+    String id,
+    Map<String, dynamic> data,
+  ) async => data;
+
+  @override
+  Future<Map<String, dynamic>> encodeItem(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+  }) async => json;
+
+  @override
+  Future<Map<String, dynamic>> encodeNamed(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+  }) async => json;
+
+  @override
+  void forget(String collection, String id) {}
 }

@@ -82,6 +82,14 @@ mixin FirestoreListMutations<T> on Notifier<List<T>> {
   FirebaseFirestore get db => ref.read(firestoreProvider);
   Future<void> reload();
 
+  /// The items of [docs] parsed with [parse] (which decrypts them, so it is
+  /// async), in order; the documents [parse] can't read (null) are left
+  /// out.
+  Future<List<T>> parseDocs(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+    Future<T?> Function(QueryDocumentSnapshot<Map<String, dynamic>> doc) parse,
+  ) async => (await Future.wait(docs.map(parse))).whereType<T>().toList();
+
   /// Reads [query] from the local cache only (no network wait) and merges
   /// it into the state, so a screen shows the last known data at once while
   /// the server fetch is in flight. [itemId] gives an item's document id;
@@ -90,7 +98,7 @@ mixin FirestoreListMutations<T> on Notifier<List<T>> {
   /// nothing or failed.
   Future<Map<String, T>> seedFromCache(
     Query<Map<String, dynamic>> query,
-    T Function(QueryDocumentSnapshot<Map<String, dynamic>> doc) parse,
+    Future<T?> Function(QueryDocumentSnapshot<Map<String, dynamic>> doc) parse,
     String Function(T item) itemId,
     bool Function() isStale,
   ) async {
@@ -101,7 +109,9 @@ mixin FirestoreListMutations<T> on Notifier<List<T>> {
       return const {};
     }
     if (isStale() || snap.docs.isEmpty) return const {};
-    final seeded = {for (final doc in snap.docs) doc.id: parse(doc)};
+    final parsed = await parseDocs(snap.docs, parse);
+    if (isStale() || parsed.isEmpty) return const {};
+    final seeded = {for (final item in parsed) itemId(item): item};
     final existingIds = state.map(itemId).toSet();
     state = [
       ...state,
@@ -154,19 +164,23 @@ mixin FirestoreListMutations<T> on Notifier<List<T>> {
   }
 
   /// Commits Firestore batch writes in chunks of 500 (Firestore's per-batch
-  /// operation limit). Chunks are committed together rather than one after
-  /// the other, so offline they are all queued locally at once instead of
-  /// each waiting for the previous one's server acknowledgement.
-  Future<void> commitInChunks(List<void Function(WriteBatch batch)> ops) {
+  /// operation limit). An op may be async (it encrypts the document first):
+  /// every batch is filled before any is committed. Chunks are committed
+  /// together rather than one after the other, so offline they are all
+  /// queued locally at once instead of each waiting for the previous one's
+  /// server acknowledgement.
+  Future<void> commitInChunks(
+    List<FutureOr<void> Function(WriteBatch batch)> ops,
+  ) async {
     final batches = <WriteBatch>[];
     for (var i = 0; i < ops.length; i += 500) {
       final batch = db.batch();
       for (final op in ops.skip(i).take(500)) {
-        op(batch);
+        await op(batch);
       }
       batches.add(batch);
     }
-    return Future.wait(batches.map((b) => b.commit()));
+    await Future.wait(batches.map((b) => b.commit()));
   }
 
   /// True if [write] completed within [grace], false if it is still

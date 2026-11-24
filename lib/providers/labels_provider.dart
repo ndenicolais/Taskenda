@@ -9,10 +9,14 @@
 // GitHub: https://github.com/ndenicolais
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/crypto/item_cipher.dart';
+import '../core/crypto/item_codec.dart';
 import '../models/label_model.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'crypto_provider.dart';
 import 'sync_provider.dart';
 
 /// SharedPreferences key where older versions kept the labels, only on the
@@ -26,9 +30,16 @@ class LabelsNotifier extends Notifier<List<LabelModel>>
     with FirestoreListMutations<LabelModel> {
   late String _uid;
 
+  ItemCipher? _cipher;
+
+  static const _collection = 'labels';
+  static const _encryptedKeys = ['name'];
+
   @override
   List<LabelModel> build() {
-    _uid = ref.watch(currentUidProvider);
+    // Nothing loads until the keys are unlocked: as if signed out.
+    _cipher = ref.watch(itemCipherProvider);
+    _uid = _cipher == null ? '' : ref.watch(currentUidProvider);
     ref.watch(firestoreProvider);
     _load().ignore();
     return [];
@@ -39,10 +50,47 @@ class LabelsNotifier extends Notifier<List<LabelModel>>
 
   static String _id(LabelModel l) => l.id;
 
-  static LabelModel _parse(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = Map<String, dynamic>.from(doc.data());
-    data['id'] = doc.id;
-    return LabelModel.fromJson(data);
+  Future<LabelModel?> _parse(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    try {
+      final data = Map<String, dynamic>.from(
+        await _cipher!.decode(_collection, doc.id, doc.data()),
+      );
+      data['id'] = doc.id;
+      return LabelModel.fromJson(data);
+    } catch (e) {
+      if (kDebugMode) debugPrint('$_collection/${doc.id} unreadable: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>> _encode(LabelModel l) => _cipher!.encodeNamed(
+    _collection,
+    l.id,
+    l.toJson(),
+    contentKeys: _encryptedKeys,
+  );
+
+  /// Writes again, encrypted, the labels of [docs] still stored in clear.
+  Future<void> _encryptLegacy(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
+    if (!_cipher!.encrypts) return;
+    final legacy = [
+      for (final l in state)
+        if (docs.any((d) => d.id == l.id && !ItemCodec.isEncrypted(d.data())))
+          l,
+    ];
+    if (legacy.isEmpty) return;
+    try {
+      await commitInChunks([
+        for (final l in legacy)
+          (WriteBatch b) async => b.set(_col.doc(l.id), await _encode(l)),
+      ]);
+    } catch (e) {
+      if (kDebugMode) debugPrint('Labels not encrypted yet: $e');
+    }
   }
 
   /// Re-fetches all labels from Firestore, replacing local state.
@@ -59,8 +107,9 @@ class LabelsNotifier extends Notifier<List<LabelModel>>
             : await seedFromCache(_col, _parse, _id, () => uid != _uid);
     final snap = await _col.get();
     if (uid != _uid) return;
-    final labels = snap.docs.map(_parse).toList();
+    final labels = await parseDocs(snap.docs, _parse);
     state = replace ? labels : reconcileInitialLoad(labels, seeded, _id);
+    _encryptLegacy(snap.docs).ignore();
     // Shared by overlapping loads, so the labels aren't migrated twice.
     await (_migration ??= _migrateLocalLabels().whenComplete(
       () => _migration = null,
@@ -96,7 +145,7 @@ class LabelsNotifier extends Notifier<List<LabelModel>>
       (current) => [...current, ...added],
       () => commitInChunks([
         for (final l in added)
-          (WriteBatch b) => b.set(_col.doc(l.id), l.toJson()),
+          (WriteBatch b) async => b.set(_col.doc(l.id), await _encode(l)),
       ]),
     );
   }
@@ -114,7 +163,7 @@ class LabelsNotifier extends Notifier<List<LabelModel>>
     final updated = label.copyWith(name: trimmed);
     await mutate(
       (current) => current.map((l) => l.id == label.id ? updated : l).toList(),
-      () => _col.doc(label.id).set(updated.toJson()),
+      () async => _col.doc(label.id).set(await _encode(updated)),
     );
   }
 

@@ -13,10 +13,12 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/crypto/item_cipher.dart';
 import '../models/note_model.dart';
 import '../utils/notification_service.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'crypto_provider.dart';
 import 'reminders_actions.dart';
 import 'shared_items.dart';
 import 'sync_provider.dart';
@@ -39,7 +41,9 @@ class NotesNotifier extends Notifier<List<NoteModel>>
 
   @override
   List<NoteModel> build() {
-    _uid = ref.watch(currentUidProvider);
+    // Nothing loads until the keys are unlocked: as if signed out.
+    _cipher = ref.watch(itemCipherProvider);
+    _uid = _cipher == null ? '' : ref.watch(currentUidProvider);
     ref.watch(firestoreProvider);
     _initialLoad = Completer<bool>();
     _disposed = false;
@@ -71,14 +75,23 @@ class NotesNotifier extends Notifier<List<NoteModel>>
   NoteModel sharedFromJson(Map<String, dynamic> json) =>
       NoteModel.fromJson(json);
 
+  @override
+  List<String> get privateKeys => const ['audioNotes', 'tags'];
+
+  ItemCipher? _cipher;
+
+  @override
+  ItemCipher get cipher => _cipher!;
+
   CollectionReference<Map<String, dynamic>> get _col => ownCollection;
 
   static String _id(NoteModel n) => n.id;
 
-  static NoteModel _parse(QueryDocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = Map<String, dynamic>.from(doc.data());
-    data['id'] = doc.id;
-    return NoteModel.fromJson(data);
+  Future<NoteModel?> _parse(
+    QueryDocumentSnapshot<Map<String, dynamic>> doc,
+  ) async {
+    final data = await decodeDoc(doc);
+    return data == null ? null : NoteModel.fromJson(data);
   }
 
   void _onLoadError(Object? error) =>
@@ -121,7 +134,7 @@ class NotesNotifier extends Notifier<List<NoteModel>>
         if (!ready.isCompleted) ready.complete(false);
         return;
       }
-      final notes = [...snap.docs.map(_parse), ...shared];
+      final notes = [...await parseDocs(snap.docs, _parse), ...shared];
       if (replace) {
         state = notes;
       } else {
@@ -135,6 +148,7 @@ class NotesNotifier extends Notifier<List<NoteModel>>
       // Not awaited: offline the deletes stay queued and must not hold up
       // the loading flag.
       _purgeOldTrashFirestore().ignore();
+      encryptLegacyDocs(snap.docs).ignore();
     } catch (e) {
       if (!_disposed) _onLoadError(e);
     } finally {

@@ -179,6 +179,9 @@ class ItemCodec {
 
   // ── Item keys ─────────────────────────────────────────────────────────────
 
+  /// A random key for a new item.
+  Future<SecretKey> newItemKey() => _crypto.newSecretKey();
+
   /// The [keysField] entry giving [uid] the [itemKey], wrapped with their
   /// [masterKey] (the owner).
   Future<Map<String, dynamic>> masterKeyEntryFor({
