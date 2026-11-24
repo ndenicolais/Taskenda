@@ -62,6 +62,11 @@ dependencies:
   # Place suggestions for event locations (searchPlaces Cloud Function)
   http: ^1.6.0
 
+  # End-to-end encryption (lib/core/crypto, guides/E2EE_PLAN.md)
+  cryptography: ^2.9.0
+  cryptography_flutter: ^2.3.4
+  flutter_secure_storage: ^11.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
