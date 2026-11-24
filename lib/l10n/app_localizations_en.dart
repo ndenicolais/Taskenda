@@ -1763,7 +1763,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsExportIcsSubtitle => 'Export all events to an .ics file';
 
   @override
-  String get settingsImportIcs => 'Import from Google Calendar';
+  String get settingsImportIcs => 'Import .ics file';
 
   @override
   String get settingsImportIcsSubtitle => 'Import events from an .ics file';
@@ -2456,6 +2456,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedTextAsNote => 'Note';
+
+  @override
+  String get sharedIcsTitle => 'Import calendar';
+
+  @override
+  String sharedIcsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count events from the received file to the calendar?',
+      one: 'Add 1 event from the received file to the calendar?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharedIcsMessageNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add $count events from “$name” to the calendar?',
+      one: 'Add 1 event from “$name” to the calendar?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sharedIcsImport => 'Import';
 
   @override
   String get infoDescriptionClear =>

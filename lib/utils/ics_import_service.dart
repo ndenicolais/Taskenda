@@ -56,6 +56,18 @@ class IcsImportService {
   static List<CalendarEventModel> parseIcs(String icsContent) =>
       parse(icsContent).events;
 
+  /// The calendar's display name (`X-WR-CALNAME`), or null if it has none.
+  static String? calendarName(String icsContent) {
+    final unfolded = icsContent.replaceAll(RegExp(r'\r\n[ \t]|\n[ \t]'), '');
+    final match = RegExp(
+      r'^X-WR-CALNAME(?:;[^:\r\n]*)?:(.*)$',
+      multiLine: true,
+      caseSensitive: false,
+    ).firstMatch(unfolded);
+    final name = match == null ? '' : _unescape(match.group(1)!.trim());
+    return name.isEmpty ? null : name;
+  }
+
   /// Parses an ICS string (as exported by Google Calendar, Outlook, Apple…).
   ///
   /// Recurrences keep frequency, interval, weekdays, "Nth weekday of the

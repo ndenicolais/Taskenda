@@ -11,10 +11,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../models/calendar_model.dart';
 import '../../models/note_model.dart';
 import '../../models/task_model.dart';
+import '../../providers/settings/data_actions.dart';
+import '../../widgets/shared/error_feedback.dart';
 import '../../widgets/shared/app_dialogs.dart';
 import 'app_router.dart';
 
@@ -69,12 +72,13 @@ enum SharedTextTarget { note, task, event }
 
 /// Receives the text shared to Taskenda from other apps (Android "Share"
 /// sheet, see `MainActivity.kt`), asks whether to make it a note, a task or
-/// an event, and opens that editor filled in.
+/// an event, and opens that editor filled in. A calendar file (.ics) shared
+/// or opened with Taskenda has its events imported after a confirmation.
 ///
 /// Wraps the signed-in home, under `MaterialApp`'s navigator, like
 /// [HomeWidgetLaunchHandler]. A cold start's text is taken once per
 /// process. Android only; on web it just returns [child].
-class SharedTextLaunchHandler extends StatefulWidget {
+class SharedTextLaunchHandler extends ConsumerStatefulWidget {
   const SharedTextLaunchHandler({super.key, required this.child});
 
   final Widget child;
@@ -85,11 +89,12 @@ class SharedTextLaunchHandler extends StatefulWidget {
   static bool initialShareHandled = false;
 
   @override
-  State<SharedTextLaunchHandler> createState() =>
+  ConsumerState<SharedTextLaunchHandler> createState() =>
       _SharedTextLaunchHandlerState();
 }
 
-class _SharedTextLaunchHandlerState extends State<SharedTextLaunchHandler> {
+class _SharedTextLaunchHandlerState
+    extends ConsumerState<SharedTextLaunchHandler> {
   static bool get _enabled =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
@@ -99,7 +104,7 @@ class _SharedTextLaunchHandlerState extends State<SharedTextLaunchHandler> {
     if (!_enabled) return;
     // Text shared while the app is open (singleTop: onNewIntent).
     SharedTextLaunchHandler.channel.setMethodCallHandler((call) async {
-      if (call.method == 'shared') _handle(SharedText.fromMap(call.arguments));
+      if (call.method == 'shared') _handleShare(call.arguments);
     });
     if (!SharedTextLaunchHandler.initialShareHandled) {
       SharedTextLaunchHandler.initialShareHandled = true;
@@ -107,7 +112,7 @@ class _SharedTextLaunchHandlerState extends State<SharedTextLaunchHandler> {
         try {
           final map = await SharedTextLaunchHandler.channel
               .invokeMethod<Object?>('takeInitialShare');
-          _handle(SharedText.fromMap(map));
+          _handleShare(map);
         } on PlatformException {
           // No text to take.
         } on MissingPluginException {
@@ -121,6 +126,53 @@ class _SharedTextLaunchHandlerState extends State<SharedTextLaunchHandler> {
   void dispose() {
     if (_enabled) SharedTextLaunchHandler.channel.setMethodCallHandler(null);
     super.dispose();
+  }
+
+  /// The map from `MainActivity.kt`: an .ics file's content or a text.
+  void _handleShare(Object? map) {
+    final ics = map is Map ? map['ics'] : null;
+    if (ics is String) {
+      _importCalendar(ics);
+    } else {
+      _handle(SharedText.fromMap(map));
+    }
+  }
+
+  Future<void> _importCalendar(String ics) async {
+    if (!mounted) return;
+    final l10n = context.l10n;
+    final actions = ref.read(dataActionsProvider);
+    final preview = actions.icsPreview(ics);
+    if (preview.count == 0) {
+      _showSnack(l10n.settingsNoEventsInFile);
+      return;
+    }
+    final name = preview.name;
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: l10n.sharedIcsTitle,
+      message:
+          name == null
+              ? l10n.sharedIcsMessage(preview.count)
+              : l10n.sharedIcsMessageNamed(preview.count, name),
+      confirmLabel: l10n.sharedIcsImport,
+    );
+    if (!confirmed || !mounted) return;
+    final result = actions.importIcs(ics);
+    notifyOnError(result.saved, context);
+    final imported = l10n.settingsIcsImported(result.count);
+    _showSnack(
+      result.approximated == 0
+          ? imported
+          : '$imported ${l10n.settingsIcsApproximated(result.approximated)}',
+      seconds: result.approximated == 0 ? 3 : 8,
+    );
+  }
+
+  void _showSnack(String message, {int seconds = 3}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: Duration(seconds: seconds)),
+    );
   }
 
   Future<void> _handle(SharedText? shared) async {

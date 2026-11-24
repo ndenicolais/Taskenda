@@ -23,6 +23,16 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="text/plain"/>
             </intent-filter>
+            <!-- Calendar files (.ics) shared or opened from other apps: their
+                 events are imported after a confirmation (MainActivity.kt). -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/calendar"/>
+                <data android:mimeType="text/x-vcalendar"/>
+                <data android:mimeType="application/ics"/>
+            </intent-filter>
         </activity>
         <meta-data android:name="flutterEmbedding" android:value="2" />
         <!-- Push messages of sharing (firebase_messaging): status bar icon and

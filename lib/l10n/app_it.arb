@@ -650,7 +650,7 @@
   "settingsImportCalendarJsonSubtitle": "Ripristina gli eventi da un file .json",
   "settingsExportIcs": "Esporta calendario ICS",
   "settingsExportIcsSubtitle": "Esporta tutti gli eventi in un file .ics",
-  "settingsImportIcs": "Importa da Google Calendar",
+  "settingsImportIcs": "Importa file .ics",
   "settingsImportIcsSubtitle": "Importa eventi da un file .ics",
   "settingsClearCalendar": "Cancella eventi calendario",
   "settingsClearCalendarSubtitle": "Rimuove tutti gli eventi dal calendario",
@@ -955,6 +955,27 @@
   "calendarParticipantsAdd": "Invita tramite email",
   "sharedTextTitle": "Salva in Taskenda come",
   "sharedTextAsNote": "Nota",
+  "sharedIcsTitle": "Importa calendario",
+  "sharedIcsMessage": "{count, plural, =1{Aggiungere al calendario 1 evento dal file ricevuto?} other{Aggiungere al calendario {count} eventi dal file ricevuto?}}",
+  "@sharedIcsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedIcsMessageNamed": "{count, plural, =1{Aggiungere al calendario 1 evento da «{name}»?} other{Aggiungere al calendario {count} eventi da «{name}»?}}",
+  "@sharedIcsMessageNamed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedIcsImport": "Importa",
   "infoDescriptionClear": "Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account e disponibili su ogni dispositivo.",
   "infoFeatureSyncTitleClear": "Sincronizzazione e backup",
   "infoFeatureSyncTextClear": "Dati sul tuo account, backup ed esportazione in PDF, TXT, JSON, CSV e HTML",

@@ -3107,7 +3107,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsImportIcs.
   ///
   /// In it, this message translates to:
-  /// **'Importa da Google Calendar'**
+  /// **'Importa file .ics'**
   String get settingsImportIcs;
 
   /// No description provided for @settingsImportIcsSubtitle.
@@ -4303,6 +4303,30 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Nota'**
   String get sharedTextAsNote;
+
+  /// No description provided for @sharedIcsTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Importa calendario'**
+  String get sharedIcsTitle;
+
+  /// No description provided for @sharedIcsMessage.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Aggiungere al calendario 1 evento dal file ricevuto?} other{Aggiungere al calendario {count} eventi dal file ricevuto?}}'**
+  String sharedIcsMessage(int count);
+
+  /// No description provided for @sharedIcsMessageNamed.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Aggiungere al calendario 1 evento da «{name}»?} other{Aggiungere al calendario {count} eventi da «{name}»?}}'**
+  String sharedIcsMessageNamed(int count, String name);
+
+  /// No description provided for @sharedIcsImport.
+  ///
+  /// In it, this message translates to:
+  /// **'Importa'**
+  String get sharedIcsImport;
 
   /// No description provided for @infoDescriptionClear.
   ///

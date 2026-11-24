@@ -713,4 +713,21 @@ void main() {
       expect(other.isBirthday || other.isNameDay, isFalse);
     });
   });
+
+  group('IcsImportService.calendarName', () {
+    test('reads X-WR-CALNAME, unfolded and unescaped', () {
+      const ics =
+          'BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'
+          'X-WR-CALNAME:Motordule · F1\, F2\r\n \, F3\r\nEND:VCALENDAR\r\n';
+      expect(IcsImportService.calendarName(ics), 'Motordule · F1, F2, F3');
+    });
+
+    test('null without a name', () {
+      expect(IcsImportService.calendarName(_ics(['SUMMARY:x'])), isNull);
+      expect(
+        IcsImportService.calendarName('BEGIN:VCALENDAR\nX-WR-CALNAME:\n'),
+        isNull,
+      );
+    });
+  });
 }

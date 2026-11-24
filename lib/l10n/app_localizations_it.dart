@@ -1775,7 +1775,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Esporta tutti gli eventi in un file .ics';
 
   @override
-  String get settingsImportIcs => 'Importa da Google Calendar';
+  String get settingsImportIcs => 'Importa file .ics';
 
   @override
   String get settingsImportIcsSubtitle => 'Importa eventi da un file .ics';
@@ -2475,6 +2475,34 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get sharedTextAsNote => 'Nota';
+
+  @override
+  String get sharedIcsTitle => 'Importa calendario';
+
+  @override
+  String sharedIcsMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Aggiungere al calendario $count eventi dal file ricevuto?',
+      one: 'Aggiungere al calendario 1 evento dal file ricevuto?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sharedIcsMessageNamed(int count, String name) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Aggiungere al calendario $count eventi da «$name»?',
+      one: 'Aggiungere al calendario 1 evento da «$name»?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sharedIcsImport => 'Importa';
 
   @override
   String get infoDescriptionClear =>

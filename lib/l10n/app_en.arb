@@ -539,7 +539,7 @@
   "settingsImportCalendarJsonSubtitle": "Restore the events from a .json file",
   "settingsExportIcs": "Export ICS calendar",
   "settingsExportIcsSubtitle": "Export all events to an .ics file",
-  "settingsImportIcs": "Import from Google Calendar",
+  "settingsImportIcs": "Import .ics file",
   "settingsImportIcsSubtitle": "Import events from an .ics file",
   "settingsClearCalendar": "Clear calendar events",
   "settingsClearCalendarSubtitle": "Removes all events from the calendar",
@@ -747,6 +747,27 @@
   "calendarParticipantsAdd": "Invite by email",
   "sharedTextTitle": "Save to Taskenda as",
   "sharedTextAsNote": "Note",
+  "sharedIcsTitle": "Import calendar",
+  "sharedIcsMessage": "{count, plural, =1{Add 1 event from the received file to the calendar?} other{Add {count} events from the received file to the calendar?}}",
+  "@sharedIcsMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sharedIcsMessageNamed": "{count, plural, =1{Add 1 event from “{name}” to the calendar?} other{Add {count} events from “{name}” to the calendar?}}",
+  "@sharedIcsMessageNamed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharedIcsImport": "Import",
   "infoDescriptionClear": "Taskenda brings together notes, checklists, tasks and calendar events, synced to your account and available on every device.",
   "infoFeatureSyncTitleClear": "Sync and backup",
   "infoFeatureSyncTextClear": "Data on your account, backups and export to PDF, TXT, JSON, CSV and HTML",

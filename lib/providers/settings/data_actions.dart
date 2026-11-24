@@ -185,6 +185,13 @@ class DataActions {
     return events.isEmpty ? null : IcsExportService.generateIcs(events);
   }
 
+  /// Events in [content] and the calendar's name, to confirm an import
+  /// before running it (a file shared from another app).
+  ({int count, String? name}) icsPreview(String content) => (
+    count: IcsImportService.parse(content).events.length,
+    name: IcsImportService.calendarName(content),
+  );
+
   /// Adds the events found in [content] to the calendar. `count` is 0 when
   /// the file has no events (nothing is imported); `saved` completes when
   /// Firestore has persisted them; `approximated` counts the recurrences
