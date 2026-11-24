@@ -36,6 +36,13 @@
 </head>
 
 <body>
+  <!-- The passkeys plugin calls PasskeyAuthenticator.init() while the app
+       starts, a function of Corbado's bundle.js, which is not included yet:
+       without this placeholder the web app stops on a blank page. Passkeys on
+       the web come with the passkey phase (guides/E2EE_PLAN.md). -->
+  <script>
+    window.PasskeyAuthenticator = window.PasskeyAuthenticator || { init: function () {} };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 
