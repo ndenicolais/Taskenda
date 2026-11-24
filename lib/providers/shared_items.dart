@@ -259,11 +259,11 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   ///   document still in clear gets a new key sealed for the collaborators;
   /// - any other: the whole document, encrypted.
   ///
-  /// Documents in clear stay in clear while a collaborator has no public
-  /// key yet (or with a cipher that doesn't encrypt, in tests).
+  /// The rules refuse documents in clear: only a cipher that doesn't encrypt
+  /// (tests) writes them.
   Future<void> writeItem(WriteBatch b, T item) async {
     if (item.isForeignTo(sharingUid)) {
-      if (_hasKey(item)) {
+      if (cipher.encrypts) {
         final json = item.toJson();
         b.update(docOf(item), {
           ItemCodec.contentField: await cipher.encryptSharedContent(
@@ -310,8 +310,8 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
 
   /// The encrypted fields for an update of the own shared [item]: with its
   /// current key, or a new one sealed for the collaborators if the document
-  /// is in clear; null to keep it in clear (a collaborator without a public
-  /// key, or a cipher that doesn't encrypt).
+  /// is in clear (throws [MissingPublicKeyException] if one of them has no
+  /// public key); null with a cipher that doesn't encrypt (tests).
   Future<Map<String, dynamic>?> _encryptedSharedFields(T item) async {
     if (!cipher.encrypts) return null;
     if (_hasKey(item)) {
@@ -323,12 +323,7 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         privateKeys: privateKeys,
       );
     }
-    try {
-      return await _rotated(item);
-    } on MissingPublicKeyException catch (e) {
-      if (kDebugMode) debugPrint('${item.id} stays in clear: $e');
-      return null;
-    }
+    return _rotated(item);
   }
 
   /// Adds to [b] the writes deleting [item] for good; for an item shared
@@ -640,8 +635,8 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   /// The fields giving [memberUid] the key of [current] (before sharing)
   /// as [updated] (after): their sealed entry in `keys`, or, for a
   /// document still in clear, the whole document encrypted with a new key
-  /// for every collaborator (kept in clear if an older one has no public
-  /// key yet).
+  /// for every collaborator (throws [MissingPublicKeyException] if an older
+  /// one has no public key).
   Future<Map<String, Object?>> _keysForNewMember(
     T current,
     T updated,
@@ -658,12 +653,7 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         ),
       };
     }
-    try {
-      return {..._clearContentDeletes(current), ...await _rotated(updated)};
-    } on MissingPublicKeyException catch (e) {
-      if (kDebugMode) debugPrint('${current.id} shared in clear: $e');
-      return const {};
-    }
+    return {..._clearContentDeletes(current), ...await _rotated(updated)};
   }
 
   /// Stops sharing the own item [id] with [collaboratorUid].

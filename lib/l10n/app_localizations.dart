@@ -3755,7 +3755,7 @@ abstract class AppLocalizations {
   /// No description provided for @policy_section_data_text.
   ///
   /// In it, this message translates to:
-  /// **'• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette.\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.'**
+  /// **'• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Cifratura: il codice di cifratura e il codice di recupero non lasciano mai il tuo dispositivo e li conosci solo tu. Sul tuo account vengono salvate le tue chiavi di cifratura, protette da questi codici e quindi inutilizzabili senza di essi, e una chiave pubblica che gli altri utenti usano per condividere elementi con te.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.'**
   String get policy_section_data_text;
 
   /// No description provided for @policy_section_use_title.
@@ -3779,7 +3779,7 @@ abstract class AppLocalizations {
   /// No description provided for @policy_section_storage_text.
   ///
   /// In it, this message translates to:
-  /// **'Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell\'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall\'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.\n\nMentre scrivi il luogo di un evento, il testo digitato, la lingua dell\'app e il paese impostato sul dispositivo passano dal server di Taskenda (Firebase Cloud Functions) al servizio Google Places di Google per suggerirti luoghi e indirizzi: non viene inviato nient\'altro, né la tua posizione né i dati del tuo account, e Google non riceve il tuo indirizzo IP. Se tocchi il luogo per aprirlo in Maps, la ricerca passa all\'app o al sito di Google Maps.'**
+  /// **'Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell\'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall\'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. Note, task, eventi, etichette ed elenchi sono cifrati end-to-end: vengono cifrati sul tuo dispositivo prima di essere salvati e possono leggerli solo tu e le persone con cui condividi un elemento, non lo sviluppatore né Google. Sul server restano leggibili solo le informazioni tecniche che servono a far funzionare l\'app: quanti elementi hai, le date di creazione, modifica ed eliminazione, se un elemento è fissato, archiviato o nel cestino, il suo ordine, gli orari di promemoria e avvisi e con chi lo condividi. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google, e contengono solo il nome di chi condivide. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.\n\nMentre scrivi il luogo di un evento, il testo digitato, la lingua dell\'app e il paese impostato sul dispositivo passano dal server di Taskenda (Firebase Cloud Functions) al servizio Google Places di Google per suggerirti luoghi e indirizzi: non viene inviato nient\'altro, né la tua posizione né i dati del tuo account, e Google non riceve il tuo indirizzo IP. Se tocchi il luogo per aprirlo in Maps, la ricerca passa all\'app o al sito di Google Maps.'**
   String get policy_section_storage_text;
 
   /// No description provided for @policy_section_device_title.
@@ -3815,7 +3815,7 @@ abstract class AppLocalizations {
   /// No description provided for @policy_section_retention_text.
   ///
   /// In it, this message translates to:
-  /// **'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Puoi anche chiedere la cancellazione scrivendo a {email}.'**
+  /// **'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se dimentichi sia il codice di cifratura sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a {email}.'**
   String policy_section_retention_text(String email);
 
   /// No description provided for @policy_section_rights_title.
@@ -4231,6 +4231,54 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Questa persona non ha ancora attivato la cifratura. Chiedile di aggiornare Taskenda e di accedere, poi riprova.'**
   String get shareErrorNoEncryption;
+
+  /// No description provided for @settingsSecurityTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Sicurezza'**
+  String get settingsSecurityTitle;
+
+  /// No description provided for @securityInfo.
+  ///
+  /// In it, this message translates to:
+  /// **'Note, task ed eventi sono cifrati end-to-end: solo tu e le persone con cui li condividi potete leggerli.'**
+  String get securityInfo;
+
+  /// No description provided for @securityChangePassphrase.
+  ///
+  /// In it, this message translates to:
+  /// **'Cambia codice di cifratura'**
+  String get securityChangePassphrase;
+
+  /// No description provided for @securityChangePassphraseSubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Ti servirà per sbloccare i dati su un nuovo dispositivo'**
+  String get securityChangePassphraseSubtitle;
+
+  /// No description provided for @securityCurrentPassphrase.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di cifratura attuale'**
+  String get securityCurrentPassphrase;
+
+  /// No description provided for @securityPassphraseChanged.
+  ///
+  /// In it, this message translates to:
+  /// **'Codice di cifratura cambiato'**
+  String get securityPassphraseChanged;
+
+  /// No description provided for @securityNewRecoveryKey.
+  ///
+  /// In it, this message translates to:
+  /// **'Nuovo codice di recupero'**
+  String get securityNewRecoveryKey;
+
+  /// No description provided for @securityNewRecoveryKeySubtitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Il codice di recupero attuale smetterà di funzionare'**
+  String get securityNewRecoveryKeySubtitle;
 }
 
 class _AppLocalizationsDelegate

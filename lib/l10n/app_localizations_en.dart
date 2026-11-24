@@ -2145,7 +2145,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get policy_section_data_text =>
-      '• Account: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.\n• Content: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels.\n• Audio notes: recordings stay on your device only; just the file name, duration and path are synced with the note.\n• Sharing: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.\n• Preferences: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.\n• On your device: a copy of your preferences, intro guide and what\'s new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.';
+      '• Account: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.\n• Content: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels. They are end-to-end encrypted on your device (see point 4).\n• Audio notes: recordings stay on your device only; just the file name, duration and path are synced with the note.\n• Encryption: your encryption code and recovery code never leave your device and only you know them. Your account stores your encryption keys, protected by these codes and so unusable without them, and a public key other users use to share items with you.\n• Sharing: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.\n• Preferences: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.\n• On your device: a copy of your preferences, intro guide and what\'s new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders, your unlocked encryption keys (protected by the system; on the web they stay in the browser tab, or in the browser if you choose to remember them) and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.';
 
   @override
   String get policy_section_use_title => '3. How we use data';
@@ -2159,7 +2159,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get policy_section_storage_text =>
-      'Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service. The developer does not look at your content and does not share it with anyone.\n\nWhile you type the location of an event, the typed text, the app language and the country set on the device go through Taskenda\'s server (Firebase Cloud Functions) to Google\'s Places service to suggest places and addresses: nothing else is sent, neither your position nor your account data, and Google does not receive your IP address. If you tap the location to open it in Maps, the search is handed to the Google Maps app or website.';
+      'Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Notes, tasks, events, labels and lists are end-to-end encrypted: they are encrypted on your device before they are saved, and only you and the people you share an item with can read them, not the developer nor Google. The server can still read only the technical information the app needs to work: how many items you have, when they were created, changed and deleted, whether an item is pinned, archived or in the trash, its order, the times of reminders and alerts and who you share it with. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service, and only contain the name of who shared. The developer does not look at your content and does not share it with anyone.\n\nWhile you type the location of an event, the typed text, the app language and the country set on the device go through Taskenda\'s server (Firebase Cloud Functions) to Google\'s Places service to suggest places and addresses: nothing else is sent, neither your position nor your account data, and Google does not receive your IP address. If you tap the location to open it in Maps, the search is handed to the Google Maps app or website.';
 
   @override
   String get policy_section_device_title => '5. On-device processing';
@@ -2180,7 +2180,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String policy_section_retention_text(String email) {
-    return 'Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from Settings > Account > Delete account: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from Settings > Backup and data > Full backup. Any residual copies in Google\'s systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. You can also ask for deletion by writing to $email.';
+    return 'Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from Settings > Account > Delete account: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing, your encryption keys are deleted and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from Settings > Backup and data > Full backup. Any residual copies in Google\'s systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. If you forget both the encryption code and the recovery code, nobody can recover your encrypted data: you can only reset encryption, which deletes it. You can also ask for deletion by writing to $email.';
   }
 
   @override
@@ -2417,4 +2417,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get shareErrorNoEncryption =>
       'This person hasn\'t turned on encryption yet. Ask them to update Taskenda and sign in, then try again.';
+
+  @override
+  String get settingsSecurityTitle => 'Security';
+
+  @override
+  String get securityInfo =>
+      'Notes, tasks and events are end-to-end encrypted: only you and the people you share them with can read them.';
+
+  @override
+  String get securityChangePassphrase => 'Change encryption code';
+
+  @override
+  String get securityChangePassphraseSubtitle =>
+      'You\'ll need it to unlock your data on a new device';
+
+  @override
+  String get securityCurrentPassphrase => 'Current encryption code';
+
+  @override
+  String get securityPassphraseChanged => 'Encryption code changed';
+
+  @override
+  String get securityNewRecoveryKey => 'New recovery code';
+
+  @override
+  String get securityNewRecoveryKeySubtitle =>
+      'Your current recovery code will stop working';
 }

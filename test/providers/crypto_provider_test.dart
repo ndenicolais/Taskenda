@@ -178,4 +178,64 @@ void main() {
     await c.read(cryptoProvider.notifier).forget();
     expect(storage.values, isEmpty);
   });
+
+  test('change the passphrase: the old one stops working', () async {
+    final (c, _) = await start();
+    await c.read(cryptoProvider.notifier).setup('old passphrase');
+    final recovery =
+        (c.read(cryptoProvider) as CryptoUnlocked).pendingRecoveryKey!;
+    final notifier = c.read(cryptoProvider.notifier);
+
+    await expectLater(
+      notifier.changePassphrase('wrong', 'new passphrase'),
+      throwsA(isA<CryptoException>()),
+    );
+    await notifier.changePassphrase('old passphrase', 'new passphrase');
+    expect(c.read(cryptoProvider), isA<CryptoUnlocked>());
+
+    final (other, _) = await start(on: MemoryKeyStorage());
+    final otherNotifier = other.read(cryptoProvider.notifier);
+    await expectLater(
+      otherNotifier.unlock('old passphrase'),
+      throwsA(isA<CryptoException>()),
+    );
+    await otherNotifier.unlock('new passphrase');
+    expect(other.read(cryptoProvider), isA<CryptoUnlocked>());
+
+    // The recovery key is not affected.
+    final (third, _) = await start(on: MemoryKeyStorage());
+    await third.read(cryptoProvider.notifier).recover(recovery, 'third one');
+    expect(third.read(cryptoProvider), isA<CryptoUnlocked>());
+  });
+
+  test('a new recovery key replaces the old one', () async {
+    final (c, _) = await start();
+    await c.read(cryptoProvider.notifier).setup('passphrase');
+    final old = (c.read(cryptoProvider) as CryptoUnlocked).pendingRecoveryKey!;
+    c.read(cryptoProvider.notifier).acknowledgeRecoveryKey();
+
+    await expectLater(
+      c.read(cryptoProvider.notifier).regenerateRecoveryKey('wrong'),
+      throwsA(isA<CryptoException>()),
+    );
+    final fresh = await c
+        .read(cryptoProvider.notifier)
+        .regenerateRecoveryKey('passphrase');
+    expect(fresh, isNot(old));
+    expect(CryptoService.parseRecoveryKey(fresh), isNotNull);
+    // Shown by the settings, not by the gate.
+    expect(
+      (c.read(cryptoProvider) as CryptoUnlocked).pendingRecoveryKey,
+      isNull,
+    );
+
+    final (other, _) = await start(on: MemoryKeyStorage());
+    final otherNotifier = other.read(cryptoProvider.notifier);
+    await expectLater(
+      otherNotifier.recover(old, 'new passphrase'),
+      throwsA(isA<CryptoException>()),
+    );
+    await otherNotifier.recover(fresh, 'new passphrase');
+    expect(other.read(cryptoProvider), isA<CryptoUnlocked>());
+  });
 }

@@ -6,7 +6,7 @@
 
 ## Italiano
 
-**Ultimo aggiornamento: 21 novembre 2026**
+**Ultimo aggiornamento: 24 novembre 2026**
 
 Taskenda è un'app per note, task e calendario. Questa informativa spiega quali dati tratta, perché e come puoi controllarli. Taskenda non mostra pubblicità, non usa strumenti di analisi o di tracciamento e non vende né cede i tuoi dati.
 
@@ -17,11 +17,12 @@ Il titolare del trattamento è Nicola De Nicolais, sviluppatore di Taskenda. Per
 ### 2. Dati che raccogliamo
 
 - **Account**: l'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell'account e dell'ultimo accesso.
-- **Contenuti**: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette.
+- **Contenuti**: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).
 - **Note audio**: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.
+- **Cifratura**: il codice di cifratura e il codice di recupero non lasciano mai il tuo dispositivo e li conosci solo tu. Sul tuo account vengono salvate le tue chiavi di cifratura, protette da questi codici e quindi inutilizzabili senza di essi, e una chiave pubblica che gli altri utenti usano per condividere elementi con te.
 - **Condivisione**: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell'app; viene cancellato quando esci dall'account su quel dispositivo.
 - **Preferenze**: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l'accesso.
-- **Sul dispositivo**: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l'uso offline, i promemoria programmati e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.
+- **Sul dispositivo**: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.
 
 ### 3. Come usiamo i dati
 
@@ -29,7 +30,7 @@ I dati servono solo a far funzionare Taskenda: accedere al tuo account, salvare 
 
 ### 4. Dove sono conservati
 
-Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.
+Account e contenuti sono conservati su Google Firebase (Firebase Authentication e Cloud Firestore), servizi forniti da Google. I contenuti sono conservati su server nell'Unione europea, mentre Firebase Authentication può trattare i dati anche fuori dall'Unione europea: il trasferimento avviene con le garanzie previste dai termini di Google Firebase. Note, task, eventi, etichette ed elenchi sono cifrati end-to-end: vengono cifrati sul tuo dispositivo prima di essere salvati e possono leggerli solo tu e le persone con cui condividi un elemento, non lo sviluppatore né Google. Sul server restano leggibili solo le informazioni tecniche che servono a far funzionare l'app: quanti elementi hai, le date di creazione, modifica ed eliminazione, se un elemento è fissato, archiviato o nel cestino, il suo ordine, gli orari di promemoria e avvisi e con chi lo condividi. I dati viaggiano cifrati e le regole di sicurezza del database fanno sì che solo il tuo account possa leggere e modificare i tuoi contenuti, oltre alle persone con cui scegli di condividere un elemento. Le notifiche di condivisione sono inviate tramite Firebase Cloud Messaging, un servizio di Google, e contengono solo il nome di chi condivide. Lo sviluppatore non consulta i tuoi contenuti e non li condivide con nessuno.
 
 Mentre scrivi il luogo di un evento, il testo digitato, la lingua dell'app e il paese impostato sul dispositivo passano dal server di Taskenda (Firebase Cloud Functions) al servizio Google Places di Google per suggerirti luoghi e indirizzi: non viene inviato nient'altro, né la tua posizione né i dati del tuo account, e Google non riceve il tuo indirizzo IP. Se tocchi il luogo per aprirlo in Maps, la ricerca passa all'app o al sito di Google Maps.
 
@@ -60,7 +61,7 @@ Taskenda non accede a posizione, contatti, fotocamera, foto o file del telefono:
 
 ### 7. Conservazione e cancellazione
 
-I tuoi dati restano finché mantieni l'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l'account e tutti i dati da *Impostazioni > Account > Elimina account*: vengono cancellati l'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall'elenco usato per la condivisione e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da *Impostazioni > Backup e dati > Backup globale*. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall'account non cancella i dati; disinstallando l'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Puoi anche chiedere la cancellazione scrivendo a [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+I tuoi dati restano finché mantieni l'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l'account e tutti i dati da *Impostazioni > Account > Elimina account*: vengono cancellati l'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da *Impostazioni > Backup e dati > Backup globale*. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall'account non cancella i dati; disinstallando l'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se dimentichi sia il codice di cifratura sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
 
 ### 8. I tuoi diritti
 
@@ -85,7 +86,7 @@ Se questa informativa cambia, la nuova versione sarà disponibile nell'app (*Inf
 
 ## English
 
-**Last updated: November 21, 2026**
+**Last updated: November 24, 2026**
 
 Taskenda is an app for notes, tasks and calendar. This policy explains which data it processes, why, and how you can control it. Taskenda shows no ads, uses no analytics or tracking tools, and does not sell or hand over your data.
 
@@ -96,11 +97,12 @@ The data controller is Nicola De Nicolais, developer of Taskenda. For any privac
 ### 2. Data we collect
 
 - **Account**: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.
-- **Content**: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels.
+- **Content**: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels. They are end-to-end encrypted on your device (see point 4).
 - **Audio notes**: recordings stay on your device only; just the file name, duration and path are synced with the note.
+- **Encryption**: your encryption code and recovery code never leave your device and only you know them. Your account stores your encryption keys, protected by these codes and so unusable without them, and a public key other users use to share items with you.
 - **Sharing**: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.
 - **Preferences**: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.
-- **On your device**: a copy of your preferences, intro guide and what's new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.
+- **On your device**: a copy of your preferences, intro guide and what's new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders, your unlocked encryption keys (protected by the system; on the web they stay in the browser tab, or in the browser if you choose to remember them) and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.
 
 ### 3. How we use data
 
@@ -108,7 +110,7 @@ Data is used only to make Taskenda work: signing in to your account, saving your
 
 ### 4. Where it is stored
 
-Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service. The developer does not look at your content and does not share it with anyone.
+Account and content are stored on Google Firebase (Firebase Authentication and Cloud Firestore), services provided by Google. Content is stored on servers in the European Union, while Firebase Authentication may also process data outside the European Union: the transfer takes place with the safeguards provided by the Google Firebase terms. Notes, tasks, events, labels and lists are end-to-end encrypted: they are encrypted on your device before they are saved, and only you and the people you share an item with can read them, not the developer nor Google. The server can still read only the technical information the app needs to work: how many items you have, when they were created, changed and deleted, whether an item is pinned, archived or in the trash, its order, the times of reminders and alerts and who you share it with. Data travels encrypted and the database security rules make sure only your account can read and change your content, plus the people you choose to share an item with. Sharing notifications are sent through Firebase Cloud Messaging, a Google service, and only contain the name of who shared. The developer does not look at your content and does not share it with anyone.
 
 While you type the location of an event, the typed text, the app language and the country set on the device go through Taskenda's server (Firebase Cloud Functions) to Google's Places service to suggest places and addresses: nothing else is sent, neither your position nor your account data, and Google does not receive your IP address. If you tap the location to open it in Maps, the search is handed to the Google Maps app or website.
 
@@ -139,7 +141,7 @@ Taskenda does not access your location, contacts, camera, photos or phone files:
 
 ### 7. Retention and deletion
 
-Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from *Settings > Account > Delete account*: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from *Settings > Backup and data > Full backup*. Any residual copies in Google's systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. You can also ask for deletion by writing to [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
+Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from *Settings > Account > Delete account*: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing, your encryption keys are deleted and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from *Settings > Backup and data > Full backup*. Any residual copies in Google's systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. If you forget both the encryption code and the recovery code, nobody can recover your encrypted data: you can only reset encryption, which deletes it. You can also ask for deletion by writing to [ndn21dev@gmail.com](mailto:ndn21dev@gmail.com).
 
 ### 8. Your rights
 

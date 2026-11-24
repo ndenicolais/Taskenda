@@ -20,17 +20,84 @@ import 'crypto_widgets.dart';
 
 /// Shows a new recovery key once (after setup or recovery): the user must
 /// confirm they saved it before going on.
-class RecoveryKeyScreen extends ConsumerStatefulWidget {
+class RecoveryKeyScreen extends ConsumerWidget {
   const RecoveryKeyScreen({super.key, required this.recoveryKey});
 
   /// As text, e.g. `ABCD-EFGH-…`.
   final String recoveryKey;
 
   @override
-  ConsumerState<RecoveryKeyScreen> createState() => _RecoveryKeyScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    return CryptoScaffold(
+      icon: Icons.key_outlined,
+      title: l10n.cryptoRecoveryShowTitle,
+      message: l10n.cryptoRecoveryShowBody,
+      showSignOut: false,
+      children: [
+        RecoveryKeyPanel(
+          recoveryKey: recoveryKey,
+          doneLabel: l10n.cryptoContinue,
+          onDone:
+              () => ref.read(cryptoProvider.notifier).acknowledgeRecoveryKey(),
+        ),
+      ],
+    );
+  }
 }
 
-class _RecoveryKeyScreenState extends ConsumerState<RecoveryKeyScreen> {
+/// A new recovery key from the settings, in a dialog that can only be
+/// closed once the user confirms they saved it.
+Future<void> showRecoveryKeyDialog(BuildContext context, String recoveryKey) {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      final l10n = ctx.l10n;
+      return PopScope(
+        canPop: false,
+        child: AlertDialog(
+          title: Text(l10n.cryptoRecoveryShowTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(l10n.cryptoRecoveryShowBody),
+                const SizedBox(height: AppSpacing.lg),
+                RecoveryKeyPanel(
+                  recoveryKey: recoveryKey,
+                  doneLabel: l10n.commonDone,
+                  onDone: () => Navigator.pop(ctx),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+/// The recovery key with copy and share buttons, the "I saved it" checkbox
+/// and a button enabled only once it is ticked.
+class RecoveryKeyPanel extends StatefulWidget {
+  const RecoveryKeyPanel({
+    super.key,
+    required this.recoveryKey,
+    required this.doneLabel,
+    required this.onDone,
+  });
+
+  final String recoveryKey;
+  final String doneLabel;
+  final VoidCallback onDone;
+
+  @override
+  State<RecoveryKeyPanel> createState() => _RecoveryKeyPanelState();
+}
+
+class _RecoveryKeyPanelState extends State<RecoveryKeyPanel> {
   bool _saved = false;
 
   Future<void> _copy() async {
@@ -50,11 +117,9 @@ class _RecoveryKeyScreenState extends ConsumerState<RecoveryKeyScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    return CryptoScaffold(
-      icon: Icons.key_outlined,
-      title: l10n.cryptoRecoveryShowTitle,
-      message: l10n.cryptoRecoveryShowBody,
-      showSignOut: false,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -74,22 +139,20 @@ class _RecoveryKeyScreenState extends ConsumerState<RecoveryKeyScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        Row(
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppSpacing.md,
+          runSpacing: AppSpacing.sm,
           children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _copy,
-                icon: const Icon(Icons.copy_outlined),
-                label: Text(l10n.cryptoRecoveryCopy),
-              ),
+            OutlinedButton.icon(
+              onPressed: _copy,
+              icon: const Icon(Icons.copy_outlined),
+              label: Text(l10n.cryptoRecoveryCopy),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _share,
-                icon: const Icon(Icons.share_outlined),
-                label: Text(l10n.commonShare),
-              ),
+            OutlinedButton.icon(
+              onPressed: _share,
+              icon: const Icon(Icons.share_outlined),
+              label: Text(l10n.commonShare),
             ),
           ],
         ),
@@ -103,12 +166,8 @@ class _RecoveryKeyScreenState extends ConsumerState<RecoveryKeyScreen> {
         ),
         const SizedBox(height: AppSpacing.md),
         CryptoSubmitButton(
-          label: l10n.cryptoContinue,
-          onPressed:
-              _saved
-                  ? () =>
-                      ref.read(cryptoProvider.notifier).acknowledgeRecoveryKey()
-                  : null,
+          label: widget.doneLabel,
+          onPressed: _saved ? widget.onDone : null,
         ),
       ],
     );

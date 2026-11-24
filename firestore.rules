@@ -2,7 +2,9 @@ rules_version = '2';
 
 // All app data lives under users/{uid}/ (notes, tasks, task_lists,
 // calendar_events, labels, shared_*_prefs, fcm_tokens, settings, crypto).
-// Each signed-in user has full access to their own branch. On top of that:
+// Each signed-in user has full access to their own branch, except that the
+// end-to-end encrypted collections accept only encrypted documents (`e`
+// = 1 and an `enc` blob, see guides/E2EE_PLAN.md). On top of that:
 // - user_directory maps an email to a uid, so items can be shared by email;
 // - public_keys holds each user's encryption public key;
 // - a note, task or event can be shared: its collaborators (uids in
@@ -34,14 +36,43 @@ service cloud.firestore {
             .difference([request.auth.uid].toSet());
     }
 
-    // A collaborator may change only the shared content [keys] of an item
-    // (personal fields live in their own shared_*_prefs) or leave it.
-    function collaboratorUpdate(keys) {
-      return isCollaborator() && (changedKeys().hasOnly(keys) || leaves());
+    // A collaborator may change only the encrypted shared content of an
+    // item (`enc`, plus `updatedAt`; personal fields live in their own
+    // shared_*_prefs) or leave it. Never `keys`, `keyVer`, `priv` or the
+    // members: the client also sends the `keyVer` it encrypted for, which
+    // counts as a change, and is refused, if the owner replaced the key.
+    function collaboratorUpdate() {
+      return isCollaborator()
+        && ((resource.data.get('e', 0) == 1
+            && changedKeys().hasOnly(['enc', 'updatedAt']))
+          || leaves());
     }
 
-    match /users/{uid}/{document=**} {
-      allow read, write: if signedIn() && request.auth.uid == uid;
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Collections whose documents are end-to-end encrypted.
+    function encryptedCollections() {
+      return ['notes', 'tasks', 'calendar_events', 'labels', 'task_lists',
+        'shared_note_prefs', 'shared_task_prefs', 'shared_event_prefs'];
+    }
+
+    // The document as it will be is encrypted: nothing in clear can be
+    // written there, not even by its owner.
+    function staysEncrypted() {
+      return request.resource.data.get('e', 0) == 1
+        && request.resource.data.get('enc', null) is map;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    match /users/{uid}/{collection}/{docId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && (!(collection in encryptedCollections()) || staysEncrypted());
     }
 
     // One entry per user, keyed by their lowercase email. Readable one at a
@@ -66,37 +97,20 @@ service cloud.firestore {
     }
 
     // Shared items, for collaborators (the owner is covered above). Also
-    // match the collection-group queries on `collaborators`. End-to-end
-    // encrypted items keep the shared content in `enc`: a collaborator
-    // writes `enc` and `updatedAt` and can never touch `keys`, `keyVer`
-    // (so a write made with a key the owner has just replaced is refused)
-    // or `priv` (the owner's). The other keys mirror `sharedKeys` of
-    // NoteModel, TaskModel and CalendarEventModel, for items still in clear
-    // (shared before encryption): to be dropped once none is left.
+    // match the collection-group queries on `collaborators`.
     match /{path=**}/notes/{noteId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate([
-        'enc', 'title', 'content', 'type', 'style', 'checklistItems',
-        'updatedAt'
-      ]);
+      allow update: if collaboratorUpdate();
     }
 
     match /{path=**}/tasks/{taskId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate([
-        'enc', 'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
-        'recurrenceExceptions', 'subtasks', 'updatedAt'
-      ]);
+      allow update: if collaboratorUpdate();
     }
 
     match /{path=**}/calendar_events/{eventId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate([
-        'enc', 'title', 'description', 'location', 'color', 'startTime', 'endTime',
-        'isAllDay', 'isBirthday', 'isNameDay', 'recurrence',
-        'recurrenceEndDate', 'recurrenceInterval', 'recurrenceWeekdays',
-        'recurrenceMonthWeek', 'recurrenceExceptions', 'updatedAt'
-      ]);
+      allow update: if collaboratorUpdate();
     }
   }
 }

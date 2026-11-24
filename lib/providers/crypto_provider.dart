@@ -358,6 +358,54 @@ class CryptoNotifier extends Notifier<CryptoState> {
     unawaited(_publishPublicKey(uid, keys.publicKey));
   }
 
+  /// The account's bundle read from the server (throws offline) and the
+  /// keys it holds, checked against [passphrase] (throws [CryptoException]
+  /// if wrong): settings changes need the current code and a connection,
+  /// so a change can't stay queued unseen.
+  Future<(UserKeyBundle, UnlockedKeys)> _verified(
+    String uid,
+    String passphrase,
+  ) async {
+    final snap = await _bundleDoc(
+      uid,
+    ).get(const GetOptions(source: Source.server));
+    final data = snap.data();
+    if (data == null) throw StateError('No keys for this account');
+    final bundle = UserKeyBundle.fromJson(data);
+    final keys = await _manager.unlockWithPassphrase(uid, bundle, passphrase);
+    return (bundle, keys);
+  }
+
+  Future<void> _saveBundle(String uid, UserKeyBundle bundle) =>
+      _bundleDoc(uid).set({
+        ...bundle.toJson(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+  /// Protects the keys with [newPassphrase] instead of [currentPassphrase]
+  /// (the master key and the data don't change).
+  Future<void> changePassphrase(
+    String currentPassphrase,
+    String newPassphrase,
+  ) async {
+    final uid = _uid;
+    final (bundle, keys) = await _verified(uid, currentPassphrase);
+    await _saveBundle(
+      uid,
+      await _manager.withPassphrase(uid, bundle, keys, newPassphrase),
+    );
+  }
+
+  /// Replaces the recovery key (the old one stops working) and returns the
+  /// new one as text, to show to the user.
+  Future<String> regenerateRecoveryKey(String currentPassphrase) async {
+    final uid = _uid;
+    final (bundle, keys) = await _verified(uid, currentPassphrase);
+    final renewed = await _manager.withNewRecoveryKey(uid, bundle, keys);
+    await _saveBundle(uid, renewed.bundle);
+    return CryptoService.formatRecoveryKey(renewed.recoveryKey);
+  }
+
   /// The user has saved the recovery key shown after setup or recovery.
   void acknowledgeRecoveryKey() {
     final current = state;
