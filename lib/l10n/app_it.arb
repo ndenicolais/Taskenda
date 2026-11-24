@@ -579,8 +579,8 @@
   "infoFeatureTasksText": "Organizza impegni ed eventi giorno per giorno",
   "infoFeatureRemindersTitle": "Notifiche",
   "infoFeatureRemindersText": "Notifiche puntuali e widget nella schermata Home",
-  "infoFeatureSyncTitle": "Sincronizzazione e backup",
-  "infoFeatureSyncText": "Dati sul tuo account, backup ed esportazione in PDF, TXT, JSON, CSV e HTML",
+  "infoFeatureSyncTitle": "Sincronizzazione cifrata e backup",
+  "infoFeatureSyncText": "Dati sul tuo account cifrati end-to-end: solo tu e le persone con cui condividi possono leggerli. Backup ed esportazione in PDF, TXT, JSON, CSV e HTML",
   "infoLinksTitle": "Link",
   "infoLinkSource": "Codice sorgente",
   "infoLinkDeveloper": "Profilo GitHub",
@@ -762,7 +762,7 @@
       }
     }
   },
-  "infoDescription": "Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account e disponibili su ogni dispositivo.",
+  "infoDescription": "Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account con la cifratura end-to-end e disponibili su ogni dispositivo.",
   "statsCompletedOf": "Completati: {completed} / {total}",
   "@statsCompletedOf": {
     "placeholders": {

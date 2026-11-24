@@ -1631,11 +1631,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Notifiche puntuali e widget nella schermata Home';
 
   @override
-  String get infoFeatureSyncTitle => 'Sincronizzazione e backup';
+  String get infoFeatureSyncTitle => 'Sincronizzazione cifrata e backup';
 
   @override
   String get infoFeatureSyncText =>
-      'Dati sul tuo account, backup ed esportazione in PDF, TXT, JSON, CSV e HTML';
+      'Dati sul tuo account cifrati end-to-end: solo tu e le persone con cui condividi possono leggerli. Backup ed esportazione in PDF, TXT, JSON, CSV e HTML';
 
   @override
   String get infoLinksTitle => 'Link';
@@ -2069,7 +2069,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get infoDescription =>
-      'Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account e disponibili su ogni dispositivo.';
+      'Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account con la cifratura end-to-end e disponibili su ogni dispositivo.';
 
   @override
   String statsCompletedOf(int completed, int total) {

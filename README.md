@@ -48,8 +48,8 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 | 📤 **Export and backup** | Notes as PDF, TXT, CSV, HTML or JSON, full backups and calendar import/export in ICS |
 | 📱 **Home screen widgets** | Scrolling lists of notes, tasks and upcoming calendar entries, and quick actions to create a note, task or event |
 | 🔐 **Authentication** | Sign in with a Google account or email and password |
-| 🔒 **End-to-end encryption** | Notes, tasks, events, labels and lists are encrypted on your device with a code only you know: nobody else can read them, not even the developer; shared items can be read only by the people you add. A recovery code lets you get your data back if you forget the code, and you can change both in Settings |
-| ☁️ **Sync** | Notes, tasks, lists, labels and events are stored on Cloud Firestore, and changes made offline sync later |
+| 🔒 **End-to-end encryption** | Notes, tasks, events, labels and lists are encrypted on your device before they are saved: nobody else can read them, not even the developer, and a shared item can be read only by the people you add |
+| ☁️ **Sync** | Notes, tasks, lists, labels and events are stored encrypted on Cloud Firestore, and changes made offline sync later |
 | 🌍 **Web app** | The same account in the browser at [taskenda21.web.app](https://taskenda21.web.app), without reminders, voice recording, widgets and automatic backups |
 | 🌍 **Multilingual** | Italian and English |
 | 🌗 **Theme** | System / Light / Dark theme |

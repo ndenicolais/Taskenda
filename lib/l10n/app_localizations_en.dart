@@ -1620,11 +1620,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Timely notifications and a Home screen widget';
 
   @override
-  String get infoFeatureSyncTitle => 'Sync and backup';
+  String get infoFeatureSyncTitle => 'Encrypted sync and backup';
 
   @override
   String get infoFeatureSyncText =>
-      'Data on your account, backups and export to PDF, TXT, JSON, CSV and HTML';
+      'Data on your account, end-to-end encrypted: only you and the people you share with can read it. Backups and export to PDF, TXT, JSON, CSV and HTML';
 
   @override
   String get infoLinksTitle => 'Links';
@@ -2055,7 +2055,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get infoDescription =>
-      'Taskenda brings together notes, checklists, tasks and calendar events, synced to your account and available on every device.';
+      'Taskenda brings together notes, checklists, tasks and calendar events, synced to your account with end-to-end encryption and available on every device.';
 
   @override
   String statsCompletedOf(int completed, int total) {

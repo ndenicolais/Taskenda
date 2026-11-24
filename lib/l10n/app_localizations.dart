@@ -2849,13 +2849,13 @@ abstract class AppLocalizations {
   /// No description provided for @infoFeatureSyncTitle.
   ///
   /// In it, this message translates to:
-  /// **'Sincronizzazione e backup'**
+  /// **'Sincronizzazione cifrata e backup'**
   String get infoFeatureSyncTitle;
 
   /// No description provided for @infoFeatureSyncText.
   ///
   /// In it, this message translates to:
-  /// **'Dati sul tuo account, backup ed esportazione in PDF, TXT, JSON, CSV e HTML'**
+  /// **'Dati sul tuo account cifrati end-to-end: solo tu e le persone con cui condividi possono leggerli. Backup ed esportazione in PDF, TXT, JSON, CSV e HTML'**
   String get infoFeatureSyncText;
 
   /// No description provided for @infoLinksTitle.
@@ -3611,7 +3611,7 @@ abstract class AppLocalizations {
   /// No description provided for @infoDescription.
   ///
   /// In it, this message translates to:
-  /// **'Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account e disponibili su ogni dispositivo.'**
+  /// **'Taskenda raccoglie note, liste di controllo, attività ed eventi del calendario, sincronizzati sul tuo account con la cifratura end-to-end e disponibili su ogni dispositivo.'**
   String get infoDescription;
 
   /// No description provided for @statsCompletedOf.
