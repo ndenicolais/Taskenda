@@ -79,4 +79,43 @@ class PlainItemCipher implements ItemCipher {
 
   @override
   void forget(String collection, String id) {}
+
+  /// Never encrypted: the sharing code takes its clear paths.
+  @override
+  int? keyVersion(String collection, String id) => null;
+
+  @override
+  Future<Map<String, dynamic>> encodeContent(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+  }) => throw UnsupportedError('Plain cipher');
+
+  @override
+  Future<Map<String, dynamic>> encryptSharedContent(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+  }) => throw UnsupportedError('Plain cipher');
+
+  @override
+  Future<Map<String, dynamic>> sealItemKey(
+    String collection,
+    String id, {
+    required String recipientUid,
+    required List<int> publicKey,
+  }) => throw UnsupportedError('Plain cipher');
+
+  @override
+  Future<Map<String, dynamic>> rotate(
+    String collection,
+    String id,
+    Map<String, dynamic> json, {
+    required List<String> contentKeys,
+    List<String> privateKeys = const [],
+    required Map<String, List<int>> recipients,
+  }) => throw UnsupportedError('Plain cipher');
 }

@@ -66,19 +66,25 @@ service cloud.firestore {
     }
 
     // Shared items, for collaborators (the owner is covered above). Also
-    // match the collection-group queries on `collaborators`. The key lists
-    // mirror `sharedKeys` of NoteModel, TaskModel and CalendarEventModel.
+    // match the collection-group queries on `collaborators`. End-to-end
+    // encrypted items keep the shared content in `enc`: a collaborator
+    // writes `enc` and `updatedAt` and can never touch `keys`, `keyVer`
+    // (so a write made with a key the owner has just replaced is refused)
+    // or `priv` (the owner's). The other keys mirror `sharedKeys` of
+    // NoteModel, TaskModel and CalendarEventModel, for items still in clear
+    // (shared before encryption): to be dropped once none is left.
     match /{path=**}/notes/{noteId} {
       allow read: if isCollaborator();
       allow update: if collaboratorUpdate([
-        'title', 'content', 'type', 'style', 'checklistItems', 'updatedAt'
+        'enc', 'title', 'content', 'type', 'style', 'checklistItems',
+        'updatedAt'
       ]);
     }
 
     match /{path=**}/tasks/{taskId} {
       allow read: if isCollaborator();
       allow update: if collaboratorUpdate([
-        'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
+        'enc', 'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
         'recurrenceExceptions', 'subtasks', 'updatedAt'
       ]);
     }
@@ -86,7 +92,7 @@ service cloud.firestore {
     match /{path=**}/calendar_events/{eventId} {
       allow read: if isCollaborator();
       allow update: if collaboratorUpdate([
-        'title', 'description', 'location', 'color', 'startTime', 'endTime',
+        'enc', 'title', 'description', 'location', 'color', 'startTime', 'endTime',
         'isAllDay', 'isBirthday', 'isNameDay', 'recurrence',
         'recurrenceEndDate', 'recurrenceInterval', 'recurrenceWeekdays',
         'recurrenceMonthWeek', 'recurrenceExceptions', 'updatedAt'

@@ -119,6 +119,48 @@ final itemCipherProvider = Provider<ItemCipher?>((ref) {
   );
 });
 
+/// The users' public keys (`public_keys/{uid}`), to seal item keys for
+/// collaborators.
+class PublicKeyDirectory {
+  PublicKeyDirectory(this._ref);
+
+  final Ref _ref;
+
+  /// The public key of [uid], null if they haven't set up encryption.
+  Future<Uint8List?> publicKeyOf(String uid) async {
+    final snap =
+        await _ref
+            .read(firestoreProvider)
+            .collection('public_keys')
+            .doc(uid)
+            .get();
+    final pk = snap.data()?['pk'];
+    if (pk is! String) return null;
+    try {
+      final bytes = base64Decode(pk);
+      return bytes.length == CryptoService.keyLength ? bytes : null;
+    } on FormatException {
+      return null;
+    }
+  }
+
+  /// The public keys of [uids]; throws [MissingPublicKeyException] for the
+  /// first one without.
+  Future<Map<String, List<int>>> publicKeysOf(Iterable<String> uids) async {
+    final result = <String, List<int>>{};
+    for (final uid in uids) {
+      final pk = await publicKeyOf(uid);
+      if (pk == null) throw MissingPublicKeyException(uid);
+      result[uid] = pk;
+    }
+    return result;
+  }
+}
+
+final publicKeyDirectoryProvider = Provider<PublicKeyDirectory>(
+  PublicKeyDirectory.new,
+);
+
 /// The collections under `users/{uid}/` whose documents are encrypted.
 const encryptedCollections = [
   'notes',

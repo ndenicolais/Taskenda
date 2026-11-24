@@ -733,5 +733,6 @@
   "cryptoContinue": "Continue",
   "cryptoLoadErrorTitle": "Can't check encryption",
   "cryptoLoadErrorBody": "The first sign-in on this device needs an internet connection. Check your connection and try again.",
-  "cryptoNeedsConnection": "An internet connection is needed. Check your connection and try again."
+  "cryptoNeedsConnection": "An internet connection is needed. Check your connection and try again.",
+  "shareErrorNoEncryption": "This person hasn't turned on encryption yet. Ask them to update Taskenda and sign in, then try again."
 }

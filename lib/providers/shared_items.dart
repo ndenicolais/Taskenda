@@ -19,6 +19,7 @@ import '../core/crypto/item_codec.dart';
 import '../models/share_member.dart';
 import '../models/sharing.dart';
 import 'core_providers.dart';
+import 'crypto_provider.dart';
 import 'sharing_provider.dart';
 import 'sync_provider.dart';
 
@@ -44,9 +45,10 @@ final sharedWithMeQueryProvider = Provider<
 ///   instead (the item stays with its owner);
 /// - after the first load the shared items are live (see
 ///   [startSharedListeners]), unlike the rest of the state;
-/// - the documents go through [cipher]: an item neither shared by nor with
-///   this user is encrypted, the shared ones stay in clear until sharing is
-///   end-to-end encrypted too (phase 4 of `guides/E2EE_PLAN.md`).
+/// - the documents go through [cipher] (end-to-end encryption, see
+///   `guides/E2EE_PLAN.md`): each item has its own key, wrapped for the
+///   owner and sealed for each collaborator; removing a collaborator, or
+///   one leaving, gives the item a new key.
 mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   /// The signed-in user's uid.
   String get sharingUid;
@@ -102,26 +104,111 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     }
   }
 
-  /// Writes again, encrypted, the own items of [docs] still stored in clear
-  /// (written before end-to-end encryption) that aren't shared. Best effort,
-  /// not awaited by the loads: it is retried at the next load.
-  Future<void> encryptLegacyDocs(
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  List<String> _contentKeys(T item) =>
+      ItemCodec.contentKeys(item.sharedContentKeys);
+
+  /// True if [item]'s document is encrypted with a key this user has.
+  bool _hasKey(T item) =>
+      cipher.encrypts && cipher.keyVersion(sharedCollection, item.id) != null;
+
+  /// The deletes of the fields a document in clear had, when it becomes
+  /// encrypted with an update.
+  Map<String, Object> _clearContentDeletes(T item) => {
+    for (final k in [..._contentKeys(item), ...privateKeys])
+      k: FieldValue.delete(),
+  };
+
+  /// The whole encrypted document of the own shared [item] with a new item
+  /// key, sealed for its current collaborators. Throws
+  /// [MissingPublicKeyException] if one of them has no public key.
+  Future<Map<String, dynamic>> _rotated(T item) async => cipher.rotate(
+    sharedCollection,
+    item.id,
+    item.toJson(),
+    contentKeys: _contentKeys(item),
+    privateKeys: privateKeys,
+    recipients: await ref
+        .read(publicKeyDirectoryProvider)
+        .publicKeysOf(item.collaborators.map((c) => c.uid)),
+  );
+
+  /// The personal fields of an item shared with this user, as stored in
+  /// [sharedPrefsCollection]: its labels encrypted with the master key.
+  Future<Map<String, dynamic>> _encodePrefs(T item) => cipher.encodeNamed(
+    sharedPrefsCollection,
+    item.id,
+    item.personalJson(),
+    contentKeys: const ['tags'],
+  );
+
+  Set<String>? _syncing;
+
+  /// Brings the own documents among [docs] up to date with end-to-end
+  /// encryption, in the background (best effort, retried at the next load):
+  /// - written in clear before it (or shared in clear): written again
+  ///   encrypted;
+  /// - shared, with a key entry for someone no longer a collaborator (they
+  ///   left) or none for a collaborator: a new item key for the current
+  ///   collaborators.
+  Future<void> syncEncryption(
+    Iterable<DocumentSnapshot<Map<String, dynamic>>> docs,
   ) async {
     if (!cipher.encrypts) return;
+    final syncing = _syncing ??= {};
     final legacy = <T>[];
+    final rekey = <T>[];
     for (final doc in docs) {
-      if (ItemCodec.isEncrypted(doc.data())) continue;
+      final data = doc.data();
       final item = itemById(doc.id);
-      if (item != null && isPlainItem(item)) legacy.add(item);
+      if (data == null || item == null || item.isForeignTo(sharingUid)) {
+        continue;
+      }
+      if (syncing.contains(item.id)) continue;
+      if (!ItemCodec.isEncrypted(data)) {
+        legacy.add(item);
+        continue;
+      }
+      final keys = data[ItemCodec.keysField];
+      if (keys is! Map) continue;
+      // Also for an item no longer shared: the last collaborator left.
+      final members = {sharingUid, ...item.collaborators.map((c) => c.uid)};
+      if (!setEquals(keys.keys.toSet(), members)) rekey.add(item);
     }
-    if (legacy.isEmpty) return;
+    final ids = [...legacy, ...rekey].map((i) => i.id).toList();
+    if (ids.isEmpty) return;
+    syncing.addAll(ids);
     try {
       await commitInChunks([
         for (final item in legacy) (WriteBatch b) => writeItem(b, item),
+        for (final item in rekey) (WriteBatch b) => _writeRekeyed(b, item),
       ]);
     } catch (e) {
-      if (kDebugMode) debugPrint('$sharedCollection not encrypted yet: $e');
+      if (kDebugMode) debugPrint('$sharedCollection encryption not synced: $e');
+    } finally {
+      syncing.removeAll(ids);
+    }
+  }
+
+  /// Adds to [b] the own [item] encrypted with a new item key (next
+  /// version), for its current collaborators only.
+  Future<void> _writeRekeyed(WriteBatch b, T item) async {
+    final json = item.toJson();
+    final inBlob = {..._contentKeys(item), ...privateKeys};
+    final clear = {
+      for (final e in json.entries)
+        if (!inBlob.contains(e.key)) e.key: e.value,
+    };
+    final rotated = await _rotated(item);
+    if (item.isShared) {
+      b.update(ownCollection.doc(item.id), {
+        ...clear,
+        ...rotated,
+        for (final k in item.optionalKeys)
+          if (!json.containsKey(k) && !inBlob.contains(k))
+            k: FieldValue.delete(),
+      });
+    } else {
+      b.set(ownCollection.doc(item.id), {...clear, ...rotated});
     }
   }
 
@@ -163,30 +250,84 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
 
   /// Adds to [b] the writes persisting [item]:
   /// - shared with this user: its shared content on the owner's document
-  ///   (the only fields the rules let a collaborator change) and its
-  ///   personal fields in [sharedPrefsCollection];
-  /// - own and shared: an update leaving the sharing fields alone, so a
-  ///   collaborator who left meanwhile is not added back; in clear, so
-  ///   the encrypted fields of a document shared after it was encrypted
-  ///   are removed;
+  ///   (the only fields the rules let a collaborator change: `enc`, with
+  ///   the `keyVer` it was encrypted for, so a write made with a key the
+  ///   owner has just replaced is refused) and its personal fields in
+  ///   [sharedPrefsCollection];
+  /// - own and shared: an update leaving the sharing fields (and `keys`)
+  ///   alone, so a collaborator who left meanwhile is not added back; a
+  ///   document still in clear gets a new key sealed for the collaborators;
   /// - any other: the whole document, encrypted.
+  ///
+  /// Documents in clear stay in clear while a collaborator has no public
+  /// key yet (or with a cipher that doesn't encrypt, in tests).
   Future<void> writeItem(WriteBatch b, T item) async {
     if (item.isForeignTo(sharingUid)) {
-      b.update(docOf(item), {
-        for (final e in item.sharedContentJson().entries)
-          e.key: e.value ?? FieldValue.delete(),
-      });
-      b.set(prefsCollection.doc(item.id), item.personalJson());
+      if (_hasKey(item)) {
+        final json = item.toJson();
+        b.update(docOf(item), {
+          ItemCodec.contentField: await cipher.encryptSharedContent(
+            sharedCollection,
+            item.id,
+            json,
+            contentKeys: _contentKeys(item),
+          ),
+          'updatedAt': json['updatedAt'],
+          ItemCodec.keyVersionField: cipher.keyVersion(
+            sharedCollection,
+            item.id,
+          ),
+        });
+      } else {
+        b.update(docOf(item), {
+          for (final e in item.sharedContentJson().entries)
+            e.key: e.value ?? FieldValue.delete(),
+        });
+      }
+      b.set(prefsCollection.doc(item.id), await _encodePrefs(item));
     } else if (item.isShared) {
       final json = item.toJson();
+      final encrypted = await _encryptedSharedFields(item);
+      final inBlob = {..._contentKeys(item), ...privateKeys};
       b.update(ownCollection.doc(item.id), {
-        ...json,
+        if (encrypted == null)
+          ...json
+        else ...{
+          for (final e in json.entries)
+            if (!inBlob.contains(e.key)) e.key: e.value,
+          ..._clearContentDeletes(item),
+          ...encrypted,
+        },
         for (final k in item.optionalKeys)
-          if (!json.containsKey(k)) k: FieldValue.delete(),
-        if (cipher.encrypts) ...ItemCipher.clearCodecFields,
+          if (!json.containsKey(k) &&
+              (encrypted == null || !inBlob.contains(k)))
+            k: FieldValue.delete(),
       });
     } else {
       b.set(ownCollection.doc(item.id), await encodeItem(item));
+    }
+  }
+
+  /// The encrypted fields for an update of the own shared [item]: with its
+  /// current key, or a new one sealed for the collaborators if the document
+  /// is in clear; null to keep it in clear (a collaborator without a public
+  /// key, or a cipher that doesn't encrypt).
+  Future<Map<String, dynamic>?> _encryptedSharedFields(T item) async {
+    if (!cipher.encrypts) return null;
+    if (_hasKey(item)) {
+      return cipher.encodeContent(
+        sharedCollection,
+        item.id,
+        item.toJson(),
+        contentKeys: _contentKeys(item),
+        privateKeys: privateKeys,
+      );
+    }
+    try {
+      return await _rotated(item);
+    } on MissingPublicKeyException catch (e) {
+      if (kDebugMode) debugPrint('${item.id} stays in clear: $e');
+      return null;
     }
   }
 
@@ -254,7 +395,19 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         ref.read(sharedWithMeQueryProvider)(sharedCollection, uid).get(),
         prefsCol.get(),
       ]);
-      final prefs = {for (final d in results[1].docs) d.id: d.data()};
+      final prefs = <String, Map<String, dynamic>>{};
+      for (final d in results[1].docs) {
+        try {
+          prefs[d.id] = await cipher.decode(
+            sharedPrefsCollection,
+            d.id,
+            d.data(),
+          );
+        } catch (e) {
+          // Unreadable: the item shows with default personal fields.
+          if (kDebugMode) debugPrint('$sharedPrefsCollection/${d.id}: $e');
+        }
+      }
       final items = <T>[];
       final sharedIds = <String>{};
       for (final doc in results[0].docs) {
@@ -391,6 +544,7 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
   ) async {
     if (sharingDisposed || uid != sharingUid) return;
     final updates = <String, T?>{};
+    final changed = <DocumentSnapshot<Map<String, dynamic>>>[];
     for (final change in snap.docChanges) {
       final doc = change.doc;
       final current = itemById(doc.id);
@@ -403,6 +557,7 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
         continue;
       }
       if (doc.metadata.hasPendingWrites) continue;
+      changed.add(doc);
       final data = await decodeDoc(doc);
       if (data == null) continue;
       final item = sharedFromJson(data);
@@ -415,13 +570,16 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     }
     if (sharingDisposed || uid != sharingUid) return;
     _applyLive(updates);
+    // A collaborator who left: the item gets a new key.
+    syncEncryption(changed).ignore();
   }
 
   // ── Collaborators ─────────────────────────────────────────────────────────
 
-  /// Shares the own item [id] with the Taskenda user signed up with [email].
-  /// Throws [ShareException] if nobody uses Taskenda with that email, it is
-  /// the current user's or they already are a collaborator.
+  /// Shares the own item [id] with the Taskenda user signed up with [email]:
+  /// the item key is sealed for their public key. Throws [ShareException] if
+  /// nobody uses Taskenda with that email, it is the current user's, they
+  /// already are a collaborator or haven't set up encryption yet.
   Future<ShareMember> addCollaborator(String id, String email) async {
     final me = ref.read(currentShareMemberProvider);
     final item = itemById(id);
@@ -438,6 +596,13 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     final member = await ref.read(userDirectoryProvider).lookup(key);
     if (member == null) throw const ShareException(ShareError.notFound);
     if (member.uid == sharingUid) throw const ShareException(ShareError.self);
+    final publicKey =
+        cipher.encrypts
+            ? await ref.read(publicKeyDirectoryProvider).publicKeyOf(member.uid)
+            : null;
+    if (cipher.encrypts && publicKey == null) {
+      throw const ShareException(ShareError.noEncryption);
+    }
     // Re-read: the item may have changed during the lookup.
     final current = itemById(id);
     if (current == null) throw StateError('Item deleted meanwhile');
@@ -454,20 +619,51 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     );
     await mutate(
       (list) => [for (final i in list) i.id == id ? updated : i],
-      () => ownCollection.doc(id).update({
-        // Shared items are in clear for now: the content is written again
-        // without the encrypted fields.
-        if (cipher.encrypts && !current.isShared) ...{
-          ...current.toJson(),
-          ...ItemCipher.clearCodecFields,
-        },
-        'ownerId': uid,
-        'owner': me.toProfileJson(),
-        'collaborators': FieldValue.arrayUnion([member.uid]),
-        'collaboratorProfiles.${member.uid}': member.toProfileJson(),
-      }),
+      () async {
+        final data = <String, Object?>{
+          'ownerId': uid,
+          'owner': me.toProfileJson(),
+          'collaborators': FieldValue.arrayUnion([member.uid]),
+          'collaboratorProfiles.${member.uid}': member.toProfileJson(),
+        };
+        if (publicKey != null) {
+          data.addAll(
+            await _keysForNewMember(current, updated, member.uid, publicKey),
+          );
+        }
+        await ownCollection.doc(id).update(data);
+      },
     );
     return member;
+  }
+
+  /// The fields giving [memberUid] the key of [current] (before sharing)
+  /// as [updated] (after): their sealed entry in `keys`, or, for a
+  /// document still in clear, the whole document encrypted with a new key
+  /// for every collaborator (kept in clear if an older one has no public
+  /// key yet).
+  Future<Map<String, Object?>> _keysForNewMember(
+    T current,
+    T updated,
+    String memberUid,
+    List<int> publicKey,
+  ) async {
+    if (_hasKey(current)) {
+      return {
+        '${ItemCodec.keysField}.$memberUid': await cipher.sealItemKey(
+          sharedCollection,
+          current.id,
+          recipientUid: memberUid,
+          publicKey: publicKey,
+        ),
+      };
+    }
+    try {
+      return {..._clearContentDeletes(current), ...await _rotated(updated)};
+    } on MissingPublicKeyException catch (e) {
+      if (kDebugMode) debugPrint('${current.id} shared in clear: $e');
+      return const {};
+    }
   }
 
   /// Stops sharing the own item [id] with [collaboratorUid].
@@ -488,7 +684,26 @@ mixin SharedItems<T extends Shareable<T>> on FirestoreListMutations<T> {
     );
     await mutate(
       (list) => [for (final i in list) i.id == id ? updated : i],
-      () => ownCollection.doc(id).update(_leaveData(collaboratorUid)),
+      () async {
+        final data = <String, Object?>{..._leaveData(collaboratorUid)};
+        if (_hasKey(item)) {
+          // A new key for those who stay: the removed collaborator only has
+          // the old one, which opens nothing written from now on.
+          try {
+            data.addAll(await _rotated(updated));
+          } catch (_) {
+            cipher.forget(sharedCollection, id);
+            rethrow;
+          }
+        }
+        try {
+          await ownCollection.doc(id).update(data);
+        } catch (_) {
+          // Not written: read the key again from the document.
+          cipher.forget(sharedCollection, id);
+          rethrow;
+        }
+      },
     );
   }
 

@@ -71,7 +71,9 @@ class UserDirectory {
 final userDirectoryProvider = Provider<UserDirectory>(UserDirectory.new);
 
 /// Why [UserDirectory.lookup]-based sharing refused an email.
-enum ShareError { notFound, self, alreadyAdded }
+/// [noEncryption]: the user exists but has no public key yet (they haven't
+/// set up end-to-end encryption), so nothing can be shared with them.
+enum ShareError { notFound, self, alreadyAdded, noEncryption }
 
 /// Thrown by the sharing methods of the data notifiers.
 class ShareException implements Exception {

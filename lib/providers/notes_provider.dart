@@ -148,7 +148,7 @@ class NotesNotifier extends Notifier<List<NoteModel>>
       // Not awaited: offline the deletes stay queued and must not hold up
       // the loading flag.
       _purgeOldTrashFirestore().ignore();
-      encryptLegacyDocs(snap.docs).ignore();
+      syncEncryption(snap.docs).ignore();
     } catch (e) {
       if (!_disposed) _onLoadError(e);
     } finally {

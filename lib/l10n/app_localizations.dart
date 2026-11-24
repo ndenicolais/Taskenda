@@ -4225,6 +4225,12 @@ abstract class AppLocalizations {
   /// In it, this message translates to:
   /// **'Serve una connessione a internet. Controlla la connessione e riprova.'**
   String get cryptoNeedsConnection;
+
+  /// No description provided for @shareErrorNoEncryption.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa persona non ha ancora attivato la cifratura. Chiedile di aggiornare Taskenda e di accedere, poi riprova.'**
+  String get shareErrorNoEncryption;
 }
 
 class _AppLocalizationsDelegate

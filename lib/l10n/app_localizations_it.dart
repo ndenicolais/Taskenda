@@ -2432,4 +2432,8 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get cryptoNeedsConnection =>
       'Serve una connessione a internet. Controlla la connessione e riprova.';
+
+  @override
+  String get shareErrorNoEncryption =>
+      'Questa persona non ha ancora attivato la cifratura. Chiedile di aggiornare Taskenda e di accedere, poi riprova.';
 }

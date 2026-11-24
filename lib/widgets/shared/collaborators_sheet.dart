@@ -115,6 +115,7 @@ class _CollaboratorsSheetState extends ConsumerState<CollaboratorsSheet> {
     ShareError.notFound => context.l10n.shareErrorNotFound,
     ShareError.self => context.l10n.shareErrorSelf,
     ShareError.alreadyAdded => context.l10n.shareErrorAlreadyAdded,
+    ShareError.noEncryption => context.l10n.shareErrorNoEncryption,
   };
 
   Future<void> _add() async {

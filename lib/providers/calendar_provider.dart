@@ -150,7 +150,7 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
     if (!ready.isCompleted) ready.complete(true);
     // Not awaited: offline the deletes stay queued.
     _purgeOldTrashFirestore().ignore();
-    encryptLegacyDocs(snap.docs).ignore();
+    syncEncryption(snap.docs).ignore();
   }
 
   static String _id(CalendarEventModel e) => e.id;

@@ -5,7 +5,9 @@
 // note, task or event (users/{ownerId}/<collection>/{itemId}), every device
 // of each new collaborator (users/{uid}/fcm_tokens, saved by the app's
 // PushMessaging) gets a message in the language stored with its token.
-// Tokens rejected by FCM are deleted.
+// Tokens rejected by FCM are deleted. The content of the items is
+// end-to-end encrypted, so the message never carries it: only the owner's
+// name (in clear on shared items) and a generic text.
 //
 // searchPlaces: place suggestions for the event location field, from the
 // Google Places API (New) Autocomplete. The API key stays here, in the
@@ -34,14 +36,14 @@ const TEXTS = {
     task: (who) => `${who} ha condiviso un task con te`,
     event: (who) => `${who} ha condiviso un evento con te`,
     someone: "Qualcuno",
-    untitled: "Senza titolo",
+    open: "Tocca per aprirlo in Taskenda",
   },
   en: {
     note: (who) => `${who} shared a note with you`,
     task: (who) => `${who} shared a task with you`,
     event: (who) => `${who} shared an event with you`,
     someone: "Someone",
-    untitled: "Untitled",
+    open: "Tap to open it in Taskenda",
   },
 };
 
@@ -67,7 +69,6 @@ async function notifyNewCollaborators(collection, event) {
   if (added.length === 0) return;
 
   const ownerName = after.owner?.name || after.owner?.email || "";
-  const title = (after.title ?? "").trim();
   const db = getFirestore();
 
   await Promise.all(added.map(async (uid) => {
@@ -85,7 +86,7 @@ async function notifyNewCollaborators(collection, event) {
         tokens: docs.map((d) => d.id),
         notification: {
           title: t[kind](ownerName || t.someone),
-          body: title || t.untitled,
+          body: t.open,
         },
         data: {type: kind, id: itemId},
         android: {
