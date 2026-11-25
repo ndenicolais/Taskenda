@@ -85,7 +85,7 @@ Open [taskenda21.web.app](https://taskenda21.web.app) in a recent browser and si
 | State management | Riverpod |
 | Cloud database | Cloud Firestore (with offline persistence) |
 | Authentication | Firebase Auth + Google Sign In |
-| End-to-end encryption | cryptography (AES-256-GCM, PBKDF2, X25519), flutter_secure_storage |
+| End-to-end encryption | cryptography (AES-256-GCM, HKDF, X25519), passkeys (WebAuthn PRF), flutter_secure_storage |
 | Local persistence | SharedPreferences, app documents folder (audio, backups) |
 | Fonts | Manrope (titles) and Inter (text), plus six note fonts (bundled) |
 | Icons | Material Icons |
