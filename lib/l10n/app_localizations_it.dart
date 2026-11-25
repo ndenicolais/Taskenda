@@ -1151,6 +1151,61 @@ class AppLocalizationsIt extends AppLocalizations {
   String get calendarEventTrashed => 'Evento spostato nel cestino';
 
   @override
+  String calendarEventsTrashed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count eventi spostati nel cestino',
+      one: '1 evento spostato nel cestino',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selezionati',
+      one: '1 selezionato',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarSelected => 'Selezionato';
+
+  @override
+  String get calendarCancelSelection => 'Annulla selezione';
+
+  @override
+  String calendarDeleteSelectedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Elimina $count eventi',
+      one: 'Elimina evento',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarDeleteSelectedConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Vuoi spostare i $count eventi selezionati nel cestino? Per gli eventi che si ripetono va nel cestino tutta la serie.',
+      one:
+          'Vuoi spostare l\'evento selezionato nel cestino? Se si ripete, va nel cestino tutta la serie.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonSelectAll => 'Seleziona tutti';
+
+  @override
   String get calendarEventUnarchived => 'Evento rimosso dall\'archivio';
 
   @override

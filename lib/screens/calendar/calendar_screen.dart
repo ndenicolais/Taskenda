@@ -13,7 +13,9 @@ import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/calendar_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/calendar_provider.dart';
+import '../../providers/calendar_selection_provider.dart';
 import '../../theme/app_font_sizes.dart';
 import '../../theme/app_spacing.dart';
 import '../../widgets/nav_scaffold.dart';
@@ -24,6 +26,7 @@ import 'calendar_new_entry.dart';
 import 'calendar_schedule_view.dart';
 import 'calendar_search_bar.dart';
 import 'calendar_search_results_view.dart';
+import 'calendar_selection.dart';
 import 'calendar_year_view.dart';
 
 // ── Main widget ───────────────────────────────────────────────────────────────
@@ -195,7 +198,76 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
     final searchQuery = ref.watch(calendarSearchQueryProvider);
     final isSearching = searchQuery.isNotEmpty;
     final filteredEvents = ref.watch(filteredCalendarEventsProvider);
+    final selection = ref.watch(calendarSelectionProvider);
 
+    // Back leaves the selection before leaving the screen.
+    return PopScope(
+      canPop: selection.isEmpty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) ref.read(calendarSelectionProvider.notifier).clear();
+      },
+      child:
+          selection.isEmpty
+              ? _buildScaffold(
+                isSearching: isSearching,
+                showTasks: showTasks,
+                allEvents: allEvents,
+                filteredEvents: filteredEvents,
+              )
+              : NavScaffold(
+                section: DrawerSection.calendar,
+                titleWidget: CalendarSelectionActions.title(
+                  context,
+                  selection.length,
+                ),
+                appBarActions: CalendarSelectionActions.actions(
+                  context,
+                  ref,
+                  selectAllIds:
+                      isSearching ? _selectableIds(filteredEvents) : null,
+                ),
+                body: _buildBody(
+                  isSearching: isSearching,
+                  allEvents: allEvents,
+                  filteredEvents: filteredEvents,
+                ),
+              ),
+    );
+  }
+
+  /// The search results that can go in the multiple selection.
+  List<String> _selectableIds(List<CalendarEventModel> events) {
+    final uid = ref.read(currentUidProvider);
+    return [
+      for (final e in events)
+        if (isCalendarItemSelectable(e, uid)) e.id,
+    ];
+  }
+
+  Widget _buildBody({
+    required bool isSearching,
+    required List<CalendarEventModel> allEvents,
+    required List<CalendarEventModel> filteredEvents,
+  }) {
+    return Listener(
+      onPointerSignal: _handlePointerSignal,
+      child:
+          isSearching
+              ? CalendarSearchResultsView(events: filteredEvents)
+              // Blank until the cached events are in, instead of a
+              // "no events" placeholder flashing before them.
+              : !ref.watch(calendarCacheSeededProvider).hasValue
+              ? const SizedBox.shrink()
+              : _buildCurrentView(allEvents),
+    );
+  }
+
+  Widget _buildScaffold({
+    required bool isSearching,
+    required bool showTasks,
+    required List<CalendarEventModel> allEvents,
+    required List<CalendarEventModel> filteredEvents,
+  }) {
     return NavScaffold(
       section: DrawerSection.calendar,
       titleWidget: CalendarSearchBar(
@@ -254,16 +326,10 @@ class _CalendarWorkspaceViewState extends ConsumerState<CalendarWorkspaceView> {
           ),
         ],
       ],
-      body: Listener(
-        onPointerSignal: _handlePointerSignal,
-        child:
-            isSearching
-                ? CalendarSearchResultsView(events: filteredEvents)
-                // Blank until the cached events are in, instead of a
-                // "no events" placeholder flashing before them.
-                : !ref.watch(calendarCacheSeededProvider).hasValue
-                ? const SizedBox.shrink()
-                : _buildCurrentView(allEvents),
+      body: _buildBody(
+        isSearching: isSearching,
+        allEvents: allEvents,
+        filteredEvents: filteredEvents,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed:

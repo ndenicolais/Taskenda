@@ -9,9 +9,11 @@
 // GitHub: https://github.com/ndenicolais
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskenda/models/calendar_model.dart';
 import 'package:taskenda/models/task_model.dart';
+import 'package:taskenda/providers/auth_provider.dart';
 import 'package:taskenda/screens/calendar/calendar_schedule_view.dart';
 import 'package:taskenda/screens/calendar/calendar_time_grid.dart';
 import 'package:taskenda/screens/calendar/calendar_utils.dart';
@@ -19,11 +21,15 @@ import 'package:taskenda/utils/recurrence.dart';
 
 import '../helpers/l10n.dart';
 
-Widget _app(Widget child) => MaterialApp(
-  locale: testLocale,
-  supportedLocales: testSupportedLocales,
-  localizationsDelegates: testLocalizationsDelegates,
-  home: Scaffold(body: child),
+// The schedule cards read the multiple selection (and the uid) from Riverpod.
+Widget _app(Widget child) => ProviderScope(
+  overrides: [currentUidProvider.overrideWithValue('u')],
+  child: MaterialApp(
+    locale: testLocale,
+    supportedLocales: testSupportedLocales,
+    localizationsDelegates: testLocalizationsDelegates,
+    home: Scaffold(body: child),
+  ),
 );
 
 void main() {

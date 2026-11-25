@@ -1147,6 +1147,61 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarEventTrashed => 'Event moved to trash';
 
   @override
+  String calendarEventsTrashed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count events moved to trash',
+      one: '1 event moved to trash',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count selected',
+      one: '1 selected',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get calendarSelected => 'Selected';
+
+  @override
+  String get calendarCancelSelection => 'Cancel selection';
+
+  @override
+  String calendarDeleteSelectedTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count events',
+      one: 'Delete event',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String calendarDeleteSelectedConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Move the $count selected events to the trash? For repeating events, the whole series goes to the trash.',
+      one:
+          'Move the selected event to the trash? If it repeats, the whole series goes to the trash.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commonSelectAll => 'Select all';
+
+  @override
   String get calendarEventUnarchived => 'Event removed from archive';
 
   @override

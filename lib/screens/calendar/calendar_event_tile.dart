@@ -55,6 +55,8 @@ class CalendarEventListTile extends StatelessWidget {
     super.key,
     required this.event,
     required this.onTap,
+    this.onLongPress,
+    this.selected = false,
     this.dense = false,
     this.padding = const EdgeInsets.symmetric(
       horizontal: AppSpacing.md,
@@ -64,6 +66,12 @@ class CalendarEventListTile extends StatelessWidget {
 
   final CalendarEventModel event;
   final VoidCallback onTap;
+
+  /// Starts the multiple selection (null: the card can't be selected).
+  final VoidCallback? onLongPress;
+
+  /// Selected for a bulk delete: outlined, with a check mark.
+  final bool selected;
   final bool dense;
   final EdgeInsetsGeometry padding;
 
@@ -74,52 +82,74 @@ class CalendarEventListTile extends StatelessWidget {
     final subtitle = calendarItemSubtitle(context.l10n, event);
     final festive = style.isFestive;
     final radius = BorderRadius.circular(festive ? 12 : 8);
+    final primary = Theme.of(context).colorScheme.primary;
+    return Padding(
+      padding: padding,
+      child: Container(
+        foregroundDecoration:
+            selected
+                ? BoxDecoration(
+                  borderRadius: radius,
+                  border: Border.all(color: primary, width: 2),
+                )
+                : null,
+        child: _card(context, style, isDark, subtitle, festive, radius),
+      ),
+    );
+  }
+
+  Widget _card(
+    BuildContext context,
+    CalendarItemStyle style,
+    bool isDark,
+    String? subtitle,
+    bool festive,
+    BorderRadius radius,
+  ) {
     final double vertical =
         festive
             ? (dense ? AppSpacing.md : AppSpacing.lg)
             : (dense ? AppSpacing.sm : AppSpacing.md);
-    return Padding(
-      padding: padding,
-      child: Material(
-        color: festive ? Colors.transparent : style.background,
-        borderRadius: radius,
-        // Clips the side bar (a non-uniform border) to the rounded shape.
-        clipBehavior: Clip.antiAlias,
-        child: Ink(
-          decoration:
+    return Material(
+      color: festive ? Colors.transparent : style.background,
+      borderRadius: radius,
+      // Clips the side bar (a non-uniform border) to the rounded shape.
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration:
+            festive
+                ? BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [style.background, style.festiveEnd!],
+                  ),
+                )
+                : BoxDecoration(border: style.sideBar(4)),
+        child: CustomPaint(
+          painter:
               festive
-                  ? BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [style.background, style.festiveEnd!],
-                    ),
+                  ? _ConfettiPainter(
+                    seed: event.title.hashCode,
+                    isDark: isDark,
+                    accent: style.accent,
                   )
-                  : BoxDecoration(border: style.sideBar(4)),
-          child: CustomPaint(
-            painter:
-                festive
-                    ? _ConfettiPainter(
-                      seed: event.title.hashCode,
-                      isDark: isDark,
-                      accent: style.accent,
-                    )
-                    : style.texture != null
-                    ? EventTexturePainter(
-                      texture: style.texture!,
-                      color: style.textureColor(isDark),
-                    )
-                    : null,
-            child: InkWell(
-              borderRadius: radius,
-              onTap: onTap,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: vertical,
-                ),
-                child: _content(context, style, subtitle, festive),
+                  : style.texture != null
+                  ? EventTexturePainter(
+                    texture: style.texture!,
+                    color: style.textureColor(isDark),
+                  )
+                  : null,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            onLongPress: onLongPress,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: vertical,
               ),
+              child: _content(context, style, subtitle, festive),
             ),
           ),
         ),
@@ -187,6 +217,16 @@ class CalendarEventListTile extends StatelessWidget {
               size: 16,
               color: style.foreground.withValues(alpha: 0.85),
               semanticLabel: context.l10n.shareSharedLabel,
+            ),
+          ),
+        if (selected)
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.sm),
+            child: Icon(
+              Icons.check_circle,
+              size: 20,
+              color: Theme.of(context).colorScheme.primary,
+              semanticLabel: context.l10n.calendarSelected,
             ),
           ),
       ],

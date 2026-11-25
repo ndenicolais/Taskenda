@@ -263,6 +263,38 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
     );
   }
 
+  /// Moves the events [ids] to the trash with one batched write (bulk
+  /// delete from the calendar selection).
+  Future<void> softDeleteMany(Set<String> ids) =>
+      _setDeletedAt(ids, DateTime.now());
+
+  /// Puts the events [ids] back from the trash (undo of [softDeleteMany]).
+  Future<void> restoreManyFromTrash(Set<String> ids) =>
+      _setDeletedAt(ids, null);
+
+  Future<void> _setDeletedAt(Set<String> ids, DateTime? deletedAt) {
+    final updated = [
+      for (final e in state)
+        if (ids.contains(e.id))
+          withCurrentSharing(
+            deletedAt == null
+                ? e.copyWith(clearDeletedAt: true)
+                : e.copyWith(deletedAt: deletedAt, isArchived: false),
+          ),
+    ];
+    if (updated.isEmpty) return Future.value();
+    for (final e in updated) {
+      _syncAlerts(e).ignore();
+    }
+    final byId = {for (final e in updated) e.id: e};
+    return mutate(
+      (current) => [for (final e in current) byId[e.id] ?? e],
+      () => commitInChunks([
+        for (final e in updated) (WriteBatch b) => writeItem(b, e),
+      ]),
+    );
+  }
+
   Future<void> restoreFromTrash(String id) async {
     final updated = state
         .firstWhere((e) => e.id == id)

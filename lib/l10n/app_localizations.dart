@@ -2216,6 +2216,48 @@ abstract class AppLocalizations {
   /// **'Evento spostato nel cestino'**
   String get calendarEventTrashed;
 
+  /// No description provided for @calendarEventsTrashed.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 evento spostato nel cestino} other{{count} eventi spostati nel cestino}}'**
+  String calendarEventsTrashed(int count);
+
+  /// No description provided for @calendarSelectedCount.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{1 selezionato} other{{count} selezionati}}'**
+  String calendarSelectedCount(int count);
+
+  /// No description provided for @calendarSelected.
+  ///
+  /// In it, this message translates to:
+  /// **'Selezionato'**
+  String get calendarSelected;
+
+  /// No description provided for @calendarCancelSelection.
+  ///
+  /// In it, this message translates to:
+  /// **'Annulla selezione'**
+  String get calendarCancelSelection;
+
+  /// No description provided for @calendarDeleteSelectedTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Elimina evento} other{Elimina {count} eventi}}'**
+  String calendarDeleteSelectedTitle(int count);
+
+  /// No description provided for @calendarDeleteSelectedConfirm.
+  ///
+  /// In it, this message translates to:
+  /// **'{count, plural, =1{Vuoi spostare l\'evento selezionato nel cestino? Se si ripete, va nel cestino tutta la serie.} other{Vuoi spostare i {count} eventi selezionati nel cestino? Per gli eventi che si ripetono va nel cestino tutta la serie.}}'**
+  String calendarDeleteSelectedConfirm(int count);
+
+  /// No description provided for @commonSelectAll.
+  ///
+  /// In it, this message translates to:
+  /// **'Seleziona tutti'**
+  String get commonSelectAll;
+
   /// No description provided for @calendarEventUnarchived.
   ///
   /// In it, this message translates to:

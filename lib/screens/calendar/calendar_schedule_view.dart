@@ -17,6 +17,7 @@ import '../../models/calendar_model.dart';
 import '../../theme/app_font_sizes.dart';
 import '../../theme/app_spacing.dart';
 import 'calendar_event_tile.dart';
+import 'calendar_selection.dart';
 import 'calendar_utils.dart';
 
 /// Chronological agenda ("Programma") view, laid out like Google Calendar:
@@ -316,17 +317,25 @@ class _ScheduleDayRowState extends State<_ScheduleDayRow> {
             child: Column(
               children: [
                 for (final item in items)
-                  CalendarEventListTile(
+                  CalendarSelectableItem(
                     event: item,
-                    dense: true,
-                    padding: const EdgeInsets.fromLTRB(
-                      0,
-                      AppSpacing.xxs,
-                      AppSpacing.md,
-                      AppSpacing.xxs,
-                    ),
-                    onTap:
+                    onOpen:
                         () => AppNav.openCalendarItem(context, item, day: day),
+                    builder:
+                        (context, selected, onTap, onLongPress) =>
+                            CalendarEventListTile(
+                              event: item,
+                              dense: true,
+                              selected: selected,
+                              padding: const EdgeInsets.fromLTRB(
+                                0,
+                                AppSpacing.xxs,
+                                AppSpacing.md,
+                                AppSpacing.xxs,
+                              ),
+                              onTap: onTap,
+                              onLongPress: onLongPress,
+                            ),
                   ),
               ],
             ),

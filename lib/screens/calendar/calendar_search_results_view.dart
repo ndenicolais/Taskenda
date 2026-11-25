@@ -17,6 +17,7 @@ import '../../theme/app_font_sizes.dart';
 import '../../theme/app_spacing.dart';
 import 'calendar_event_style.dart';
 import 'calendar_event_tile.dart';
+import 'calendar_selection.dart';
 
 /// List of events matching the current search query, sorted most-recent first.
 class CalendarSearchResultsView extends StatelessWidget {
@@ -58,15 +59,30 @@ class CalendarSearchResultsView extends StatelessWidget {
         final dateStr = DateFormat('d MMMM yyyy').format(event.startTime);
         final timeStr = formatEventTimeRange(context.l10n, event);
 
-        return ListTile(
-          leading: _buildLeading(context, event, colorScheme),
-          title: Text(
-            event.title.isEmpty
-                ? context.l10n.commonUntitledParens
-                : event.title,
-          ),
-          subtitle: Text('$dayOfWeek, $dateStr • $timeStr'),
-          onTap: () => AppNav.openCalendarItem(context, event),
+        return CalendarSelectableItem(
+          event: event,
+          onOpen: () => AppNav.openCalendarItem(context, event),
+          builder:
+              (context, selected, onTap, onLongPress) => ListTile(
+                leading: _buildLeading(context, event, colorScheme),
+                title: Text(
+                  event.title.isEmpty
+                      ? context.l10n.commonUntitledParens
+                      : event.title,
+                ),
+                subtitle: Text('$dayOfWeek, $dateStr • $timeStr'),
+                selected: selected,
+                trailing:
+                    selected
+                        ? Icon(
+                          Icons.check_circle,
+                          color: colorScheme.primary,
+                          semanticLabel: context.l10n.calendarSelected,
+                        )
+                        : null,
+                onTap: onTap,
+                onLongPress: onLongPress,
+              ),
         );
       },
     );
