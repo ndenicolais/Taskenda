@@ -49,8 +49,7 @@ Synced to your account with Firebase, with backups, PDF export, Home screen widg
 | 📱 **Home screen widgets** | Scrolling lists of notes, tasks and upcoming calendar entries, and quick actions to create a note, task or event |
 | 📤 **Share to Taskenda** | Taskenda appears in Android's "Share" sheet: text and links from other apps become a new note, task or event |
 | 🔐 **Authentication** | Sign in with a Google account or email and password |
-| 🔒 **End-to-end encryption** | Notes, tasks, events, labels and lists are encrypted on your device before they are saved: nobody else can read them, not even the developer, and a shared item can be read only by the people you add |
-| ☁️ **Sync** | Notes, tasks, lists, labels and events are stored encrypted on Cloud Firestore, and changes made offline sync later |
+| ☁️ **Sync** | Notes, tasks, lists, labels and events are stored on Cloud Firestore, readable only by your account and the people you share an item with, and changes made offline sync later |
 | 🌍 **Web app** | The same account in the browser at [taskenda21.web.app](https://taskenda21.web.app), without reminders, voice recording, widgets and automatic backups |
 | 🌍 **Multilingual** | Italian and English |
 | 🌗 **Theme** | System / Light / Dark theme |
@@ -85,7 +84,7 @@ Open [taskenda21.web.app](https://taskenda21.web.app) in a recent browser and si
 | State management | Riverpod |
 | Cloud database | Cloud Firestore (with offline persistence) |
 | Authentication | Firebase Auth + Google Sign In |
-| End-to-end encryption | cryptography (AES-256-GCM, HKDF, X25519), passkeys (WebAuthn PRF), flutter_secure_storage |
+| End-to-end encryption (in development, off by default: `--dart-define=E2EE=true`) | cryptography (AES-256-GCM, HKDF, X25519), passkeys (WebAuthn PRF), flutter_secure_storage |
 | Local persistence | SharedPreferences, app documents folder (audio, backups) |
 | Fonts | Manrope (titles) and Inter (text), plus six note fonts (bundled) |
 | Icons | Material Icons |
