@@ -346,6 +346,28 @@ class _CalendarEventEditorScreenState
   }
 
   Future<void> _confirmDelete() async {
+    final occurrence = _occurrenceStart;
+    if (occurrence != null) {
+      final scope = await showRecurringEventDeleteDialog(context);
+      if (scope == null || !mounted) return;
+      if (scope == RecurringScope.thisOccurrence) {
+        final notifier = ref.read(calendarProvider.notifier);
+        final previous = ref.read(eventsByIdProvider)[widget.event.id];
+        if (previous != null) {
+          notifyWithUndo(
+            notifier.excludeOccurrence(previous.id, occurrence),
+            context,
+            message: context.l10n.calendarOccurrenceDeleted,
+            onUndo: () => notifier.restoreEvent(previous),
+          );
+        }
+        _softDeleted = true;
+        Navigator.pop(context);
+        return;
+      }
+      _trash();
+      return;
+    }
     final confirmed = await showAppConfirmDialog(
       context,
       title: context.l10n.calendarDeleteEvent,
@@ -354,6 +376,10 @@ class _CalendarEventEditorScreenState
       destructive: true,
     );
     if (!confirmed || !mounted) return;
+    _trash();
+  }
+
+  void _trash() {
     // A never-saved event is not in the provider: nothing to trash.
     if (!_isNew) {
       final notifier = ref.read(calendarProvider.notifier);
