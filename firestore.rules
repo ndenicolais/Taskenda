@@ -2,9 +2,11 @@ rules_version = '2';
 
 // All app data lives under users/{uid}/ (notes, tasks, task_lists,
 // calendar_events, labels, shared_*_prefs, fcm_tokens, settings, crypto).
-// Each signed-in user has full access to their own branch, except that the
-// end-to-end encrypted collections accept only encrypted documents (`e`
-// = 1 and an `enc` blob, see guides/E2EE_PLAN.md). On top of that:
+// Each signed-in user has full access to their own branch, except that,
+// once they have encryption keys (users/{uid}/crypto/keys), the end-to-end
+// encrypted collections accept only encrypted documents (`e` = 1 and an
+// `enc` blob, see guides/E2EE_PLAN.md). Users without keys (encryption
+// off, or skipped) keep writing in clear. On top of that:
 // - user_directory maps an email to a uid, so items can be shared by email;
 // - public_keys holds each user's encryption public key;
 // - a note, task or event can be shared: its collaborators (uids in
@@ -36,15 +38,20 @@ service cloud.firestore {
             .difference([request.auth.uid].toSet());
     }
 
-    // A collaborator may change only the encrypted shared content of an
-    // item (`enc`, plus `updatedAt`; personal fields live in their own
-    // shared_*_prefs) or leave it. Never `keys`, `keyVer`, `priv` or the
-    // members: the client also sends the `keyVer` it encrypted for, which
-    // counts as a change, and is refused, if the owner replaced the key.
-    function collaboratorUpdate() {
+    // A collaborator may change only the shared content of an item
+    // (personal fields live in their own shared_*_prefs) or leave it.
+    // Encrypted item: only `enc` and `updatedAt`, never `keys`, `keyVer`,
+    // `priv` or the members (the client also sends the `keyVer` it
+    // encrypted for, which counts as a change, and is refused, if the owner
+    // replaced the key). Item in clear (owner without keys): the
+    // [plainKeys], which mirror `sharedKeys` of NoteModel, TaskModel and
+    // CalendarEventModel.
+    function collaboratorUpdate(plainKeys) {
       return isCollaborator()
         && ((resource.data.get('e', 0) == 1
             && changedKeys().hasOnly(['enc', 'updatedAt']))
+          || (resource.data.get('e', 0) != 1
+            && changedKeys().hasOnly(plainKeys))
           || leaves());
     }
 
@@ -58,11 +65,17 @@ service cloud.firestore {
         'shared_note_prefs', 'shared_task_prefs', 'shared_event_prefs'];
     }
 
-    // The document as it will be is encrypted: nothing in clear can be
-    // written there, not even by its owner.
+    // The document as it will be is encrypted.
     function staysEncrypted() {
       return request.resource.data.get('e', 0) == 1
         && request.resource.data.get('enc', null) is map;
+    }
+
+    // The user has encryption keys: from then on nothing in clear can be
+    // written in their encrypted collections, not even by them. One extra
+    // read, made only for writes in clear (staysEncrypted() comes first).
+    function hasKeys(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)/crypto/keys);
     }
 
     match /users/{uid} {
@@ -72,7 +85,9 @@ service cloud.firestore {
     match /users/{uid}/{collection}/{docId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)
-        && (!(collection in encryptedCollections()) || staysEncrypted());
+        && (!(collection in encryptedCollections())
+          || staysEncrypted()
+          || !hasKeys(uid));
     }
 
     // One entry per user, keyed by their lowercase email. Readable one at a
@@ -100,17 +115,27 @@ service cloud.firestore {
     // match the collection-group queries on `collaborators`.
     match /{path=**}/notes/{noteId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate();
+      allow update: if collaboratorUpdate([
+        'title', 'content', 'type', 'style', 'checklistItems', 'updatedAt'
+      ]);
     }
 
     match /{path=**}/tasks/{taskId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate();
+      allow update: if collaboratorUpdate([
+        'title', 'description', 'isCompleted', 'dueDate', 'recurrence',
+        'recurrenceExceptions', 'subtasks', 'updatedAt'
+      ]);
     }
 
     match /{path=**}/calendar_events/{eventId} {
       allow read: if isCollaborator();
-      allow update: if collaboratorUpdate();
+      allow update: if collaboratorUpdate([
+        'title', 'description', 'location', 'color', 'startTime', 'endTime',
+        'isAllDay', 'isBirthday', 'isNameDay', 'recurrence',
+        'recurrenceEndDate', 'recurrenceInterval', 'recurrenceWeekdays',
+        'recurrenceMonthWeek', 'recurrenceExceptions', 'updatedAt'
+      ]);
     }
   }
 }
