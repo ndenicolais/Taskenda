@@ -61,7 +61,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _maybeShowChangelog() async {
     final pending = await ChangelogService.pendingEntries(
       ref.read(sharedPreferencesProvider),
-      appVersion,
+      appBuildNumber,
     );
     if (pending.isEmpty || !mounted) return;
     await showChangelogDialog(context, entries: pending);

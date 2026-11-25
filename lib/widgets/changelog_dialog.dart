@@ -9,6 +9,7 @@
 // GitHub: https://github.com/ndenicolais
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../core/constants/changelog.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_spacing.dart';
@@ -33,6 +34,7 @@ class ChangelogDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final tt = Theme.of(context).textTheme;
+    final locale = Localizations.localeOf(context).toString();
     return AlertDialog(
       title: Text(l10n.changelog_dialog_title),
       content: SingleChildScrollView(
@@ -42,7 +44,7 @@ class ChangelogDialog extends StatelessWidget {
           children: [
             for (final entry in entries) ...[
               Text(
-                'v${entry.version}',
+                DateFormat.yMMMMd(locale).format(entry.date),
                 style: tt.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               for (final section in entry.sections.entries) ...[

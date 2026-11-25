@@ -11,28 +11,34 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/changelog.dart';
 
-const _kLastSeenChangelogVersionKey = 'last_seen_changelog_version';
-
 /// Decides which changelog entries to show after an update.
 class ChangelogService {
-  /// Returns the entries newer than the version the user last saw and
-  /// records [currentVersion] as seen.
+  static const prefsLastSeenBuild = 'last_seen_changelog_build';
+
+  /// Entries of a build after the last seen one and not after [currentBuild],
+  /// skipping those without items; records [currentBuild] as seen.
   ///
-  /// On a fresh install nothing is shown: the current version is only
-  /// recorded, so the dialog appears from the next update on.
+  /// With nothing recorded yet only the entry of [currentBuild] is shown: a
+  /// fresh install and the first update that ships the dialog look the same,
+  /// and showing nothing would hide the first changelog from every existing
+  /// user. The same build or a downgrade shows and records nothing.
   static Future<List<ChangelogEntry>> pendingEntries(
     SharedPreferences prefs,
-    String currentVersion, {
+    int currentBuild, {
     List<ChangelogEntry>? entries,
   }) async {
     final all = entries ?? changelogEntries;
-    final lastSeen = prefs.getString(_kLastSeenChangelogVersionKey);
+    final lastSeen = prefs.getInt(prefsLastSeenBuild);
 
-    if (lastSeen == currentVersion) return const [];
-    await prefs.setString(_kLastSeenChangelogVersionKey, currentVersion);
-    if (lastSeen == null) return const [];
+    if (lastSeen != null && lastSeen >= currentBuild) return const [];
+    await prefs.setInt(prefsLastSeenBuild, currentBuild);
 
-    final lastSeenIndex = all.indexWhere((e) => e.version == lastSeen);
-    return lastSeenIndex == -1 ? all : all.sublist(0, lastSeenIndex);
+    final from = lastSeen ?? currentBuild - 1;
+    return all
+        .where(
+          (e) =>
+              e.build > from && e.build <= currentBuild && e.items.isNotEmpty,
+        )
+        .toList();
   }
 }

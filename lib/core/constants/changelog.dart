@@ -24,10 +24,20 @@ class ChangelogItem {
   final String Function(AppLocalizations l) textBuilder;
 }
 
+/// The changes of one release. The version name stays the same across
+/// releases (`1.0.0`), so an entry is keyed on the build number
+/// (`appBuildNumber`, the `+N` of `pubspec.yaml`) and shows its [date].
 class ChangelogEntry {
-  const ChangelogEntry({required this.version, required this.items});
+  const ChangelogEntry({
+    required this.build,
+    required this.date,
+    required this.items,
+  });
 
-  final String version;
+  final int build;
+
+  /// Release date, the entry title in the dialog (users never see the build).
+  final DateTime date;
   final List<ChangelogItem> items;
 
   /// Items grouped by [ChangeType] in enum order; empty types are omitted.
@@ -38,9 +48,9 @@ class ChangelogEntry {
   };
 }
 
-/// Newest version first. Bullet texts are the `changelog_v<version>_bullet_N`
-/// keys of `lib/l10n/app_*.arb`.
+/// Newest build first; the top entry must match `appBuildNumber`. Bullet
+/// texts are the `changelog_b<build>_<N>` keys of `lib/l10n/app_*.arb`.
 final List<ChangelogEntry> changelogEntries = [
   // First release of Taskenda: no changes to list yet.
-  const ChangelogEntry(version: '1.0.0', items: []),
+  ChangelogEntry(build: 1, date: DateTime(2026, 11, 25), items: const []),
 ];

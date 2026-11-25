@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:taskenda/core/constants/app_version.dart';
 import 'package:taskenda/core/constants/changelog.dart';
 
 void main() {
   test('sections follow the ChangeType order and skip empty types', () {
     String text(_) => '';
     final entry = ChangelogEntry(
-      version: '1.0.0',
+      build: 1,
+      date: DateTime(2026),
       items: [
         ChangelogItem(ChangeType.fixed, text),
         ChangelogItem(ChangeType.added, text),
@@ -26,7 +28,7 @@ void main() {
       final arb =
           jsonDecode(File('lib/l10n/app_$locale.arb').readAsStringSync())
               as Map<String, dynamic>;
-      return arb.keys.where((k) => k.startsWith('changelog_v')).toSet();
+      return arb.keys.where((k) => k.startsWith('changelog_b')).toSet();
     }
 
     final keys = bulletKeys('it');
@@ -46,5 +48,22 @@ void main() {
       changelogEntries.fold<int>(0, (sum, e) => sum + e.items.length),
       keys.length,
     );
+  });
+
+  test('the top entry matches the build in pubspec.yaml', () {
+    final pubspec = File('pubspec.yaml').readAsStringSync();
+    final match = RegExp(
+      r'^version:\s*\S+\+(\d+)',
+      multiLine: true,
+    ).firstMatch(pubspec);
+    expect(match, isNotNull, reason: 'pubspec.yaml needs a +build suffix');
+    expect(changelogEntries.first.build, int.parse(match!.group(1)!));
+    expect(changelogEntries.first.build, appBuildNumber);
+  });
+
+  test('builds are unique and newest first', () {
+    final builds = changelogEntries.map((e) => e.build).toList();
+    expect(builds, [...builds]..sort((a, b) => b.compareTo(a)));
+    expect(builds.toSet(), hasLength(builds.length));
   });
 }

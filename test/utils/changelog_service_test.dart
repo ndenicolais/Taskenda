@@ -1,55 +1,82 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskenda/core/constants/changelog.dart';
 import 'package:taskenda/utils/changelog_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-const _entries = [
-  ChangelogEntry(version: '1.2.0', items: []),
-  ChangelogEntry(version: '1.1.0', items: []),
-  ChangelogEntry(version: '1.0.0', items: []),
-];
+ChangelogEntry _entry(int build, {bool empty = false}) => ChangelogEntry(
+  build: build,
+  date: DateTime(2026, 1, build),
+  items: [if (!empty) ChangelogItem(ChangeType.added, (_) => '')],
+);
 
-Future<SharedPreferences> _prefs([Map<String, Object> values = const {}]) {
-  SharedPreferences.setMockInitialValues(values);
+// Newest first, as in changelog.dart.
+final _entries = [_entry(3), _entry(2), _entry(1)];
+
+Future<SharedPreferences> _prefs([int? lastSeen]) {
+  SharedPreferences.setMockInitialValues({
+    if (lastSeen != null) ChangelogService.prefsLastSeenBuild: lastSeen,
+  });
   return SharedPreferences.getInstance();
 }
 
-Future<List<String>> _pendingVersions(
+Future<List<int>> _pending(
   SharedPreferences prefs,
-  String current,
-) async {
+  int current, {
+  List<ChangelogEntry>? entries,
+}) async {
   final pending = await ChangelogService.pendingEntries(
     prefs,
     current,
-    entries: _entries,
+    entries: entries ?? _entries,
   );
-  return pending.map((e) => e.version).toList();
+  return pending.map((e) => e.build).toList();
 }
 
 void main() {
-  test('fresh install shows nothing and records the current version', () async {
+  test('nothing recorded: only the current entry, build recorded', () async {
     final prefs = await _prefs();
 
-    expect(await _pendingVersions(prefs, '1.2.0'), isEmpty);
-    expect(await _pendingVersions(prefs, '1.2.0'), isEmpty);
+    expect(await _pending(prefs, 3), [3]);
+    expect(prefs.getInt(ChangelogService.prefsLastSeenBuild), 3);
+    expect(await _pending(prefs, 3), isEmpty);
   });
 
-  test('same version shows nothing', () async {
-    final prefs = await _prefs({'last_seen_changelog_version': '1.2.0'});
+  test('nothing recorded and no entry for the current build', () async {
+    final prefs = await _prefs();
 
-    expect(await _pendingVersions(prefs, '1.2.0'), isEmpty);
+    expect(await _pending(prefs, 4), isEmpty);
+    expect(prefs.getInt(ChangelogService.prefsLastSeenBuild), 4);
   });
 
-  test('update shows only the entries newer than the last seen', () async {
-    final prefs = await _prefs({'last_seen_changelog_version': '1.0.0'});
+  test('shows only the entries after the last seen build', () async {
+    final prefs = await _prefs(1);
 
-    expect(await _pendingVersions(prefs, '1.2.0'), ['1.2.0', '1.1.0']);
-    expect(await _pendingVersions(prefs, '1.2.0'), isEmpty);
+    expect(await _pending(prefs, 3), [3, 2]);
   });
 
-  test('unknown last seen version shows the whole history', () async {
-    final prefs = await _prefs({'last_seen_changelog_version': '0.9.0'});
+  test('a skipped build without an entry does not show everything', () async {
+    final prefs = await _prefs(2);
 
-    expect(await _pendingVersions(prefs, '1.2.0'), ['1.2.0', '1.1.0', '1.0.0']);
+    expect(await _pending(prefs, 4), [3]);
+  });
+
+  test('entries after the installed build are not shown', () async {
+    final prefs = await _prefs(1);
+
+    expect(await _pending(prefs, 2), [2]);
+  });
+
+  test('entries without items are skipped', () async {
+    final prefs = await _prefs();
+
+    expect(await _pending(prefs, 1, entries: [_entry(1, empty: true)]), []);
+    expect(prefs.getInt(ChangelogService.prefsLastSeenBuild), 1);
+  });
+
+  test('downgrade shows nothing and keeps the higher build', () async {
+    final prefs = await _prefs(3);
+
+    expect(await _pending(prefs, 2), isEmpty);
+    expect(prefs.getInt(ChangelogService.prefsLastSeenBuild), 3);
   });
 }
