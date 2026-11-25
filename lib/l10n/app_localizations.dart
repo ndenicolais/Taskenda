@@ -2498,17 +2498,23 @@ abstract class AppLocalizations {
   /// **'Elimina evento ricorrente'**
   String get calendarDeleteRecurringTitle;
 
-  /// No description provided for @calendarDeleteThisOccurrence.
+  /// No description provided for @calendarEditRecurringTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica evento ricorrente'**
+  String get calendarEditRecurringTitle;
+
+  /// No description provided for @calendarRecurringThisOccurrence.
   ///
   /// In it, this message translates to:
   /// **'Solo questo evento'**
-  String get calendarDeleteThisOccurrence;
+  String get calendarRecurringThisOccurrence;
 
-  /// No description provided for @calendarDeleteWholeSeries.
+  /// No description provided for @calendarRecurringWholeSeries.
   ///
   /// In it, this message translates to:
   /// **'Tutti gli eventi della serie'**
-  String get calendarDeleteWholeSeries;
+  String get calendarRecurringWholeSeries;
 
   /// No description provided for @calendarOccurrenceDeleted.
   ///

@@ -8,6 +8,8 @@
 // Contact: ndn21dev@gmail.com
 // GitHub: https://github.com/ndenicolais
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +23,12 @@ import '../../theme/app_spacing.dart';
 import '../../utils/focus_after_transition.dart';
 import '../../utils/notification_service.dart';
 import '../../utils/picker_defaults.dart';
+import '../../utils/recurrence.dart';
 import '../../widgets/shared/app_dialogs.dart';
 import '../../widgets/shared/collaborators_sheet.dart';
 import '../../widgets/shared/error_feedback.dart';
 import '../../widgets/shared/date_time_picker_dialog.dart';
+import 'calendar_event_delete.dart';
 import 'calendar_event_details_section.dart';
 import 'calendar_event_editor_bars.dart';
 import 'calendar_location_field.dart';
@@ -32,8 +36,17 @@ import 'calendar_new_entry.dart';
 import 'calendar_participants_tile.dart';
 
 class CalendarEventEditorScreen extends ConsumerStatefulWidget {
-  const CalendarEventEditorScreen({super.key, required this.event});
+  const CalendarEventEditorScreen({
+    super.key,
+    required this.event,
+    this.occurrence,
+  });
   final CalendarEventModel event;
+
+  /// The day the event was opened from in the calendar: for a recurring
+  /// event the editor shows that occurrence and, on leaving with changes,
+  /// asks whether they apply to it only or to the whole series.
+  final DateTime? occurrence;
 
   @override
   ConsumerState<CalendarEventEditorScreen> createState() =>
@@ -51,6 +64,16 @@ class _CalendarEventEditorScreenState
   bool _isNew = false;
   bool _softDeleted = false;
 
+  /// Start of the occurrence being edited (on the day it was opened from),
+  /// or null when the editor works on the event as a whole.
+  DateTime? _occurrenceStart;
+
+  /// The occurrence as opened, to tell whether anything was changed.
+  String _occurrenceBaseline = '';
+
+  /// Set while the "this event / whole series" choice is open.
+  bool _choosingScope = false;
+
   @override
   void initState() {
     super.initState();
@@ -62,6 +85,17 @@ class _CalendarEventEditorScreenState
       _event = _event.copyWith(
         alertMinutesBefore: ref.read(eventAlertOffsetProvider),
       );
+    }
+    final day = widget.occurrence;
+    if (!_isNew && day != null && _event.recurrence != RecurrenceType.none) {
+      final s = _event.startTime;
+      final start = DateTime(day.year, day.month, day.day, s.hour, s.minute);
+      _event = _event.copyWith(
+        startTime: start,
+        endTime: start.add(_event.endTime.difference(s)),
+      );
+      _occurrenceStart = start;
+      _occurrenceBaseline = _contentKey(_event);
     }
 
     _titleController = TextEditingController(text: _event.title);
@@ -126,16 +160,101 @@ class _CalendarEventEditorScreenState
     );
   }
 
+  /// [_event] with the text fields as typed.
+  CalendarEventModel _edited() => _event.copyWith(
+    title: _titleController.text.trim(),
+    description: _descriptionController.text.trim(),
+    location: _locationController.text.trim(),
+  );
+
+  /// What [e] stores, apart from the modification time.
+  static String _contentKey(CalendarEventModel e) =>
+      jsonEncode(e.copyWith(updatedAt: DateTime(2000)).toJson());
+
+  static String _recurrenceKey(CalendarEventModel e) {
+    final json = e.toJson();
+    return jsonEncode([
+      for (final k in const [
+        'recurrence',
+        'recurrenceEndDate',
+        'recurrenceInterval',
+        'recurrenceWeekdays',
+        'recurrenceMonthWeek',
+      ])
+        json[k],
+    ]);
+  }
+
+  /// [e], edited as the occurrence on [_occurrenceStart], back on the
+  /// series: a date moved there moves the series start by as many days.
+  CalendarEventModel _asSeries(CalendarEventModel e) {
+    final occ = _occurrenceStart;
+    if (occ == null) return e;
+    final s = e.startTime;
+    final days =
+        DateTime.utc(
+          s.year,
+          s.month,
+          s.day,
+        ).difference(DateTime.utc(occ.year, occ.month, occ.day)).inDays;
+    final first = widget.event.startTime;
+    final start = DateTime(
+      first.year,
+      first.month,
+      first.day + days,
+      s.hour,
+      s.minute,
+    );
+    return e.copyWith(
+      startTime: start,
+      endTime: start.add(e.endTime.difference(s)),
+    );
+  }
+
+  /// Leaving the editor of an occurrence: unchanged it just closes, with
+  /// changes it asks whether they apply to this event only (split off the
+  /// series) or to the whole series. Cancelling stays in the editor.
+  Future<void> _closeOccurrence() async {
+    if (_choosingScope || _softDeleted) return;
+    final edited = _edited();
+    var scope = RecurringScope.series;
+    if (_contentKey(edited) == _occurrenceBaseline) {
+      _softDeleted = true; // Nothing changed: nothing to save.
+    } else if (_recurrenceKey(edited) == _recurrenceKey(widget.event)) {
+      _choosingScope = true;
+      final picked = await showRecurringEventEditDialog(context);
+      _choosingScope = false;
+      if (picked == null || !mounted) return;
+      scope = picked;
+    }
+    // A changed recurrence is about the series: no question asked.
+    if (!_softDeleted) {
+      if (scope == RecurringScope.thisOccurrence) {
+        notifyOnError(
+          ref
+              .read(calendarProvider.notifier)
+              .splitOccurrence(
+                widget.event.id,
+                _occurrenceStart!,
+                edited.asStandaloneCopy(),
+              ),
+          context,
+        );
+      } else {
+        _save();
+      }
+      _softDeleted = true; // Saved here: not again on pop.
+    }
+    Navigator.pop(context);
+  }
+
   void _save({bool force = false}) {
     if (_softDeleted) return;
     if (_isNew && _isEmpty() && !force) return;
 
-    final updated = _event.copyWith(
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      location: _locationController.text.trim(),
-      updatedAt: DateTime.now(),
-    );
+    final now = DateTime.now();
+    final edited = _edited().copyWith(updatedAt: now);
+    final updated = _asSeries(edited);
 
     final Future<void> pending;
     if (_isNew) {
@@ -145,7 +264,9 @@ class _CalendarEventEditorScreenState
       pending = ref.read(calendarProvider.notifier).updateEvent(updated);
     }
     notifyOnError(pending, context);
-    setState(() => _event = updated);
+    // An occurrence stays shown as such; what was saved is its new baseline.
+    setState(() => _event = edited);
+    if (_occurrenceStart != null) _occurrenceBaseline = _contentKey(edited);
     NotificationService.instance
         .scheduleEventAlerts(
           updated,
@@ -253,8 +374,14 @@ class _CalendarEventEditorScreenState
     final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
+      // An occurrence of a recurring event asks before leaving with changes.
+      canPop: _occurrenceStart == null,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) _save();
+        if (didPop) {
+          _save();
+        } else {
+          _closeOccurrence();
+        }
       },
       child: Scaffold(
         appBar: CalendarEventEditorAppBar(
@@ -267,7 +394,7 @@ class _CalendarEventEditorScreenState
             Navigator.pop(context);
           },
           // Back saves too (PopScope): this is the explicit way.
-          onSave: () => Navigator.pop(context),
+          onSave: () => Navigator.maybePop(context),
         ),
         body: ListView(
           padding: const EdgeInsets.all(AppSpacing.lg),
@@ -354,7 +481,7 @@ class _CalendarEventEditorScreenState
         ),
         bottomNavigationBar: CalendarEventEditorBottomBar(
           onDelete: _confirmDelete,
-          onClose: () => Navigator.pop(context),
+          onClose: () => Navigator.maybePop(context),
         ),
       ),
     );

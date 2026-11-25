@@ -172,6 +172,25 @@ class CalendarEventModel with Shareable<CalendarEventModel> {
     );
   }
 
+  /// A new, non-recurring copy of this event (another id, not shared): an
+  /// occurrence edited on its own, split off the series.
+  CalendarEventModel asStandaloneCopy() {
+    final now = DateTime.now().toIso8601String();
+    return CalendarEventModel.fromJson({
+      ...toJson(),
+      'id': const Uuid().v4(),
+      'createdAt': now,
+      'updatedAt': now,
+    }).copyWith(
+      recurrence: RecurrenceType.none,
+      clearRecurrenceEndDate: true,
+      recurrenceInterval: 1,
+      recurrenceWeekdays: [],
+      clearRecurrenceMonthWeek: true,
+      recurrenceExceptions: [],
+    );
+  }
+
   CalendarEventModel copyWith({
     String? title,
     String? description,

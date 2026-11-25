@@ -241,6 +241,28 @@ class CalendarNotifier extends Notifier<List<CalendarEventModel>>
     );
   }
 
+  /// Splits the occurrence on [day] off the recurring event [id]: the series
+  /// leaves that day out and [single] (the edited occurrence, a new event)
+  /// takes its place. One batched write; alerts of both rescheduled.
+  Future<void> splitOccurrence(
+    String id,
+    DateTime day,
+    CalendarEventModel single,
+  ) {
+    final series = withCurrentSharing(
+      state.firstWhere((e) => e.id == id).withoutOccurrence(day),
+    );
+    _syncAlerts(series).ignore();
+    _syncAlerts(single).ignore();
+    return mutate(
+      (current) => [single, for (final e in current) e.id == id ? series : e],
+      () => commitInChunks([
+        (WriteBatch b) => writeItem(b, series),
+        (WriteBatch b) => writeItem(b, single),
+      ]),
+    );
+  }
+
   /// Puts back [previous] (undo of [excludeOccurrence]) and reschedules its
   /// alerts.
   Future<void> restoreEvent(CalendarEventModel previous) {

@@ -11,38 +11,61 @@
 import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 
-/// What deleting an occurrence of a recurring event removes.
-enum EventDeleteScope { thisOccurrence, series }
+/// What deleting or editing an occurrence of a recurring event applies to.
+enum RecurringScope { thisOccurrence, series }
 
 /// Asks whether to delete only the occurrence opened or the whole series
 /// (which goes to the trash). Null when cancelled.
-Future<EventDeleteScope?> showRecurringEventDeleteDialog(
-  BuildContext context,
-) => showDialog<EventDeleteScope>(
-  context: context,
-  builder: (_) => const _RecurringEventDeleteDialog(),
-);
+Future<RecurringScope?> showRecurringEventDeleteDialog(BuildContext context) =>
+    showDialog<RecurringScope>(
+      context: context,
+      builder:
+          (context) => _RecurringScopeDialog(
+            title: context.l10n.calendarDeleteRecurringTitle,
+            confirmLabel: context.l10n.commonDelete,
+            destructive: true,
+          ),
+    );
 
-class _RecurringEventDeleteDialog extends StatefulWidget {
-  const _RecurringEventDeleteDialog();
+/// Asks whether the changes made to the occurrence opened apply to it only
+/// (split off the series as an event of its own) or to the whole series.
+/// Null when cancelled.
+Future<RecurringScope?> showRecurringEventEditDialog(BuildContext context) =>
+    showDialog<RecurringScope>(
+      context: context,
+      builder:
+          (context) => _RecurringScopeDialog(
+            title: context.l10n.calendarEditRecurringTitle,
+            confirmLabel: context.l10n.commonSave,
+          ),
+    );
+
+class _RecurringScopeDialog extends StatefulWidget {
+  const _RecurringScopeDialog({
+    required this.title,
+    required this.confirmLabel,
+    this.destructive = false,
+  });
+
+  final String title;
+  final String confirmLabel;
+  final bool destructive;
 
   @override
-  State<_RecurringEventDeleteDialog> createState() =>
-      _RecurringEventDeleteDialogState();
+  State<_RecurringScopeDialog> createState() => _RecurringScopeDialogState();
 }
 
-class _RecurringEventDeleteDialogState
-    extends State<_RecurringEventDeleteDialog> {
-  EventDeleteScope _scope = EventDeleteScope.thisOccurrence;
+class _RecurringScopeDialogState extends State<_RecurringScopeDialog> {
+  RecurringScope _scope = RecurringScope.thisOccurrence;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text(l10n.calendarDeleteRecurringTitle),
+      title: Text(widget.title),
       contentPadding: const EdgeInsets.only(top: 16, bottom: 8),
-      content: RadioGroup<EventDeleteScope>(
+      content: RadioGroup<RecurringScope>(
         groupValue: _scope,
         onChanged: (v) {
           if (v != null) setState(() => _scope = v);
@@ -50,13 +73,13 @@ class _RecurringEventDeleteDialogState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            RadioListTile<EventDeleteScope>(
-              title: Text(l10n.calendarDeleteThisOccurrence),
-              value: EventDeleteScope.thisOccurrence,
+            RadioListTile<RecurringScope>(
+              title: Text(l10n.calendarRecurringThisOccurrence),
+              value: RecurringScope.thisOccurrence,
             ),
-            RadioListTile<EventDeleteScope>(
-              title: Text(l10n.calendarDeleteWholeSeries),
-              value: EventDeleteScope.series,
+            RadioListTile<RecurringScope>(
+              title: Text(l10n.calendarRecurringWholeSeries),
+              value: RecurringScope.series,
             ),
           ],
         ),
@@ -67,12 +90,15 @@ class _RecurringEventDeleteDialogState
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: cs.error,
-            foregroundColor: cs.onError,
-          ),
+          style:
+              widget.destructive
+                  ? FilledButton.styleFrom(
+                    backgroundColor: cs.error,
+                    foregroundColor: cs.onError,
+                  )
+                  : null,
           onPressed: () => Navigator.pop(context, _scope),
-          child: Text(l10n.commonDelete),
+          child: Text(widget.confirmLabel),
         ),
       ],
     );

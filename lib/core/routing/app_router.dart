@@ -90,6 +90,16 @@ class EventDetailsArgs {
   final DateTime? occurrence;
 }
 
+/// Arguments of [AppRoutes.event] from the pencil of an event opened on a
+/// day of the calendar: the occurrence tapped, so the changes to a
+/// recurring event can apply to that occurrence only.
+class EventEditorArgs {
+  const EventEditorArgs(this.event, {this.occurrence});
+
+  final CalendarEventModel event;
+  final DateTime? occurrence;
+}
+
 /// Builds every named route. A missing or wrongly typed argument for a
 /// detail route is treated as an unknown route instead of crashing.
 abstract final class AppRouter {
@@ -176,6 +186,11 @@ abstract final class AppRouter {
         (_) => TaskEditorScreen(task: args),
       AppRoutes.event when args is CalendarEventModel =>
         (_) => CalendarEventEditorScreen(event: args),
+      AppRoutes.event when args is EventEditorArgs =>
+        (_) => CalendarEventEditorScreen(
+          event: args.event,
+          occurrence: args.occurrence,
+        ),
       AppRoutes.taskDetails when args is TaskModel =>
         (_) => TaskDetailsScreen(task: args),
       AppRoutes.taskDetails when args is TaskDetailsArgs =>
@@ -320,14 +335,19 @@ abstract final class AppNav {
   static Future<void> editTask(BuildContext context, TaskModel task) =>
       Navigator.pushReplacementNamed(context, AppRoutes.task, arguments: task);
 
-  /// The pencil of the event details, like [editTask].
+  /// The pencil of the event details, like [editTask]. [occurrence] is the
+  /// day the details were opened from in the calendar.
   static Future<void> editEvent(
     BuildContext context,
-    CalendarEventModel event,
-  ) => Navigator.pushReplacementNamed(
+    CalendarEventModel event, {
+    DateTime? occurrence,
+  }) => Navigator.pushReplacementNamed(
     context,
     AppRoutes.event,
-    arguments: event,
+    arguments:
+        occurrence == null
+            ? event
+            : EventEditorArgs(event, occurrence: occurrence),
   );
 
   /// Opens a saved task in read-only view, with a pencil to edit it.

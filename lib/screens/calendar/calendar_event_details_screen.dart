@@ -87,7 +87,7 @@ class _CalendarEventDetailsScreenState
     if (day != null && event.recurrence != RecurrenceType.none) {
       final scope = await showRecurringEventDeleteDialog(context);
       if (scope == null || !mounted) return;
-      if (scope == EventDeleteScope.thisOccurrence) {
+      if (scope == RecurringScope.thisOccurrence) {
         final notifier = ref.read(calendarProvider.notifier);
         notifyWithUndo(
           notifier.excludeOccurrence(event.id, day),
@@ -178,7 +178,12 @@ class _CalendarEventDetailsScreenState
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.commonEdit,
-            onPressed: () => AppNav.editEvent(context, event),
+            onPressed:
+                () => AppNav.editEvent(
+                  context,
+                  event,
+                  occurrence: widget.occurrence,
+                ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),

@@ -1435,10 +1435,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarDeleteRecurringTitle => 'Delete recurring event';
 
   @override
-  String get calendarDeleteThisOccurrence => 'This event';
+  String get calendarEditRecurringTitle => 'Edit recurring event';
 
   @override
-  String get calendarDeleteWholeSeries => 'All events in the series';
+  String get calendarRecurringThisOccurrence => 'This event';
+
+  @override
+  String get calendarRecurringWholeSeries => 'All events in the series';
 
   @override
   String get calendarOccurrenceDeleted => 'Event deleted';

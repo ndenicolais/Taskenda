@@ -1440,10 +1440,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get calendarDeleteRecurringTitle => 'Elimina evento ricorrente';
 
   @override
-  String get calendarDeleteThisOccurrence => 'Solo questo evento';
+  String get calendarEditRecurringTitle => 'Modifica evento ricorrente';
 
   @override
-  String get calendarDeleteWholeSeries => 'Tutti gli eventi della serie';
+  String get calendarRecurringThisOccurrence => 'Solo questo evento';
+
+  @override
+  String get calendarRecurringWholeSeries => 'Tutti gli eventi della serie';
 
   @override
   String get calendarOccurrenceDeleted => 'Evento eliminato';
