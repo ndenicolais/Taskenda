@@ -845,7 +845,7 @@ flutter run -d chrome --web-port 5000         # web: port 5000 is the authorized
 flutter analyze --fatal-infos --fatal-warnings
 dart format --output=none --set-exit-if-changed lib test
 flutter test
-flutter build apk --release --target-platform android-arm64 --obfuscate --split-debug-info=symbols/v<version>
+flutter build apk --release --target-platform android-arm64 --obfuscate --split-debug-info=symbols/v<X.Y.Z>_b<N>
 flutter build web                             # web
 ```
 
@@ -894,7 +894,7 @@ keyPassword=<key password>
 
 - Never commit: `key.properties`, keystores, `google-services.json`, `firebase_options.dart`, `adi-registration.properties`, `symbols/`, `/tool/`, `deploy_android.ps1`, `deploy_web.ps1`, `.firebase/`, `CLAUDE.md`, `TASKS.md`.
 - Version source of truth: `version: X.Y.Z+N` in `pubspec.yaml` (`N` is the Android `versionCode` and always grows), mirrored by `appVersion`/`appBuildNumber` in `lib/core/constants/app_version.dart`. Each release adds a `ChangelogEntry` at the top of `changelogEntries`, with every bullet key in both ARB files (`changelog_test.dart` fails otherwise).
-- Obfuscation symbols go to `symbols/v<version>` (outside `build/`, so `flutter clean` keeps them) and are needed to read crash stack traces with `flutter symbolize`: keep them for every release.
+- Obfuscation symbols go to `symbols/v<X.Y.Z>_b<N>`, same suffix as the APK (outside `build/`, so `flutter clean` keeps them) and are needed to read crash stack traces with `flutter symbolize`: keep them for every release.
 - Privacy policy: the same text lives in `PRIVACY.md`, in the ARB files (`PrivacyPolicyScreen`) and on the portfolio page `https://ndenicolais.github.io/taskenda/privacy/` (built from `TASKENDA_PORTFOLIO_PAGES.md` by the site project; it is also the privacy URL of the OAuth consent screen). Update them together, with `privacyPolicyUpdatedAt` in `app_info.dart` equal to the date in `PRIVACY.md`, and before the release when adding services, analytics or permissions.
 - Local tools: `tool/icons/generate_icons.ps1` (see [Theme and style](#8-theme-and-style)).
 - Design docs: palette, theme tables, type scale, flow and mockups are rebuilt from the code following `guides/DESIGN_DOCS_GUIDE.md` and published in the ✏️ Design section of the app page on Notion. Sources in `tool/design/` (git-ignored): `palette.py`, `mockup.html` + `export.mjs`, `screens/`. Flutter's `MaterialIcons-Regular.otf` has no ligatures, so `mockup.html` maps each icon name to its codepoint from `icons.dart`.
