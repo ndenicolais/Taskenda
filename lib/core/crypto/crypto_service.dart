@@ -116,6 +116,11 @@ class CryptoService {
   X25519 get _x25519 => _c.x25519();
   Hkdf get _hkdf => _c.hkdf(hmac: Hmac.sha256(), outputLength: keyLength);
 
+  /// HKDF salt for the keys derived from an already random secret: HashLen
+  /// zero bytes, what RFC 5869 uses for an empty salt (same keys), given
+  /// explicitly because Android's native HMAC refuses an empty key.
+  static final _zeroSalt = Uint8List(32);
+
   // ── Keys ──────────────────────────────────────────────────────────────────
 
   /// A random AES-256 key (master key, item key).
@@ -140,6 +145,7 @@ class CryptoService {
     }
     return _hkdf.deriveKey(
       secretKey: SecretKeyData(recoveryKey),
+      nonce: _zeroSalt,
       info: utf8.encode(_recoveryInfo),
     );
   }
@@ -152,6 +158,7 @@ class CryptoService {
     }
     return _hkdf.deriveKey(
       secretKey: SecretKeyData(secret),
+      nonce: _zeroSalt,
       info: utf8.encode(_passkeyInfo),
     );
   }

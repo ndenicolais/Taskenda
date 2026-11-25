@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskenda/core/crypto/crypto_service.dart';
 
@@ -89,6 +90,21 @@ void main() {
       );
       expect(await a.extractBytes(), await b.extractBytes());
       expect(await a.extractBytes(), isNot(await c.extractBytes()));
+    });
+
+    test('the explicit zero salt keeps the keys of an empty salt', () async {
+      // Keys created before the explicit salt (needed by Android's native
+      // HMAC) must still open.
+      final secret = CryptoService.randomBytes(CryptoService.prfLength);
+      final emptySalt = await Hkdf(
+        hmac: Hmac.sha256(),
+        outputLength: CryptoService.keyLength,
+      ).deriveKey(
+        secretKey: SecretKeyData(secret),
+        info: utf8.encode('taskenda:v1:passkey'),
+      );
+      final kek = await crypto.derivePasskeyKek(secret);
+      expect(await kek.extractBytes(), await emptySalt.extractBytes());
     });
 
     test('a passkey secret of the wrong length is refused', () {
