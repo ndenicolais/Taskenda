@@ -305,20 +305,20 @@ class _CalendarEventEditorScreenState
                 controller: _locationController,
                 history: _locationHistory,
               ),
+              participantsTile: CalendarParticipantsTile(
+                members:
+                    ref
+                        .watch(eventsByIdProvider.select((m) => m[_event.id]))
+                        ?.membersExcept(ref.watch(currentUidProvider)) ??
+                    const [],
+                onTap: _showParticipants,
+              ),
               allDayAlertMinutes: ref.watch(defaultAlertTimeProvider),
               dayBeforeAlertMinutes: ref.watch(dayBeforeAlertTimeProvider),
               onPickDateTime: _openDateTimePicker,
               onPickEndTime: _pickEndTime,
               onClearEndTime: _clearEndTime,
               onChanged: (e) => setState(() => _event = e),
-            ),
-            CalendarParticipantsTile(
-              members:
-                  ref
-                      .watch(eventsByIdProvider.select((m) => m[_event.id]))
-                      ?.membersExcept(ref.watch(currentUidProvider)) ??
-                  const [],
-              onTap: _showParticipants,
             ),
             const SizedBox(height: AppSpacing.lg),
 

@@ -196,6 +196,7 @@ void main() {
                       allDayAlertMinutes: 9 * 60,
                       dayBeforeAlertMinutes: 9 * 60,
                       locationField: const SizedBox.shrink(),
+                      participantsTile: const SizedBox.shrink(),
                       onPickDateTime: () {},
                       onPickEndTime: () {},
                       onClearEndTime:

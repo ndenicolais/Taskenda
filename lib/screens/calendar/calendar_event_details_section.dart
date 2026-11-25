@@ -23,7 +23,7 @@ import 'calendar_event_tile.dart';
 import 'event_alert_picker.dart';
 import 'recurrence_picker.dart';
 
-/// Date/time, location, all-day, birthday, name-day, recurrence, card color
+/// Date/time, location, participants, all-day, birthday, name-day, recurrence, card color
 /// and alerts (day before / same day) of an event.
 ///
 /// Edits are reported through [onChanged] with the updated event; picking
@@ -35,6 +35,7 @@ class CalendarEventDetailsSection extends StatelessWidget {
     super.key,
     required this.event,
     required this.locationField,
+    required this.participantsTile,
     required this.allDayAlertMinutes,
     required this.dayBeforeAlertMinutes,
     required this.onPickDateTime,
@@ -48,6 +49,10 @@ class CalendarEventDetailsSection extends StatelessWidget {
   /// Location input, placed right below date and time (the screen owns its
   /// controller).
   final Widget locationField;
+
+  /// Participants row, placed right below the location (the screen owns the
+  /// sharing sheet).
+  final Widget participantsTile;
 
   /// Alert time of all-day events (minutes after midnight, from Settings).
   final int allDayAlertMinutes;
@@ -139,6 +144,7 @@ class CalendarEventDetailsSection extends StatelessWidget {
             onTap: onPickEndTime,
           ),
         locationField,
+        participantsTile,
         const SizedBox(height: AppSpacing.sm),
         _Toggle(
           title: context.l10n.calendarAllDay,
