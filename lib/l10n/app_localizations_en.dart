@@ -2200,7 +2200,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get policy_section_data_text =>
-      '• Account: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.\n• Content: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels. They are end-to-end encrypted on your device (see point 4).\n• Audio notes: recordings stay on your device only; just the file name, duration and path are synced with the note.\n• Encryption: your encryption code and recovery code never leave your device and only you know them. Your account stores your encryption keys, protected by these codes and so unusable without them, and a public key other users use to share items with you.\n• Sharing: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.\n• Preferences: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.\n• On your device: a copy of your preferences, intro guide and what\'s new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders, your unlocked encryption keys (protected by the system; on the web they stay in the browser tab, or in the browser if you choose to remember them) and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.';
+      '• Account: the email address you sign up with; the password is handled by Firebase Authentication and is never visible to the developer. If you sign in with Google, Google shares your name, email, profile photo and Google account ID with Firebase. Firebase also records when the account was created and when you last signed in.\n• Content: notes (title, text, checklists, labels, colors and style, reminders, links between notes, edit history), tasks and lists (subtasks, due dates, recurrence, priority), calendar events (location included) and labels. They are end-to-end encrypted on your device (see point 4).\n• Audio notes: recordings stay on your device only; just the file name, duration and path are synced with the note.\n• Encryption: your encryption keys are protected by your Taskenda passkey, kept by your device\'s password manager (for example Google Password Manager, which syncs it with end-to-end encryption), and, if you create one, by a recovery code only you know. The passkey\'s secret and the recovery code never leave your device. Your account stores your encryption keys, protected this way and so unusable without the passkey or the recovery code, the passkey\'s identifier, and a public key other users use to share items with you.\n• Sharing: so that other users can share notes, tasks and events with you, your email and name are saved in a directory that can only be looked up by the exact email. When you share an item, the people you add see its content, your name and your email, and you see theirs; pins, archive, reminders, alerts and labels stay personal. To tell you when someone shares something with you, the app saves a push notification identifier for each device (Firebase Cloud Messaging token) and the app language; it is deleted when you sign out on that device.\n• Preferences: language, theme, start section, layout, sorting, note, task and calendar options and alert times are also saved to your account, so you find them on the web and on a new device after signing in.\n• On your device: a copy of your preferences, intro guide and what\'s new already seen, automatic backup settings, automatic backups, a copy of your data for offline use, scheduled reminders, your unlocked encryption keys (protected by the system; on the web they stay in the browser tab, or in the browser if you choose to remember them) and the data shown by the Home screen widgets (titles and previews of notes, tasks and upcoming entries). On the web, preferences are saved in the browser.';
 
   @override
   String get policy_section_use_title => '3. How we use data';
@@ -2235,7 +2235,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String policy_section_retention_text(String email) {
-    return 'Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from Settings > Account > Delete account: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing, your encryption keys are deleted and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from Settings > Backup and data > Full backup. Any residual copies in Google\'s systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. If you forget both the encryption code and the recovery code, nobody can recover your encrypted data: you can only reset encryption, which deletes it. You can also ask for deletion by writing to $email.';
+    return 'Your data is kept as long as you keep your account. Items in the trash are permanently deleted after 7 days. You can delete your account and all your data from Settings > Account > Delete account: the account and the content on Firebase are deleted, including the notes, tasks and events you shared (which disappear for the collaborators too) and the notification identifiers, you are removed from the items others shared with you, your email leaves the directory used for sharing, your encryption keys are deleted and, on this device, reminders and automatic backups are deleted too. Before that you can export everything from Settings > Backup and data > Full backup. Any residual copies in Google\'s systems are removed within the time frames set by Firebase. Signing out does not delete data; uninstalling the app removes the data saved on the device, audio notes included. If you lose both the passkey and the recovery code, nobody can recover your encrypted data: you can only reset encryption, which deletes it. You can also ask for deletion by writing to $email.';
   }
 
   @override
@@ -2350,61 +2350,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cryptoSetupBody =>
-      'Notes, tasks and events are encrypted on your device before they are saved: nobody else can read them, not even the people who run Taskenda. Choose an encryption code: you will need it to see your data on a new device.';
+      'Notes, tasks and events are encrypted on your device before they are saved: nobody else can read them, not even the people who run Taskenda. Create a passkey: on a new device you will unlock them with your fingerprint or screen lock, with no code to remember.';
 
   @override
-  String get cryptoSetupWarning =>
-      'The encryption code is not your account password and nobody can reset it. If you forget it, you will need the recovery code we show you next.';
-
-  @override
-  String get cryptoPassphraseLabel => 'Encryption code';
-
-  @override
-  String get cryptoPassphraseConfirmLabel => 'Confirm the code';
-
-  @override
-  String get cryptoPassphraseEmpty => 'Enter the encryption code';
-
-  @override
-  String cryptoPassphraseTooShort(int min) {
-    return 'Use at least $min characters';
-  }
-
-  @override
-  String get cryptoPassphraseMismatch => 'The codes don\'t match';
-
-  @override
-  String get cryptoSetupSubmit => 'Turn on encryption';
+  String get cryptoSetupSubmit => 'Create the passkey';
 
   @override
   String get cryptoUnlockTitle => 'Unlock your data';
 
   @override
   String get cryptoUnlockBody =>
-      'Enter the encryption code you chose when you turned on encryption.';
+      'Use your Taskenda passkey, with your fingerprint or screen lock, to see your data on this device.';
 
   @override
-  String get cryptoUnlockSubmit => 'Unlock';
-
-  @override
-  String get cryptoUnlockWrong => 'Wrong encryption code';
+  String get cryptoUnlockSubmit => 'Unlock with the passkey';
 
   @override
   String get cryptoRememberBrowser => 'Remember on this browser';
 
   @override
   String get cryptoRememberBrowserHint =>
-      'Otherwise you will be asked for the code again when you close the tab. Don\'t turn it on on a shared computer.';
-
-  @override
-  String get cryptoForgotPassphrase => 'I forgot the code';
+      'Otherwise you will be asked for the passkey again when you close the tab. Don\'t turn it on on a shared computer.';
 
   @override
   String get cryptoRecoverTitle => 'Use the recovery code';
 
   @override
   String get cryptoRecoverBody =>
-      'Enter the recovery code you saved when you turned on encryption, then choose a new encryption code.';
+      'Enter the recovery code you saved: then you will create a new passkey to unlock your data with your fingerprint or screen lock.';
 
   @override
   String get cryptoRecoveryKeyLabel => 'Recovery code';
@@ -2418,13 +2391,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'This recovery code doesn\'t belong to your account';
 
   @override
-  String get cryptoNewPassphraseLabel => 'New encryption code';
-
-  @override
   String get cryptoRecoverSubmit => 'Recover my data';
-
-  @override
-  String get cryptoBackToUnlock => 'I remember the encryption code';
 
   @override
   String get cryptoNoRecoveryKey => 'I don\'t have the recovery code';
@@ -2434,7 +2401,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cryptoResetBody =>
-      'Without the encryption code and the recovery code, nobody can read your encrypted data any more. Resetting encryption loses it, and you can start again with a new code.';
+      'Without the passkey and the recovery code, nobody can read your encrypted data any more. Resetting encryption loses it, and you can start again with a new passkey.';
 
   @override
   String get cryptoResetConfirm => 'Reset';
@@ -2444,7 +2411,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cryptoRecoveryShowBody =>
-      'If you forget the encryption code, this is the only way to get your data back. Keep it somewhere safe, such as a password manager: we won\'t show it again.';
+      'If you lose the passkey, this is the only way to get your data back. Keep it somewhere safe, such as a password manager: we won\'t show it again.';
 
   @override
   String get cryptoRecoveryCopy => 'Copy';
@@ -2470,6 +2437,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'An internet connection is needed. Check your connection and try again.';
 
   @override
+  String get cryptoLostPasskey => 'I lost the passkey';
+
+  @override
+  String get cryptoBackToPasskey => 'Use the passkey';
+
+  @override
+  String get cryptoPasskeyCancelled =>
+      'Passkey not confirmed. Try again whenever you like.';
+
+  @override
+  String get cryptoPasskeyUnavailable =>
+      'This device can\'t use a passkey. It needs a screen lock (fingerprint, PIN or pattern) and a password manager with passkeys, such as Google Password Manager.';
+
+  @override
+  String get cryptoPasskeyNotFound =>
+      'There is no Taskenda passkey on this device. Use the recovery code.';
+
+  @override
+  String get cryptoPasskeyUnknown =>
+      'This passkey doesn\'t unlock your current data (it may be from before a reset). Use the recovery code.';
+
+  @override
+  String get cryptoRecoveryOfferTitle => 'Want a recovery code?';
+
+  @override
+  String get cryptoRecoveryOfferBody =>
+      'If you lose the passkey, for example by moving to a phone with another account, the recovery code is the only way to open your data again. You can create it now or later from Settings > Security.';
+
+  @override
+  String get cryptoRecoveryOfferCreate => 'Create the recovery code';
+
+  @override
+  String get cryptoRecoveryOfferLater => 'Later';
+
+  @override
   String get shareErrorNoEncryption =>
       'This person hasn\'t turned on encryption yet. Ask them to update Taskenda and sign in, then try again.';
 
@@ -2481,24 +2483,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Notes, tasks and events are end-to-end encrypted: only you and the people you share them with can read them.';
 
   @override
-  String get securityChangePassphrase => 'Change encryption code';
-
-  @override
-  String get securityChangePassphraseSubtitle =>
-      'You\'ll need it to unlock your data on a new device';
-
-  @override
-  String get securityCurrentPassphrase => 'Current encryption code';
-
-  @override
-  String get securityPassphraseChanged => 'Encryption code changed';
-
-  @override
   String get securityNewRecoveryKey => 'New recovery code';
 
   @override
   String get securityNewRecoveryKeySubtitle =>
-      'Your current recovery code will stop working';
+      'Confirm with the passkey; your current recovery code, if any, will stop working';
 
   @override
   String get calendarParticipants => 'Participants';

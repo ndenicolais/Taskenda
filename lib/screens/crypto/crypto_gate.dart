@@ -20,7 +20,7 @@ import 'recovery_key_screen.dart';
 
 /// Between sign-in and the app: shows [child] only once the user's
 /// encryption keys are unlocked, and the setup, unlock or recovery-key
-/// screen until then. [loading] is shown while the keys are looked up.
+/// screens until then. [loading] is shown while the keys are looked up.
 class CryptoGate extends ConsumerWidget {
   const CryptoGate({super.key, required this.child, required this.loading});
 
@@ -32,10 +32,11 @@ class CryptoGate extends ConsumerWidget {
     return switch (ref.watch(cryptoProvider)) {
       CryptoSignedOut() || CryptoChecking() => loading,
       CryptoNeedsSetup() => const CryptoSetupScreen(),
-      CryptoLocked() => const CryptoUnlockScreen(),
+      CryptoLocked(:final bundle) => CryptoUnlockScreen(bundle: bundle),
       CryptoUnlocked(:final pendingRecoveryKey?) => RecoveryKeyScreen(
         recoveryKey: pendingRecoveryKey,
       ),
+      CryptoUnlocked(offerRecoveryKey: true) => const RecoveryKeyOfferScreen(),
       CryptoUnlocked() => child,
       CryptoLoadFailed() => const _LoadFailedScreen(),
     };

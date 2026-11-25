@@ -37,9 +37,9 @@
 
 <body>
   <!-- The passkeys plugin calls PasskeyAuthenticator.init() while the app
-       starts, a function of Corbado's bundle.js, which is not included yet:
-       without this placeholder the web app stops on a blank page. Passkeys on
-       the web come with the passkey phase (guides/E2EE_PLAN.md). -->
+       starts, a function of Corbado's bundle.js, which is not included: on
+       the web Taskenda uses WebAuthn directly (passkey_client_web.dart), but
+       without this placeholder the plugin stops the app on a blank page. -->
   <script>
     window.PasskeyAuthenticator = window.PasskeyAuthenticator || { init: function () {} };
   </script>

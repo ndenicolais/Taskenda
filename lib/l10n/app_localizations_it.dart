@@ -2217,7 +2217,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get policy_section_data_text =>
-      '• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Cifratura: il codice di cifratura e il codice di recupero non lasciano mai il tuo dispositivo e li conosci solo tu. Sul tuo account vengono salvate le tue chiavi di cifratura, protette da questi codici e quindi inutilizzabili senza di essi, e una chiave pubblica che gli altri utenti usano per condividere elementi con te.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.';
+      '• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Cifratura: le tue chiavi di cifratura sono protette dalla passkey di Taskenda, custodita dal gestore di password del tuo dispositivo (ad esempio il Gestore password di Google, che la sincronizza con cifratura end-to-end), e, se lo crei, da un codice di recupero che conosci solo tu. Il segreto della passkey e il codice di recupero non lasciano mai il tuo dispositivo. Sul tuo account vengono salvate le tue chiavi di cifratura, protette in questo modo e quindi inutilizzabili senza la passkey o il codice di recupero, l\'identificativo della passkey e una chiave pubblica che gli altri utenti usano per condividere elementi con te.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.';
 
   @override
   String get policy_section_use_title => '3. Come usiamo i dati';
@@ -2253,7 +2253,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String policy_section_retention_text(String email) {
-    return 'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se dimentichi sia il codice di cifratura sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a $email.';
+    return 'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se perdi sia la passkey sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a $email.';
   }
 
   @override
@@ -2369,61 +2369,34 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get cryptoSetupBody =>
-      'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Scegli un codice di cifratura: ti servirà per vedere i tuoi dati su un nuovo dispositivo.';
+      'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Crea una passkey: su un nuovo dispositivo li sbloccherai con l\'impronta o il blocco schermo, senza codici da ricordare.';
 
   @override
-  String get cryptoSetupWarning =>
-      'Il codice di cifratura non è la password dell\'account e nessuno può reimpostarlo. Se lo dimentichi ti servirà il codice di recupero che ti mostriamo subito dopo.';
-
-  @override
-  String get cryptoPassphraseLabel => 'Codice di cifratura';
-
-  @override
-  String get cryptoPassphraseConfirmLabel => 'Conferma il codice';
-
-  @override
-  String get cryptoPassphraseEmpty => 'Inserisci il codice di cifratura';
-
-  @override
-  String cryptoPassphraseTooShort(int min) {
-    return 'Usa almeno $min caratteri';
-  }
-
-  @override
-  String get cryptoPassphraseMismatch => 'I codici non coincidono';
-
-  @override
-  String get cryptoSetupSubmit => 'Attiva la cifratura';
+  String get cryptoSetupSubmit => 'Crea la passkey';
 
   @override
   String get cryptoUnlockTitle => 'Sblocca i tuoi dati';
 
   @override
   String get cryptoUnlockBody =>
-      'Inserisci il codice di cifratura che hai scelto quando hai attivato la cifratura.';
+      'Usa la passkey di Taskenda, con l\'impronta o il blocco schermo, per vedere i tuoi dati su questo dispositivo.';
 
   @override
-  String get cryptoUnlockSubmit => 'Sblocca';
-
-  @override
-  String get cryptoUnlockWrong => 'Codice di cifratura errato';
+  String get cryptoUnlockSubmit => 'Sblocca con la passkey';
 
   @override
   String get cryptoRememberBrowser => 'Ricorda su questo browser';
 
   @override
   String get cryptoRememberBrowserHint =>
-      'Se non lo attivi, il codice ti verrà chiesto di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.';
-
-  @override
-  String get cryptoForgotPassphrase => 'Ho dimenticato il codice';
+      'Se non lo attivi, la passkey ti verrà chiesta di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.';
 
   @override
   String get cryptoRecoverTitle => 'Usa il codice di recupero';
 
   @override
   String get cryptoRecoverBody =>
-      'Inserisci il codice di recupero che hai salvato quando hai attivato la cifratura, poi scegli un nuovo codice di cifratura.';
+      'Inserisci il codice di recupero che hai salvato: poi creerai una nuova passkey per sbloccare i dati con l\'impronta o il blocco schermo.';
 
   @override
   String get cryptoRecoveryKeyLabel => 'Codice di recupero';
@@ -2437,13 +2410,7 @@ class AppLocalizationsIt extends AppLocalizations {
       'Questo codice di recupero non appartiene al tuo account';
 
   @override
-  String get cryptoNewPassphraseLabel => 'Nuovo codice di cifratura';
-
-  @override
   String get cryptoRecoverSubmit => 'Recupera i dati';
-
-  @override
-  String get cryptoBackToUnlock => 'Ricordo il codice di cifratura';
 
   @override
   String get cryptoNoRecoveryKey => 'Non ho il codice di recupero';
@@ -2453,7 +2420,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get cryptoResetBody =>
-      'Senza codice di cifratura e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con un nuovo codice.';
+      'Senza passkey e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con una nuova passkey.';
 
   @override
   String get cryptoResetConfirm => 'Reimposta';
@@ -2463,7 +2430,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get cryptoRecoveryShowBody =>
-      'Se dimentichi il codice di cifratura, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.';
+      'Se perdi la passkey, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.';
 
   @override
   String get cryptoRecoveryCopy => 'Copia';
@@ -2489,6 +2456,41 @@ class AppLocalizationsIt extends AppLocalizations {
       'Serve una connessione a internet. Controlla la connessione e riprova.';
 
   @override
+  String get cryptoLostPasskey => 'Ho perso la passkey';
+
+  @override
+  String get cryptoBackToPasskey => 'Usa la passkey';
+
+  @override
+  String get cryptoPasskeyCancelled =>
+      'Passkey non confermata. Riprova quando vuoi.';
+
+  @override
+  String get cryptoPasskeyUnavailable =>
+      'Su questo dispositivo non si può usare una passkey. Serve un blocco schermo (impronta, PIN o sequenza) e un gestore di password con le passkey, come il Gestore password di Google.';
+
+  @override
+  String get cryptoPasskeyNotFound =>
+      'Su questo dispositivo non c\'è la passkey di Taskenda. Usa il codice di recupero.';
+
+  @override
+  String get cryptoPasskeyUnknown =>
+      'Questa passkey non sblocca i tuoi dati attuali (forse è di prima di una reimpostazione). Usa il codice di recupero.';
+
+  @override
+  String get cryptoRecoveryOfferTitle => 'Vuoi un codice di recupero?';
+
+  @override
+  String get cryptoRecoveryOfferBody =>
+      'Se perdi la passkey, per esempio passando a un telefono con un altro account, il codice di recupero è l\'unico modo per riaprire i tuoi dati. Puoi crearlo ora o più tardi da Impostazioni > Sicurezza.';
+
+  @override
+  String get cryptoRecoveryOfferCreate => 'Crea il codice di recupero';
+
+  @override
+  String get cryptoRecoveryOfferLater => 'Più tardi';
+
+  @override
   String get shareErrorNoEncryption =>
       'Questa persona non ha ancora attivato la cifratura. Chiedile di aggiornare Taskenda e di accedere, poi riprova.';
 
@@ -2500,24 +2502,11 @@ class AppLocalizationsIt extends AppLocalizations {
       'Note, task ed eventi sono cifrati end-to-end: solo tu e le persone con cui li condividi potete leggerli.';
 
   @override
-  String get securityChangePassphrase => 'Cambia codice di cifratura';
-
-  @override
-  String get securityChangePassphraseSubtitle =>
-      'Ti servirà per sbloccare i dati su un nuovo dispositivo';
-
-  @override
-  String get securityCurrentPassphrase => 'Codice di cifratura attuale';
-
-  @override
-  String get securityPassphraseChanged => 'Codice di cifratura cambiato';
-
-  @override
   String get securityNewRecoveryKey => 'Nuovo codice di recupero';
 
   @override
   String get securityNewRecoveryKeySubtitle =>
-      'Il codice di recupero attuale smetterà di funzionare';
+      'Confermi con la passkey; il codice di recupero attuale, se c\'è, smetterà di funzionare';
 
   @override
   String get calendarParticipants => 'Partecipanti';

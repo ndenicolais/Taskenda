@@ -13,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/crypto/crypto_service.dart';
+import '../../core/crypto/passkey_client.dart';
+import '../../core/crypto/user_keys.dart';
 import '../../l10n/l10n.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/crypto_provider.dart';
@@ -178,12 +180,16 @@ class RememberBrowserTile extends StatelessWidget {
 }
 
 /// The message for an error thrown by [CryptoNotifier]; [wrongKey] is the
-/// one for a [CryptoException] (wrong code or recovery key).
+/// one for a [CryptoException] (wrong recovery key).
 String cryptoErrorMessage(
   AppLocalizations l,
   Object error, {
   required String wrongKey,
 }) => switch (error) {
+  PasskeyCancelledException() => l.cryptoPasskeyCancelled,
+  PasskeyUnavailableException() => l.cryptoPasskeyUnavailable,
+  PasskeyNotFoundException() => l.cryptoPasskeyNotFound,
+  UnknownPasskeyException() => l.cryptoPasskeyUnknown,
   CryptoException() => wrongKey,
   InvalidRecoveryKeyException() => l.cryptoRecoveryKeyInvalid,
   CryptoOfflineException() => l.cryptoNeedsConnection,

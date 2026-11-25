@@ -121,13 +121,9 @@ class _Header extends StatelessWidget {
           style: tt.bodyMedium?.copyWith(color: muted),
         ),
         const SizedBox(height: AppSpacing.xs),
-        // PROTOTYPE: a long press opens the passkey PRF diagnostic.
-        GestureDetector(
-          onLongPress: () => AppNav.openPasskeyProbe(context),
-          child: Text(
-            context.l10n.infoVersion(appVersion),
-            style: tt.bodySmall?.copyWith(color: muted),
-          ),
+        Text(
+          context.l10n.infoVersion(appVersion),
+          style: tt.bodySmall?.copyWith(color: muted),
         ),
       ],
     );

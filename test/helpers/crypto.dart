@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:cryptography/cryptography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:taskenda/core/crypto/crypto_service.dart';
 import 'package:taskenda/core/crypto/item_cipher.dart';
-import 'package:taskenda/core/crypto/user_keys.dart';
+import 'package:taskenda/core/crypto/passkey_client.dart';
 import 'package:taskenda/providers/crypto_provider.dart';
 import 'package:taskenda/utils/device_key_storage.dart';
 
@@ -27,14 +31,71 @@ class MemoryKeyStorage extends DeviceKeyStorage {
   Future<void> delete(String uid) async => values.remove(uid);
 }
 
-/// Overrides for [cryptoProvider]: encryption on, [storage] and a fast key
-/// manager.
-List<Override> cryptoOverrides(MemoryKeyStorage storage) => [
+/// A passkey provider synced across every device of the test: a passkey's
+/// PRF secret is HMAC-SHA256(credential id, salt), so any instance gives the
+/// same secret for the same passkey. [nextError] is thrown by the next call
+/// instead; [forcedCredentialId] is the passkey [get] answers with.
+class FakePasskeyClient implements PasskeyClient {
+  Exception? nextError;
+  String? forcedCredentialId;
+  int creates = 0;
+  int gets = 0;
+
+  void _throwIfAsked() {
+    final error = nextError;
+    nextError = null;
+    if (error != null) throw error;
+  }
+
+  static Future<PasskeySecret> secretOf(String id, Uint8List salt) async {
+    final mac = await Hmac.sha256().calculateMac(
+      salt,
+      secretKey: SecretKey(utf8.encode(id)),
+    );
+    return PasskeySecret(
+      credentialId: id,
+      secret: Uint8List.fromList(mac.bytes),
+    );
+  }
+
+  @override
+  Future<PasskeySecret> create({
+    required String userId,
+    required String userName,
+    required String displayName,
+    required Uint8List salt,
+  }) async {
+    _throwIfAsked();
+    creates++;
+    final id = PasskeyCodec.toBase64Url(CryptoService.randomBytes(16));
+    return secretOf(id, salt);
+  }
+
+  @override
+  Future<PasskeySecret> get({
+    required Uint8List salt,
+    List<String> credentialIds = const [],
+  }) async {
+    _throwIfAsked();
+    gets++;
+    final id =
+        forcedCredentialId ??
+        (credentialIds.isEmpty
+            ? throw const PasskeyNotFoundException()
+            : credentialIds.first);
+    return secretOf(id, salt);
+  }
+}
+
+/// Overrides for [cryptoProvider]: encryption on, [storage] and [passkeys]
+/// (a new [FakePasskeyClient] if omitted).
+List<Override> cryptoOverrides(
+  MemoryKeyStorage storage, [
+  FakePasskeyClient? passkeys,
+]) => [
   e2eeEnabledProvider.overrideWithValue(true),
   deviceKeyStorageProvider.overrideWithValue(storage),
-  userKeyManagerProvider.overrideWithValue(
-    UserKeyManager(CryptoService(), iterations: 1000),
-  ),
+  passkeyClientProvider.overrideWithValue(passkeys ?? FakePasskeyClient()),
 ];
 
 /// The [cryptoProvider] state once it is no longer [CryptoChecking].

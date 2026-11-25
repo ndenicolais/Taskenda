@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:taskenda/core/crypto/passkey_client.dart';
 import 'package:taskenda/providers/crypto_provider.dart';
 import 'package:taskenda/screens/settings/settings_security_section.dart';
 
@@ -11,17 +12,19 @@ import '../helpers/test_container.dart';
 
 void main() {
   late ProviderContainer container;
+  late FakePasskeyClient passkeys;
 
   Future<void> pumpSection(WidgetTester tester) async {
+    passkeys = FakePasskeyClient();
     container = createTestContainer(
       FakeFirebaseFirestore(),
       uid: 'u1',
-      overrides: cryptoOverrides(MemoryKeyStorage()),
+      overrides: cryptoOverrides(MemoryKeyStorage(), passkeys),
     );
     container.listen(cryptoProvider, (_, _) {});
     await tester.runAsync(() async {
       await settledCrypto(container);
-      await container.read(cryptoProvider.notifier).setup('passphrase');
+      await container.read(cryptoProvider.notifier).setup();
     });
     container.read(cryptoProvider.notifier).acknowledgeRecoveryKey();
     await tester.pumpWidget(
@@ -37,52 +40,38 @@ void main() {
     );
   }
 
-  testWidgets('shows both actions', (tester) async {
-    await pumpSection(tester);
-    expect(find.text(itL10n.settingsSecurityTitle), findsOneWidget);
-    expect(find.text(itL10n.securityChangePassphrase), findsOneWidget);
-    expect(find.text(itL10n.securityNewRecoveryKey), findsOneWidget);
-  });
-
-  testWidgets('change code: validation, then a wrong current code', (
-    tester,
-  ) async {
-    await pumpSection(tester);
-    await tester.tap(find.text(itL10n.securityChangePassphrase));
-    await tester.pumpAndSettle();
-
-    final fields = find.byType(TextFormField);
-    expect(fields, findsNWidgets(3));
-    await tester.enterText(fields.at(1), 'short');
-    await tester.tap(find.text(itL10n.commonSave));
-    await tester.pump();
-    expect(find.text(itL10n.cryptoPassphraseEmpty), findsOneWidget);
-    expect(find.text(itL10n.cryptoPassphraseTooShort(8)), findsOneWidget);
-
-    await tester.enterText(fields.at(0), 'wrong code');
-    await tester.enterText(fields.at(1), 'new passphrase');
-    await tester.enterText(fields.at(2), 'new passphrase');
-    await tester.tap(find.text(itL10n.commonSave));
+  Future<void> tapAndWait(WidgetTester tester, String text) async {
+    await tester.tap(find.text(text));
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 300)),
     );
-    await tester.pump();
-    expect(find.text(itL10n.cryptoUnlockWrong), findsOneWidget);
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('shows the recovery code action only', (tester) async {
+    await pumpSection(tester);
+    expect(find.text(itL10n.settingsSecurityTitle), findsOneWidget);
+    expect(find.text(itL10n.securityNewRecoveryKey), findsOneWidget);
+    expect(find.byType(ListTile), findsOneWidget);
+  });
+
+  testWidgets('a cancelled passkey shows a message and no code', (
+    tester,
+  ) async {
+    await pumpSection(tester);
+    passkeys.nextError = const PasskeyCancelledException();
+    await tapAndWait(tester, itL10n.securityNewRecoveryKey);
+    expect(find.text(itL10n.cryptoPasskeyCancelled), findsOneWidget);
+    expect(find.text(itL10n.cryptoRecoveryShowTitle), findsNothing);
   });
 
   testWidgets('new recovery code is shown until the user saved it', (
     tester,
   ) async {
     await pumpSection(tester);
-    await tester.tap(find.text(itL10n.securityNewRecoveryKey));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), 'passphrase');
-    await tester.tap(find.text(itL10n.cryptoContinue));
-    await tester.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 300)),
-    );
-    await tester.pumpAndSettle();
+    await tapAndWait(tester, itL10n.securityNewRecoveryKey);
 
+    expect(passkeys.gets, 1);
     expect(find.text(itL10n.cryptoRecoveryShowTitle), findsOneWidget);
     final done = find.widgetWithText(FilledButton, itL10n.commonDone);
     expect(tester.widget<FilledButton>(done).onPressed, isNull);

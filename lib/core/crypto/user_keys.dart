@@ -14,6 +14,7 @@ import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
 
 import 'crypto_service.dart';
+import 'passkey_client.dart';
 
 /// A user's keys once unlocked: the master key (wraps their item keys,
 /// encrypts labels and lists) and the X25519 key pair (opens the item keys
@@ -31,37 +32,58 @@ class UnlockedKeys {
   final Uint8List publicKey;
 }
 
+/// The passkey that was used isn't one of those that protect the keys
+/// (e.g. one created before encryption was reset).
+class UnknownPasskeyException extends CryptoException {
+  const UnknownPasskeyException() : super('Unknown passkey');
+}
+
 /// The user's keys as stored in `users/{uid}/crypto/keys`: nothing in it can
-/// be used without the passphrase or the recovery key.
+/// be used without one of the passkeys or the recovery key.
 ///
-/// `{v, kdf, mk_pass, mk_recovery, sk, pk}`: the master key wrapped with
-/// the passphrase key and with the recovery key, the private key wrapped
-/// with the master key, and the public key (also in `public_keys/{uid}`).
+/// `{v: 2, salt, passkeys: {<credential id>: {n, c}}, mk_recovery?, sk, pk}`:
+/// the PRF salt asked to every passkey, the master key wrapped with each
+/// passkey's secret and (optionally) with the recovery key, the private key
+/// wrapped with the master key, and the public key (also in
+/// `public_keys/{uid}`).
+///
+/// A version 1 bundle (from when an encryption code protected the keys) is
+/// read with no passkey: only its recovery key opens it, then a passkey is
+/// added and it is saved as version 2.
 @immutable
 class UserKeyBundle {
   const UserKeyBundle({
-    required this.kdf,
-    required this.passphraseWrapped,
+    required this.prfSalt,
+    required this.passkeysWrapped,
     required this.recoveryWrapped,
     required this.privateKeyWrapped,
     required this.publicKey,
   });
 
-  static const version = 1;
+  static const version = 2;
+  static const _legacyVersion = 1;
 
-  final KdfParams kdf;
-  final EncryptedBlob passphraseWrapped;
-  final EncryptedBlob recoveryWrapped;
+  /// Null only in a version 1 bundle.
+  final Uint8List? prfSalt;
+
+  /// Wrapped master key by passkey credential id.
+  final Map<String, EncryptedBlob> passkeysWrapped;
+
+  /// Null when the user hasn't created a recovery key.
+  final EncryptedBlob? recoveryWrapped;
   final EncryptedBlob privateKeyWrapped;
   final Uint8List publicKey;
 
-  UserKeyBundle copyWith({
-    KdfParams? kdf,
-    EncryptedBlob? passphraseWrapped,
+  bool get hasPasskey => passkeysWrapped.isNotEmpty;
+  bool get hasRecoveryKey => recoveryWrapped != null;
+
+  UserKeyBundle _copyWith({
+    Uint8List? prfSalt,
+    Map<String, EncryptedBlob>? passkeysWrapped,
     EncryptedBlob? recoveryWrapped,
   }) => UserKeyBundle(
-    kdf: kdf ?? this.kdf,
-    passphraseWrapped: passphraseWrapped ?? this.passphraseWrapped,
+    prfSalt: prfSalt ?? this.prfSalt,
+    passkeysWrapped: passkeysWrapped ?? this.passkeysWrapped,
     recoveryWrapped: recoveryWrapped ?? this.recoveryWrapped,
     privateKeyWrapped: privateKeyWrapped,
     publicKey: publicKey,
@@ -69,64 +91,70 @@ class UserKeyBundle {
 
   Map<String, dynamic> toJson() => {
     'v': version,
-    'kdf': kdf.toJson(),
-    'mk_pass': passphraseWrapped.toJson(),
-    'mk_recovery': recoveryWrapped.toJson(),
+    if (prfSalt != null) 'salt': base64Encode(prfSalt!),
+    'passkeys': {
+      for (final e in passkeysWrapped.entries) e.key: e.value.toJson(),
+    },
+    if (recoveryWrapped != null) 'mk_recovery': recoveryWrapped!.toJson(),
     'sk': privateKeyWrapped.toJson(),
     'pk': base64Encode(publicKey),
   };
 
   factory UserKeyBundle.fromJson(Map<String, dynamic> json) {
-    if (json['v'] != version || json['pk'] is! String) {
+    final v = json['v'];
+    if ((v != version && v != _legacyVersion) || json['pk'] is! String) {
       throw const CryptoException('Unsupported key bundle');
     }
+    final salt = json['salt'];
+    final passkeys = json['passkeys'];
+    final recovery = json['mk_recovery'];
     return UserKeyBundle(
-      kdf: KdfParams.fromJson(json['kdf']),
-      passphraseWrapped: EncryptedBlob.fromJson(json['mk_pass']),
-      recoveryWrapped: EncryptedBlob.fromJson(json['mk_recovery']),
+      prfSalt: v == version && salt is String ? base64Decode(salt) : null,
+      passkeysWrapped: {
+        if (v == version && passkeys is Map)
+          for (final e in passkeys.entries)
+            e.key as String: EncryptedBlob.fromJson(e.value),
+      },
+      recoveryWrapped:
+          recovery == null ? null : EncryptedBlob.fromJson(recovery),
       privateKeyWrapped: EncryptedBlob.fromJson(json['sk']),
       publicKey: base64Decode(json['pk'] as String),
     );
   }
 }
 
-/// What [UserKeyManager.create] returns: the bundle to store, the keys,
-/// and the recovery key to show to the user once.
-typedef NewUserKeys =
-    ({UserKeyBundle bundle, UnlockedKeys keys, Uint8List recoveryKey});
-
-/// Creates, unlocks and re-wraps a user's keys. Pure: storing the bundle
-/// (Firestore) and the unlocked keys (device) is up to the caller.
+/// Creates, unlocks and re-wraps a user's keys. Pure: talking to the
+/// passkey, storing the bundle (Firestore) and the unlocked keys (device)
+/// is up to the caller.
 class UserKeyManager {
-  UserKeyManager(this._crypto, {this.iterations = KdfParams.defaultIterations});
+  UserKeyManager(this._crypto);
 
   final CryptoService _crypto;
 
-  /// PBKDF2 iterations for new bundles; tests lower it.
-  final int iterations;
-
   static String _aad(String uid, String part) => 'taskenda:v1:user:$uid:$part';
 
-  /// New keys for [uid], protected by [passphrase] and a new recovery key.
-  Future<NewUserKeys> create(String uid, String passphrase) async {
+  static String _passkeyAad(String uid, String credentialId) =>
+      _aad(uid, 'mk_passkey:$credentialId');
+
+  /// A new random PRF salt, to ask the first passkey with.
+  Uint8List newPrfSalt() => CryptoService.randomBytes(CryptoService.prfLength);
+
+  /// New keys for [uid], protected by [passkey] (whose secret is for
+  /// [prfSalt]). No recovery key yet: see [withNewRecoveryKey].
+  Future<({UserKeyBundle bundle, UnlockedKeys keys})> create(
+    String uid, {
+    required Uint8List prfSalt,
+    required PasskeySecret passkey,
+  }) async {
     final masterKey = await _crypto.newSecretKey();
     final keyPair = await _crypto.newKeyPair();
     final publicKey = await _crypto.publicKeyBytes(keyPair);
-    final recoveryKey = _crypto.newRecoveryKey();
-    final kdf = _crypto.newKdfParams(iterations: iterations);
-
     final bundle = UserKeyBundle(
-      kdf: kdf,
-      passphraseWrapped: await _crypto.wrapKey(
-        masterKey,
-        await _crypto.deriveKek(passphrase, kdf),
-        aad: _aad(uid, 'mk_pass'),
-      ),
-      recoveryWrapped: await _crypto.wrapKey(
-        masterKey,
-        await _crypto.deriveRecoveryKek(recoveryKey),
-        aad: _aad(uid, 'mk_recovery'),
-      ),
+      prfSalt: prfSalt,
+      passkeysWrapped: {
+        passkey.credentialId: await _wrapForPasskey(uid, masterKey, passkey),
+      },
+      recoveryWrapped: null,
       privateKeyWrapped: await _crypto.encrypt(
         await _crypto.privateKeyBytes(keyPair),
         masterKey,
@@ -141,34 +169,38 @@ class UserKeyManager {
         keyPair: keyPair,
         publicKey: publicKey,
       ),
-      recoveryKey: recoveryKey,
     );
   }
 
-  /// The keys of [bundle]; throws [CryptoException] if [passphrase] is
-  /// wrong.
-  Future<UnlockedKeys> unlockWithPassphrase(
+  /// The keys of [bundle] opened with [passkey]; throws
+  /// [UnknownPasskeyException] if it isn't one of the bundle's passkeys,
+  /// [CryptoException] if its secret is wrong.
+  Future<UnlockedKeys> unlockWithPasskey(
     String uid,
     UserKeyBundle bundle,
-    String passphrase,
+    PasskeySecret passkey,
   ) async {
+    final wrapped = bundle.passkeysWrapped[passkey.credentialId];
+    if (wrapped == null) throw const UnknownPasskeyException();
     final masterKey = await _crypto.unwrapKey(
-      bundle.passphraseWrapped,
-      await _crypto.deriveKek(passphrase, bundle.kdf),
-      aad: _aad(uid, 'mk_pass'),
+      wrapped,
+      await _crypto.derivePasskeyKek(passkey.secret),
+      aad: _passkeyAad(uid, passkey.credentialId),
     );
     return _withKeyPair(uid, bundle, masterKey);
   }
 
   /// The keys of [bundle]; throws [CryptoException] if [recoveryKey] is
-  /// not this account's.
+  /// not this account's (or the account has none).
   Future<UnlockedKeys> unlockWithRecoveryKey(
     String uid,
     UserKeyBundle bundle,
     Uint8List recoveryKey,
   ) async {
+    final wrapped = bundle.recoveryWrapped;
+    if (wrapped == null) throw const CryptoException('No recovery key');
     final masterKey = await _crypto.unwrapKey(
-      bundle.recoveryWrapped,
+      wrapped,
       await _crypto.deriveRecoveryKek(recoveryKey),
       aad: _aad(uid, 'mk_recovery'),
     );
@@ -194,26 +226,34 @@ class UserKeyManager {
     );
   }
 
-  /// [bundle] protected by [passphrase] instead (new salt): the master key
+  Future<EncryptedBlob> _wrapForPasskey(
+    String uid,
+    SecretKey masterKey,
+    PasskeySecret passkey,
+  ) async => _crypto.wrapKey(
+    masterKey,
+    await _crypto.derivePasskeyKek(passkey.secret),
+    aad: _passkeyAad(uid, passkey.credentialId),
+  );
+
+  /// [bundle] also opened by [passkey], whose secret is for [prfSalt]: the
+  /// bundle's salt, or a new one for a version 1 bundle. The master key
   /// doesn't change, so no data has to be encrypted again.
-  Future<UserKeyBundle> withPassphrase(
+  Future<UserKeyBundle> withPasskey(
     String uid,
     UserKeyBundle bundle,
-    UnlockedKeys keys,
-    String passphrase,
-  ) async {
-    final kdf = _crypto.newKdfParams(iterations: iterations);
-    return bundle.copyWith(
-      kdf: kdf,
-      passphraseWrapped: await _crypto.wrapKey(
-        keys.masterKey,
-        await _crypto.deriveKek(passphrase, kdf),
-        aad: _aad(uid, 'mk_pass'),
-      ),
-    );
-  }
+    UnlockedKeys keys, {
+    required Uint8List prfSalt,
+    required PasskeySecret passkey,
+  }) async => bundle._copyWith(
+    prfSalt: prfSalt,
+    passkeysWrapped: {
+      ...bundle.passkeysWrapped,
+      passkey.credentialId: await _wrapForPasskey(uid, keys.masterKey, passkey),
+    },
+  );
 
-  /// [bundle] with a new recovery key (the old one stops working).
+  /// [bundle] with a new recovery key (the old one, if any, stops working).
   Future<({UserKeyBundle bundle, Uint8List recoveryKey})> withNewRecoveryKey(
     String uid,
     UserKeyBundle bundle,
@@ -221,7 +261,7 @@ class UserKeyManager {
   ) async {
     final recoveryKey = _crypto.newRecoveryKey();
     return (
-      bundle: bundle.copyWith(
+      bundle: bundle._copyWith(
         recoveryWrapped: await _crypto.wrapKey(
           keys.masterKey,
           await _crypto.deriveRecoveryKek(recoveryKey),

@@ -18,10 +18,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/crypto/crypto_service.dart';
 import '../core/crypto/item_cipher.dart';
 import '../core/crypto/item_codec.dart';
+import '../core/crypto/passkey_client.dart';
 import '../core/crypto/user_keys.dart';
 import '../utils/device_key_storage.dart';
 import 'auth_provider.dart';
 import 'core_providers.dart';
+import 'sharing_provider.dart';
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -40,7 +42,7 @@ class CryptoChecking extends CryptoState {
   const CryptoChecking();
 }
 
-/// The account has no keys yet: the user must pick an encryption code.
+/// The account has no keys yet: the user must create a passkey.
 class CryptoNeedsSetup extends CryptoState {
   const CryptoNeedsSetup();
 }
@@ -53,12 +55,18 @@ class CryptoLocked extends CryptoState {
 }
 
 /// The keys are unlocked. [pendingRecoveryKey] is a new recovery key (as
-/// text) still to be shown to the user.
+/// text) still to be shown to the user; [offerRecoveryKey] (right after
+/// setup) proposes to create one.
 class CryptoUnlocked extends CryptoState {
-  const CryptoUnlocked(this.keys, {this.pendingRecoveryKey});
+  const CryptoUnlocked(
+    this.keys, {
+    this.pendingRecoveryKey,
+    this.offerRecoveryKey = false,
+  });
 
   final UnlockedKeys keys;
   final String? pendingRecoveryKey;
+  final bool offerRecoveryKey;
 }
 
 /// The keys couldn't be looked up (typically offline on the first start
@@ -83,8 +91,9 @@ class CryptoOfflineException implements Exception {
 // ─── Providers ────────────────────────────────────────────────────────────────
 
 /// Whether this build has end-to-end encryption: `--dart-define=E2EE=true`.
-/// Off by default until unlocking with a passkey replaces the encryption
-/// code (guides/E2EE_PLAN.md): an app without it keeps working like before
+/// Off by default until "Skip" lets who can't create a passkey use the
+/// app without it (guides/E2EE_PLAN.md): an app without it keeps working
+/// like before
 /// (documents in clear, no unlock screen), compatible with the devices
 /// still on the previous version.
 const e2eeBuildFlag = bool.fromEnvironment('E2EE');
@@ -94,10 +103,12 @@ final e2eeEnabledProvider = Provider<bool>((ref) => e2eeBuildFlag);
 
 final cryptoServiceProvider = Provider<CryptoService>((ref) => CryptoService());
 
-/// Tests override it with fewer PBKDF2 iterations.
 final userKeyManagerProvider = Provider<UserKeyManager>(
   (ref) => UserKeyManager(ref.watch(cryptoServiceProvider)),
 );
+
+/// Tests override it with a fake passkey.
+final passkeyClientProvider = Provider<PasskeyClient>((ref) => PasskeyClient());
 
 /// Tests override it with an in-memory storage.
 final deviceKeyStorageProvider = Provider<DeviceKeyStorage>(
@@ -191,13 +202,14 @@ const encryptedCollections = [
 /// - `public_keys/{uid}`: their public key, readable by every signed-in
 ///   user so items can be shared with them;
 /// - the unlocked keys in [DeviceKeyStorage], so this device doesn't ask
-///   for the code again until sign-out.
+///   for the passkey again until sign-out.
 class CryptoNotifier extends Notifier<CryptoState> {
   String _uid = '';
 
   FirebaseFirestore get _db => ref.read(firestoreProvider);
   UserKeyManager get _manager => ref.read(userKeyManagerProvider);
   DeviceKeyStorage get _storage => ref.read(deviceKeyStorageProvider);
+  PasskeyClient get _passkeys => ref.read(passkeyClientProvider);
 
   DocumentReference<Map<String, dynamic>> _bundleDoc(String uid) =>
       _db.collection('users').doc(uid).collection('crypto').doc('keys');
@@ -283,14 +295,43 @@ class CryptoNotifier extends Notifier<CryptoState> {
     await _load(uid);
   }
 
-  /// Creates the account's keys, protected by [passphrase]. Needs a
-  /// connection: a transaction makes sure no other device created them
-  /// meanwhile (if one did, the state becomes [CryptoLocked]). [remember]
-  /// keeps the keys in `localStorage` on the web.
-  Future<void> setup(String passphrase, {bool remember = false}) async {
+  /// A new passkey of the signed-in account, asked with [prfSalt].
+  Future<PasskeySecret> _createPasskey(String uid, Uint8List prfSalt) {
+    final me = ref.read(currentShareMemberProvider);
+    final email = me?.email ?? '';
+    final name = me?.name ?? '';
+    final userName = email.isEmpty ? 'Taskenda' : email;
+    return _passkeys.create(
+      userId: uid,
+      userName: userName,
+      displayName: name.isEmpty ? userName : name,
+      salt: prfSalt,
+    );
+  }
+
+  /// Creates the account's keys, protected by a new passkey. Needs a
+  /// connection: the server is asked first whether keys exist (so no
+  /// passkey is created for nothing offline), then a transaction makes sure
+  /// no other device created them meanwhile (if one did, the state becomes
+  /// [CryptoLocked]). [remember] keeps the keys in `localStorage` on the
+  /// web. Throws the [PasskeyClient] exceptions.
+  Future<void> setup({bool remember = false}) async {
     final uid = _uid;
-    final created = await _manager.create(uid, passphrase);
     final bundleDoc = _bundleDoc(uid);
+    final current = await bundleDoc.get(
+      const GetOptions(source: Source.server),
+    );
+    if (current.data() case final data?) {
+      _set(uid, CryptoLocked(UserKeyBundle.fromJson(data)));
+      return;
+    }
+    final prfSalt = _manager.newPrfSalt();
+    final passkey = await _createPasskey(uid, prfSalt);
+    final created = await _manager.create(
+      uid,
+      prfSalt: prfSalt,
+      passkey: passkey,
+    );
     final existing = await _db.runTransaction<Map<String, dynamic>?>((
       tx,
     ) async {
@@ -309,127 +350,131 @@ class CryptoNotifier extends Notifier<CryptoState> {
       return;
     }
     await _remember(uid, created.keys, persistent: remember);
-    _set(
-      uid,
-      CryptoUnlocked(
-        created.keys,
-        pendingRecoveryKey: CryptoService.formatRecoveryKey(
-          created.recoveryKey,
-        ),
-      ),
-    );
+    _set(uid, CryptoUnlocked(created.keys, offerRecoveryKey: true));
   }
 
-  /// Unlocks with the encryption code; throws [CryptoException] if it is
-  /// wrong.
-  Future<void> unlock(String passphrase, {bool remember = false}) async {
+  /// Asks for one of [bundle]'s passkeys and opens the keys with it.
+  /// Throws the [PasskeyClient] exceptions, [UnknownPasskeyException] for a
+  /// passkey that doesn't protect these keys.
+  Future<UnlockedKeys> _openWithPasskey(
+    String uid,
+    UserKeyBundle bundle,
+  ) async {
+    final prfSalt = bundle.prfSalt;
+    if (prfSalt == null || !bundle.hasPasskey) {
+      throw StateError('No passkey for this account');
+    }
+    final passkey = await _passkeys.get(
+      salt: prfSalt,
+      credentialIds: bundle.passkeysWrapped.keys.toList(),
+    );
+    return _manager.unlockWithPasskey(uid, bundle, passkey);
+  }
+
+  /// Unlocks with one of the account's passkeys (see [_openWithPasskey]).
+  Future<void> unlockWithPasskey({bool remember = false}) async {
     final uid = _uid;
-    final bundle = _lockedBundle();
-    final keys = await _manager.unlockWithPassphrase(uid, bundle, passphrase);
+    final keys = await _openWithPasskey(uid, _lockedBundle());
     await _remember(uid, keys, persistent: remember);
     _set(uid, CryptoUnlocked(keys));
     unawaited(_publishPublicKey(uid, keys.publicKey));
   }
 
-  /// Unlocks with the recovery key, then protects the keys with
-  /// [newPassphrase] and a new recovery key (shown next). Throws
+  /// Unlocks with the recovery key, then creates a new passkey that will
+  /// unlock the keys from now on (the recovery key keeps working). Throws
   /// [InvalidRecoveryKeyException] for a malformed key, [CryptoException]
-  /// for another account's.
-  Future<void> recover(
-    String recoveryKeyText,
-    String newPassphrase, {
-    bool remember = false,
-  }) async {
+  /// for another account's, the [PasskeyClient] exceptions if the passkey
+  /// isn't created (the keys stay locked).
+  Future<void> recover(String recoveryKeyText, {bool remember = false}) async {
     final uid = _uid;
     final bundle = _lockedBundle();
     final recoveryKey = CryptoService.parseRecoveryKey(recoveryKeyText);
     if (recoveryKey == null) throw const InvalidRecoveryKeyException();
     final keys = await _manager.unlockWithRecoveryKey(uid, bundle, recoveryKey);
-    final withPassphrase = await _manager.withPassphrase(
+    final prfSalt = bundle.prfSalt ?? _manager.newPrfSalt();
+    final passkey = await _createPasskey(uid, prfSalt);
+    final updated = await _manager.withPasskey(
       uid,
       bundle,
       keys,
-      newPassphrase,
+      prfSalt: prfSalt,
+      passkey: passkey,
     );
-    final renewed = await _manager.withNewRecoveryKey(
-      uid,
-      withPassphrase,
-      keys,
-    );
-    await _bundleDoc(uid).set({
-      ...renewed.bundle.toJson(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
+    await _saveBundle(uid, updated);
     await _remember(uid, keys, persistent: remember);
-    _set(
-      uid,
-      CryptoUnlocked(
-        keys,
-        pendingRecoveryKey: CryptoService.formatRecoveryKey(
-          renewed.recoveryKey,
-        ),
-      ),
-    );
+    _set(uid, CryptoUnlocked(keys));
     unawaited(_publishPublicKey(uid, keys.publicKey));
   }
 
-  /// The account's bundle read from the server (throws offline) and the
-  /// keys it holds, checked against [passphrase] (throws [CryptoException]
-  /// if wrong): settings changes need the current code and a connection,
-  /// so a change can't stay queued unseen.
-  Future<(UserKeyBundle, UnlockedKeys)> _verified(
-    String uid,
-    String passphrase,
-  ) async {
+  /// The account's bundle read from the server: settings changes need a
+  /// connection, so a new recovery key can't stay queued unseen.
+  Future<UserKeyBundle> _serverBundle(String uid) async {
     final snap = await _bundleDoc(
       uid,
     ).get(const GetOptions(source: Source.server));
     final data = snap.data();
     if (data == null) throw StateError('No keys for this account');
-    final bundle = UserKeyBundle.fromJson(data);
-    final keys = await _manager.unlockWithPassphrase(uid, bundle, passphrase);
-    return (bundle, keys);
+    return UserKeyBundle.fromJson(data);
   }
 
+  /// Saves [bundle] (merged, so `createdAt` stays), dropping the fields of
+  /// a version 1 bundle.
   Future<void> _saveBundle(String uid, UserKeyBundle bundle) =>
       _bundleDoc(uid).set({
         ...bundle.toJson(),
+        'kdf': FieldValue.delete(),
+        'mk_pass': FieldValue.delete(),
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
-  /// Protects the keys with [newPassphrase] instead of [currentPassphrase]
-  /// (the master key and the data don't change).
-  Future<void> changePassphrase(
-    String currentPassphrase,
-    String newPassphrase,
-  ) async {
+  /// Right after setup: creates the first recovery key and shows it
+  /// ([CryptoUnlocked.pendingRecoveryKey]). Needs a connection.
+  Future<void> createFirstRecoveryKey() async {
     final uid = _uid;
-    final (bundle, keys) = await _verified(uid, currentPassphrase);
-    await _saveBundle(
+    final current = state;
+    if (current is! CryptoUnlocked || !current.offerRecoveryKey) {
+      throw StateError('No recovery key to offer');
+    }
+    final renewed = await _manager.withNewRecoveryKey(
       uid,
-      await _manager.withPassphrase(uid, bundle, keys, newPassphrase),
+      await _serverBundle(uid),
+      current.keys,
+    );
+    await _saveBundle(uid, renewed.bundle);
+    _set(
+      uid,
+      CryptoUnlocked(
+        current.keys,
+        pendingRecoveryKey: CryptoService.formatRecoveryKey(
+          renewed.recoveryKey,
+        ),
+      ),
     );
   }
 
-  /// Replaces the recovery key (the old one stops working) and returns the
-  /// new one as text, to show to the user.
-  Future<String> regenerateRecoveryKey(String currentPassphrase) async {
+  /// From the settings: the user confirms with their passkey, then the
+  /// recovery key is replaced (the old one, if any, stops working) and the
+  /// new one returned as text, to show to the user.
+  Future<String> regenerateRecoveryKey() async {
     final uid = _uid;
-    final (bundle, keys) = await _verified(uid, currentPassphrase);
+    final bundle = await _serverBundle(uid);
+    final keys = await _openWithPasskey(uid, bundle);
     final renewed = await _manager.withNewRecoveryKey(uid, bundle, keys);
     await _saveBundle(uid, renewed.bundle);
     return CryptoService.formatRecoveryKey(renewed.recoveryKey);
   }
 
-  /// The user has saved the recovery key shown after setup or recovery.
+  /// The user has saved the recovery key shown after setup, or chose to
+  /// create it later.
   void acknowledgeRecoveryKey() {
     final current = state;
-    if (current is CryptoUnlocked && current.pendingRecoveryKey != null) {
+    if (current is CryptoUnlocked &&
+        (current.pendingRecoveryKey != null || current.offerRecoveryKey)) {
       state = CryptoUnlocked(current.keys);
     }
   }
 
-  /// For a user who lost both the code and the recovery key: deletes what
+  /// For a user who lost both the passkey and the recovery key: deletes what
   /// was encrypted with the old keys (it can't be read any more), then the
   /// keys, so new ones can be created. Items still in clear (shared ones)
   /// are kept. Needs a connection.
@@ -488,7 +533,8 @@ class CryptoNotifier extends Notifier<CryptoState> {
         persistent: persistent,
       );
     } catch (e) {
-      // Still unlocked for this session; the code is asked again next time.
+      // Still unlocked for this session; the passkey is asked again next
+      // time.
       if (kDebugMode) debugPrint('Keys not saved on the device: $e');
     }
   }

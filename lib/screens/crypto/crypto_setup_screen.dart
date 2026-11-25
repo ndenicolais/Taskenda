@@ -15,12 +15,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../providers/crypto_provider.dart';
 import '../../theme/app_spacing.dart';
-import '../auth/login_forms.dart';
-import 'crypto_validators.dart';
 import 'crypto_widgets.dart';
 
-/// First sign-in of an account without keys: the user picks the encryption
-/// code. The recovery key is shown next (see `RecoveryKeyScreen`).
+/// First sign-in of an account without keys: the user creates the passkey
+/// that protects them. Creating a recovery key is proposed next (see
+/// `RecoveryKeyOfferScreen`).
 class CryptoSetupScreen extends ConsumerStatefulWidget {
   const CryptoSetupScreen({super.key});
 
@@ -29,31 +28,19 @@ class CryptoSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _CryptoSetupScreenState extends ConsumerState<CryptoSetupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _passCtrl = TextEditingController();
-  final _confirmCtrl = TextEditingController();
   bool _remember = false;
   bool _busy = false;
   String? _error;
 
-  @override
-  void dispose() {
-    _passCtrl.dispose();
-    _confirmCtrl.dispose();
-    super.dispose();
-  }
-
   Future<void> _submit() async {
-    if (_busy || !_formKey.currentState!.validate()) return;
+    if (_busy) return;
     final l10n = context.l10n;
     setState(() {
       _busy = true;
       _error = null;
     });
     try {
-      await ref
-          .read(cryptoProvider.notifier)
-          .setup(_passCtrl.text, remember: _remember);
+      await ref.read(cryptoProvider.notifier).setup(remember: _remember);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -66,49 +53,18 @@ class _CryptoSetupScreenState extends ConsumerState<CryptoSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     return CryptoScaffold(
-      icon: Icons.shield_outlined,
+      icon: Icons.fingerprint,
       title: l10n.cryptoSetupTitle,
       message: l10n.cryptoSetupBody,
       children: [
-        Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PasswordField(
-                controller: _passCtrl,
-                label: l10n.cryptoPassphraseLabel,
-                validator: (v) => validateNewPassphrase(l10n, v),
-              ),
-              const SizedBox(height: 14),
-              PasswordField(
-                controller: _confirmCtrl,
-                label: l10n.cryptoPassphraseConfirmLabel,
-                validator:
-                    (v) =>
-                        validatePassphraseConfirmation(l10n, v, _passCtrl.text),
-                onSubmitted: _submit,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Text(
-          l10n.cryptoSetupWarning,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
         if (kIsWeb) ...[
-          const SizedBox(height: AppSpacing.sm),
           RememberBrowserTile(
             value: _remember,
             onChanged: (v) => setState(() => _remember = v),
           ),
+          const SizedBox(height: AppSpacing.lg),
         ],
-        const SizedBox(height: AppSpacing.lg),
         if (_error != null) CryptoErrorText(_error!),
         CryptoSubmitButton(
           label: l10n.cryptoSetupSubmit,

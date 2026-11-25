@@ -18,7 +18,6 @@ import '../../screens/calendar/calendar_event_details_screen.dart';
 import '../../screens/calendar/holiday_sheet.dart';
 import '../../screens/calendar/calendar_event_editor_screen.dart';
 import '../../screens/calendar/calendar_screen.dart';
-import '../../screens/debug/passkey_probe_screen.dart';
 import '../../screens/export_screen.dart';
 import '../../screens/info_screen.dart';
 import '../../screens/label_notes_screen.dart';
@@ -61,9 +60,6 @@ abstract final class AppRoutes {
   static const info = '/info';
   static const onboarding = '/onboarding';
   static const privacyPolicy = '/privacy-policy';
-
-  /// PROTOTYPE: passkey PRF diagnostic (long press on the version in Info).
-  static const passkeyProbe = '/passkey-probe';
 }
 
 /// Arguments for [AppRoutes.note].
@@ -171,7 +167,6 @@ abstract final class AppRouter {
       AppRoutes.info => (_) => const InfoScreen(),
       AppRoutes.onboarding => (_) => const OnboardingScreen(replay: true),
       AppRoutes.privacyPolicy => (_) => const PrivacyPolicyScreen(),
-      AppRoutes.passkeyProbe => (_) => const PasskeyProbeScreen(),
       AppRoutes.note when args is NoteRouteArgs =>
         (_) => NoteEditorScreen(
           note: args.note,
@@ -397,7 +392,4 @@ abstract final class AppNav {
 
   static Future<void> openPrivacyPolicy(BuildContext context) =>
       Navigator.pushNamed(context, AppRoutes.privacyPolicy);
-
-  static Future<void> openPasskeyProbe(BuildContext context) =>
-      Navigator.pushNamed(context, AppRoutes.passkeyProbe);
 }

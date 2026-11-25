@@ -13,7 +13,7 @@ import 'dart:convert';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter/foundation.dart';
 
-/// Thrown when data can't be decrypted: wrong key or passphrase, data
+/// Thrown when data can't be decrypted: wrong key, data
 /// tampered with or moved to another document (different AAD), or a
 /// malformed blob.
 class CryptoException implements Exception {
@@ -85,54 +85,12 @@ class SealedKey {
   }
 }
 
-/// How a passphrase becomes a key-encryption key. Stored with the wrapped
-/// master key, so the parameters can be raised (or the algorithm changed)
-/// later without breaking existing accounts.
-@immutable
-class KdfParams {
-  const KdfParams({
-    required this.salt,
-    this.algorithm = pbkdf2Sha256,
-    this.iterations = defaultIterations,
-  });
-
-  static const pbkdf2Sha256 = 'pbkdf2-sha256';
-
-  /// OWASP 2023 recommendation for PBKDF2-HMAC-SHA256.
-  static const defaultIterations = 600000;
-
-  final String algorithm;
-  final int iterations;
-  final Uint8List salt;
-
-  Map<String, dynamic> toJson() => {
-    'alg': algorithm,
-    'iter': iterations,
-    'salt': base64Encode(salt),
-  };
-
-  factory KdfParams.fromJson(Object? json) {
-    if (json is! Map ||
-        json['alg'] is! String ||
-        json['iter'] is! int ||
-        json['salt'] is! String) {
-      throw const CryptoException('Malformed KDF parameters');
-    }
-    return KdfParams(
-      algorithm: json['alg'] as String,
-      iterations: json['iter'] as int,
-      salt: base64Decode(json['salt'] as String),
-    );
-  }
-}
-
 /// The cryptographic primitives of Taskenda's end-to-end encryption, with
 /// no Firebase or UI dependency (see `guides/E2EE_PLAN.md`):
 ///
 /// - AES-256-GCM with a random 96-bit nonce and an AAD that binds every
 ///   ciphertext to where it is stored;
-/// - PBKDF2-HMAC-SHA256 from the passphrase, HKDF-SHA256 from the recovery
-///   key;
+/// - HKDF-SHA256 from a passkey's PRF secret and from the recovery key;
 /// - X25519 + HKDF-SHA256 + AES-256-GCM "sealed boxes" to hand item keys
 ///   to collaborators.
 ///
@@ -145,11 +103,14 @@ class CryptoService {
   final Cryptography _c;
 
   static const keyLength = 32;
-  static const saltLength = 16;
   static const recoveryKeyLength = 32;
 
   static const _sealInfo = 'taskenda:v1:seal';
   static const _recoveryInfo = 'taskenda:v1:recovery';
+  static const _passkeyInfo = 'taskenda:v1:passkey';
+
+  /// Length of a passkey's PRF salt and of the secret it gives back.
+  static const prfLength = 32;
 
   AesGcm get _aes => _c.aesGcm(secretKeyLength: keyLength);
   X25519 get _x25519 => _c.x25519();
@@ -171,26 +132,6 @@ class CryptoService {
   Future<Uint8List> secretKeyBytes(SecretKey key) async =>
       Uint8List.fromList(await key.extractBytes());
 
-  /// Fresh KDF parameters with a random salt.
-  KdfParams newKdfParams({int iterations = KdfParams.defaultIterations}) =>
-      KdfParams(salt: randomBytes(saltLength), iterations: iterations);
-
-  /// The key-encryption key derived from [passphrase].
-  Future<SecretKey> deriveKek(String passphrase, KdfParams params) {
-    if (params.algorithm != KdfParams.pbkdf2Sha256) {
-      throw CryptoException('Unsupported KDF ${params.algorithm}');
-    }
-    final pbkdf2 = _c.pbkdf2(
-      macAlgorithm: Hmac.sha256(),
-      iterations: params.iterations,
-      bits: keyLength * 8,
-    );
-    return pbkdf2.deriveKeyFromPassword(
-      password: passphrase,
-      nonce: params.salt,
-    );
-  }
-
   /// The key-encryption key derived from a [recoveryKey] (already random,
   /// so no slow KDF is needed).
   Future<SecretKey> deriveRecoveryKek(Uint8List recoveryKey) {
@@ -200,6 +141,18 @@ class CryptoService {
     return _hkdf.deriveKey(
       secretKey: SecretKeyData(recoveryKey),
       info: utf8.encode(_recoveryInfo),
+    );
+  }
+
+  /// The key-encryption key derived from a passkey's PRF [secret] (already
+  /// random, so no slow KDF is needed).
+  Future<SecretKey> derivePasskeyKek(Uint8List secret) {
+    if (secret.length != prfLength) {
+      throw const CryptoException('Wrong passkey secret length');
+    }
+    return _hkdf.deriveKey(
+      secretKey: SecretKeyData(secret),
+      info: utf8.encode(_passkeyInfo),
     );
   }
 

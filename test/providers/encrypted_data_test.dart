@@ -31,7 +31,7 @@ void main() {
   });
 
   /// A container for [uid] with real encryption, keys created (first time)
-  /// or unlocked with the same passphrase.
+  /// or unlocked with the passkey.
   Future<ProviderContainer> unlocked({
     String uid = 'u1',
     MemoryKeyStorage? on,
@@ -46,8 +46,8 @@ void main() {
     c.listen(cryptoProvider, (_, _) {});
     final state = await settledCrypto(c);
     final notifier = c.read(cryptoProvider.notifier);
-    if (state is CryptoNeedsSetup) await notifier.setup('passphrase');
-    if (state is CryptoLocked) await notifier.unlock('passphrase');
+    if (state is CryptoNeedsSetup) await notifier.setup();
+    if (state is CryptoLocked) await notifier.unlockWithPasskey();
     return c;
   }
 

@@ -4,9 +4,6 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:taskenda/core/crypto/crypto_service.dart';
 
-String _hex(List<int> bytes) =>
-    bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-
 void main() {
   final crypto = CryptoService();
 
@@ -83,82 +80,50 @@ void main() {
   });
 
   group('key derivation', () {
-    test('PBKDF2-HMAC-SHA256 matches the known test vectors', () async {
-      Future<String> derive(int iterations) async => _hex(
-        await (await crypto.deriveKek(
-          'password',
-          KdfParams(
-            salt: Uint8List.fromList(utf8.encode('salt')),
-            iterations: iterations,
-          ),
-        )).extractBytes(),
+    test('a passkey secret gives a stable KEK, another one does not', () async {
+      final secret = CryptoService.randomBytes(CryptoService.prfLength);
+      final a = await crypto.derivePasskeyKek(secret);
+      final b = await crypto.derivePasskeyKek(Uint8List.fromList(secret));
+      final c = await crypto.derivePasskeyKek(
+        CryptoService.randomBytes(CryptoService.prfLength),
       );
-
-      expect(
-        await derive(1),
-        '120fb6cffcf8b32c43e7225256c4f837a86548c92ccc35480805987cb70be17b',
-      );
-      expect(
-        await derive(2),
-        'ae4d0c95af6b46d32d0adff928f06dd02a303f8ef3c251dfd6e2d85a95474c43',
-      );
-    });
-
-    test('the same passphrase and params give the same KEK', () async {
-      final params = crypto.newKdfParams(iterations: 1000);
-      final a = await crypto.deriveKek('pass phrase', params);
-      final b = await crypto.deriveKek('pass phrase', params);
-      final c = await crypto.deriveKek('pass phrase!', params);
       expect(await a.extractBytes(), await b.extractBytes());
       expect(await a.extractBytes(), isNot(await c.extractBytes()));
     });
 
-    test('KDF params round-trip and default to 600k PBKDF2', () {
-      final params = crypto.newKdfParams();
-      final back = KdfParams.fromJson(jsonDecode(jsonEncode(params.toJson())));
-      expect(back.algorithm, KdfParams.pbkdf2Sha256);
-      expect(back.iterations, 600000);
-      expect(back.salt, params.salt);
-      expect(params.salt, hasLength(CryptoService.saltLength));
-    });
-
-    test('an unknown KDF is refused', () {
+    test('a passkey secret of the wrong length is refused', () {
       expect(
-        () => crypto.deriveKek(
-          'x',
-          KdfParams(salt: Uint8List(16), algorithm: 'argon2id'),
-        ),
+        () => crypto.derivePasskeyKek(Uint8List(16)),
         throwsA(isA<CryptoException>()),
       );
     });
   });
 
   group('master key wrapping', () {
-    test(
-      'the passphrase unwraps the master key, a wrong one does not',
-      () async {
-        final params = crypto.newKdfParams(iterations: 1000);
-        final master = await crypto.newSecretKey();
-        final wrapped = await crypto.wrapKey(
-          master,
-          await crypto.deriveKek('right', params),
-          aad: 'mk',
-        );
+    test('the passkey KEK unwraps the master key, another does not', () async {
+      final master = await crypto.newSecretKey();
+      final secret = CryptoService.randomBytes(CryptoService.prfLength);
+      final wrapped = await crypto.wrapKey(
+        master,
+        await crypto.derivePasskeyKek(secret),
+        aad: 'mk',
+      );
 
-        final back = await crypto.unwrapKey(
-          wrapped,
-          await crypto.deriveKek('right', params),
-          aad: 'mk',
-        );
-        expect(await back.extractBytes(), await master.extractBytes());
+      final back = await crypto.unwrapKey(
+        wrapped,
+        await crypto.derivePasskeyKek(secret),
+        aad: 'mk',
+      );
+      expect(await back.extractBytes(), await master.extractBytes());
 
-        final wrongKek = await crypto.deriveKek('wrong', params);
-        expect(
-          () => crypto.unwrapKey(wrapped, wrongKek, aad: 'mk'),
-          throwsA(isA<CryptoException>()),
-        );
-      },
-    );
+      final wrongKek = await crypto.derivePasskeyKek(
+        CryptoService.randomBytes(CryptoService.prfLength),
+      );
+      expect(
+        () => crypto.unwrapKey(wrapped, wrongKek, aad: 'mk'),
+        throwsA(isA<CryptoException>()),
+      );
+    });
 
     test('the recovery key unwraps its own copy of the master key', () async {
       final master = await crypto.newSecretKey();

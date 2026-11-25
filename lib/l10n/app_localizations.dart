@@ -3797,7 +3797,7 @@ abstract class AppLocalizations {
   /// No description provided for @policy_section_data_text.
   ///
   /// In it, this message translates to:
-  /// **'• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Cifratura: il codice di cifratura e il codice di recupero non lasciano mai il tuo dispositivo e li conosci solo tu. Sul tuo account vengono salvate le tue chiavi di cifratura, protette da questi codici e quindi inutilizzabili senza di essi, e una chiave pubblica che gli altri utenti usano per condividere elementi con te.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.'**
+  /// **'• Account: l\'indirizzo email con cui ti registri; la password è gestita da Firebase Authentication e non è mai visibile allo sviluppatore. Se accedi con Google, Google condivide con Firebase nome, email, foto del profilo e identificativo del tuo account Google. Firebase registra anche la data di creazione dell\'account e dell\'ultimo accesso.\n• Contenuti: note (titolo, testo, liste di controllo, etichette, colori e stile, promemoria, collegamenti tra note, cronologia delle modifiche), task ed elenchi (sottotask, scadenze, ricorrenze, priorità), eventi del calendario (compreso il luogo) ed etichette. Sono cifrati end-to-end sul tuo dispositivo (vedi il punto 4).\n• Note audio: le registrazioni restano solo sul dispositivo; con la nota vengono sincronizzati soltanto nome, durata e percorso del file.\n• Cifratura: le tue chiavi di cifratura sono protette dalla passkey di Taskenda, custodita dal gestore di password del tuo dispositivo (ad esempio il Gestore password di Google, che la sincronizza con cifratura end-to-end), e, se lo crei, da un codice di recupero che conosci solo tu. Il segreto della passkey e il codice di recupero non lasciano mai il tuo dispositivo. Sul tuo account vengono salvate le tue chiavi di cifratura, protette in questo modo e quindi inutilizzabili senza la passkey o il codice di recupero, l\'identificativo della passkey e una chiave pubblica che gli altri utenti usano per condividere elementi con te.\n• Condivisione: per permettere ad altri di condividere note, task ed eventi con te, la tua email e il tuo nome vengono salvati in un elenco consultabile solo conoscendo l\'email esatta. Quando condividi un elemento, le persone che aggiungi ne vedono il contenuto, il tuo nome e la tua email, e tu vedi i loro; pin, archivio, promemoria, avvisi ed etichette restano personali. Per avvisarti quando qualcuno condivide qualcosa con te, l\'app salva per ogni dispositivo un identificativo per le notifiche push (token di Firebase Cloud Messaging) e la lingua dell\'app; viene cancellato quando esci dall\'account su quel dispositivo.\n• Preferenze: lingua, tema, sezione iniziale, layout, ordinamenti, opzioni di note, task e calendario e orari degli avvisi vengono salvati anche sul tuo account, così li ritrovi su web e su un nuovo dispositivo dopo l\'accesso.\n• Sul dispositivo: una copia delle preferenze, la guida introduttiva e le novità già viste, le impostazioni dei backup automatici, i backup automatici, una copia dei dati per l\'uso offline, i promemoria programmati, le chiavi di cifratura sbloccate (protette dal sistema; sul web restano nella scheda del browser, o nel browser se scegli di ricordarle) e i dati mostrati dai widget della schermata Home (titoli e anteprime di note, task e impegni). Sul web le preferenze sono salvate nel browser.'**
   String get policy_section_data_text;
 
   /// No description provided for @policy_section_use_title.
@@ -3857,7 +3857,7 @@ abstract class AppLocalizations {
   /// No description provided for @policy_section_retention_text.
   ///
   /// In it, this message translates to:
-  /// **'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se dimentichi sia il codice di cifratura sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a {email}.'**
+  /// **'I tuoi dati restano finché mantieni l\'account. Gli elementi nel cestino vengono eliminati definitivamente dopo 7 giorni. Puoi eliminare l\'account e tutti i dati da Impostazioni > Account > Elimina account: vengono cancellati l\'account e i contenuti su Firebase, compresi note, task ed eventi che hai condiviso (che spariscono anche per i collaboratori) e gli identificativi per le notifiche, vieni rimosso dagli elementi che altri hanno condiviso con te, la tua email esce dall\'elenco usato per la condivisione, vengono cancellate le tue chiavi di cifratura e, su questo dispositivo, vengono cancellati i promemoria e i backup automatici. Prima puoi esportare tutto da Impostazioni > Backup e dati > Backup globale. Eventuali copie residue nei sistemi di Google vengono rimosse nei tempi previsti da Firebase. Uscire dall\'account non cancella i dati; disinstallando l\'app vengono rimossi i dati salvati sul dispositivo, comprese le note audio. Se perdi sia la passkey sia il codice di recupero, nessuno può recuperare i tuoi dati cifrati: puoi solo reimpostare la cifratura, che li elimina. Puoi anche chiedere la cancellazione scrivendo a {email}.'**
   String policy_section_retention_text(String email);
 
   /// No description provided for @policy_section_rights_title.
@@ -4055,49 +4055,13 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoSetupBody.
   ///
   /// In it, this message translates to:
-  /// **'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Scegli un codice di cifratura: ti servirà per vedere i tuoi dati su un nuovo dispositivo.'**
+  /// **'Note, task ed eventi vengono cifrati sul tuo dispositivo prima di essere salvati: nessun altro può leggerli, nemmeno chi gestisce Taskenda. Crea una passkey: su un nuovo dispositivo li sbloccherai con l\'impronta o il blocco schermo, senza codici da ricordare.'**
   String get cryptoSetupBody;
-
-  /// No description provided for @cryptoSetupWarning.
-  ///
-  /// In it, this message translates to:
-  /// **'Il codice di cifratura non è la password dell\'account e nessuno può reimpostarlo. Se lo dimentichi ti servirà il codice di recupero che ti mostriamo subito dopo.'**
-  String get cryptoSetupWarning;
-
-  /// No description provided for @cryptoPassphraseLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Codice di cifratura'**
-  String get cryptoPassphraseLabel;
-
-  /// No description provided for @cryptoPassphraseConfirmLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Conferma il codice'**
-  String get cryptoPassphraseConfirmLabel;
-
-  /// No description provided for @cryptoPassphraseEmpty.
-  ///
-  /// In it, this message translates to:
-  /// **'Inserisci il codice di cifratura'**
-  String get cryptoPassphraseEmpty;
-
-  /// No description provided for @cryptoPassphraseTooShort.
-  ///
-  /// In it, this message translates to:
-  /// **'Usa almeno {min} caratteri'**
-  String cryptoPassphraseTooShort(int min);
-
-  /// No description provided for @cryptoPassphraseMismatch.
-  ///
-  /// In it, this message translates to:
-  /// **'I codici non coincidono'**
-  String get cryptoPassphraseMismatch;
 
   /// No description provided for @cryptoSetupSubmit.
   ///
   /// In it, this message translates to:
-  /// **'Attiva la cifratura'**
+  /// **'Crea la passkey'**
   String get cryptoSetupSubmit;
 
   /// No description provided for @cryptoUnlockTitle.
@@ -4109,20 +4073,14 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoUnlockBody.
   ///
   /// In it, this message translates to:
-  /// **'Inserisci il codice di cifratura che hai scelto quando hai attivato la cifratura.'**
+  /// **'Usa la passkey di Taskenda, con l\'impronta o il blocco schermo, per vedere i tuoi dati su questo dispositivo.'**
   String get cryptoUnlockBody;
 
   /// No description provided for @cryptoUnlockSubmit.
   ///
   /// In it, this message translates to:
-  /// **'Sblocca'**
+  /// **'Sblocca con la passkey'**
   String get cryptoUnlockSubmit;
-
-  /// No description provided for @cryptoUnlockWrong.
-  ///
-  /// In it, this message translates to:
-  /// **'Codice di cifratura errato'**
-  String get cryptoUnlockWrong;
 
   /// No description provided for @cryptoRememberBrowser.
   ///
@@ -4133,14 +4091,8 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoRememberBrowserHint.
   ///
   /// In it, this message translates to:
-  /// **'Se non lo attivi, il codice ti verrà chiesto di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.'**
+  /// **'Se non lo attivi, la passkey ti verrà chiesta di nuovo quando chiudi la scheda. Non attivarlo su un computer condiviso.'**
   String get cryptoRememberBrowserHint;
-
-  /// No description provided for @cryptoForgotPassphrase.
-  ///
-  /// In it, this message translates to:
-  /// **'Ho dimenticato il codice'**
-  String get cryptoForgotPassphrase;
 
   /// No description provided for @cryptoRecoverTitle.
   ///
@@ -4151,7 +4103,7 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoRecoverBody.
   ///
   /// In it, this message translates to:
-  /// **'Inserisci il codice di recupero che hai salvato quando hai attivato la cifratura, poi scegli un nuovo codice di cifratura.'**
+  /// **'Inserisci il codice di recupero che hai salvato: poi creerai una nuova passkey per sbloccare i dati con l\'impronta o il blocco schermo.'**
   String get cryptoRecoverBody;
 
   /// No description provided for @cryptoRecoveryKeyLabel.
@@ -4172,23 +4124,11 @@ abstract class AppLocalizations {
   /// **'Questo codice di recupero non appartiene al tuo account'**
   String get cryptoRecoveryKeyWrong;
 
-  /// No description provided for @cryptoNewPassphraseLabel.
-  ///
-  /// In it, this message translates to:
-  /// **'Nuovo codice di cifratura'**
-  String get cryptoNewPassphraseLabel;
-
   /// No description provided for @cryptoRecoverSubmit.
   ///
   /// In it, this message translates to:
   /// **'Recupera i dati'**
   String get cryptoRecoverSubmit;
-
-  /// No description provided for @cryptoBackToUnlock.
-  ///
-  /// In it, this message translates to:
-  /// **'Ricordo il codice di cifratura'**
-  String get cryptoBackToUnlock;
 
   /// No description provided for @cryptoNoRecoveryKey.
   ///
@@ -4205,7 +4145,7 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoResetBody.
   ///
   /// In it, this message translates to:
-  /// **'Senza codice di cifratura e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con un nuovo codice.'**
+  /// **'Senza passkey e senza codice di recupero nessuno può più leggere i tuoi dati cifrati. Reimpostando la cifratura verranno persi e potrai ricominciare con una nuova passkey.'**
   String get cryptoResetBody;
 
   /// No description provided for @cryptoResetConfirm.
@@ -4223,7 +4163,7 @@ abstract class AppLocalizations {
   /// No description provided for @cryptoRecoveryShowBody.
   ///
   /// In it, this message translates to:
-  /// **'Se dimentichi il codice di cifratura, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.'**
+  /// **'Se perdi la passkey, questo è l\'unico modo per recuperare i tuoi dati. Conservalo in un posto sicuro, ad esempio un gestore di password: non lo mostreremo più.'**
   String get cryptoRecoveryShowBody;
 
   /// No description provided for @cryptoRecoveryCopy.
@@ -4268,6 +4208,66 @@ abstract class AppLocalizations {
   /// **'Serve una connessione a internet. Controlla la connessione e riprova.'**
   String get cryptoNeedsConnection;
 
+  /// No description provided for @cryptoLostPasskey.
+  ///
+  /// In it, this message translates to:
+  /// **'Ho perso la passkey'**
+  String get cryptoLostPasskey;
+
+  /// No description provided for @cryptoBackToPasskey.
+  ///
+  /// In it, this message translates to:
+  /// **'Usa la passkey'**
+  String get cryptoBackToPasskey;
+
+  /// No description provided for @cryptoPasskeyCancelled.
+  ///
+  /// In it, this message translates to:
+  /// **'Passkey non confermata. Riprova quando vuoi.'**
+  String get cryptoPasskeyCancelled;
+
+  /// No description provided for @cryptoPasskeyUnavailable.
+  ///
+  /// In it, this message translates to:
+  /// **'Su questo dispositivo non si può usare una passkey. Serve un blocco schermo (impronta, PIN o sequenza) e un gestore di password con le passkey, come il Gestore password di Google.'**
+  String get cryptoPasskeyUnavailable;
+
+  /// No description provided for @cryptoPasskeyNotFound.
+  ///
+  /// In it, this message translates to:
+  /// **'Su questo dispositivo non c\'è la passkey di Taskenda. Usa il codice di recupero.'**
+  String get cryptoPasskeyNotFound;
+
+  /// No description provided for @cryptoPasskeyUnknown.
+  ///
+  /// In it, this message translates to:
+  /// **'Questa passkey non sblocca i tuoi dati attuali (forse è di prima di una reimpostazione). Usa il codice di recupero.'**
+  String get cryptoPasskeyUnknown;
+
+  /// No description provided for @cryptoRecoveryOfferTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Vuoi un codice di recupero?'**
+  String get cryptoRecoveryOfferTitle;
+
+  /// No description provided for @cryptoRecoveryOfferBody.
+  ///
+  /// In it, this message translates to:
+  /// **'Se perdi la passkey, per esempio passando a un telefono con un altro account, il codice di recupero è l\'unico modo per riaprire i tuoi dati. Puoi crearlo ora o più tardi da Impostazioni > Sicurezza.'**
+  String get cryptoRecoveryOfferBody;
+
+  /// No description provided for @cryptoRecoveryOfferCreate.
+  ///
+  /// In it, this message translates to:
+  /// **'Crea il codice di recupero'**
+  String get cryptoRecoveryOfferCreate;
+
+  /// No description provided for @cryptoRecoveryOfferLater.
+  ///
+  /// In it, this message translates to:
+  /// **'Più tardi'**
+  String get cryptoRecoveryOfferLater;
+
   /// No description provided for @shareErrorNoEncryption.
   ///
   /// In it, this message translates to:
@@ -4286,30 +4286,6 @@ abstract class AppLocalizations {
   /// **'Note, task ed eventi sono cifrati end-to-end: solo tu e le persone con cui li condividi potete leggerli.'**
   String get securityInfo;
 
-  /// No description provided for @securityChangePassphrase.
-  ///
-  /// In it, this message translates to:
-  /// **'Cambia codice di cifratura'**
-  String get securityChangePassphrase;
-
-  /// No description provided for @securityChangePassphraseSubtitle.
-  ///
-  /// In it, this message translates to:
-  /// **'Ti servirà per sbloccare i dati su un nuovo dispositivo'**
-  String get securityChangePassphraseSubtitle;
-
-  /// No description provided for @securityCurrentPassphrase.
-  ///
-  /// In it, this message translates to:
-  /// **'Codice di cifratura attuale'**
-  String get securityCurrentPassphrase;
-
-  /// No description provided for @securityPassphraseChanged.
-  ///
-  /// In it, this message translates to:
-  /// **'Codice di cifratura cambiato'**
-  String get securityPassphraseChanged;
-
   /// No description provided for @securityNewRecoveryKey.
   ///
   /// In it, this message translates to:
@@ -4319,7 +4295,7 @@ abstract class AppLocalizations {
   /// No description provided for @securityNewRecoveryKeySubtitle.
   ///
   /// In it, this message translates to:
-  /// **'Il codice di recupero attuale smetterà di funzionare'**
+  /// **'Confermi con la passkey; il codice di recupero attuale, se c\'è, smetterà di funzionare'**
   String get securityNewRecoveryKeySubtitle;
 
   /// No description provided for @calendarParticipants.

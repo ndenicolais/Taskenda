@@ -18,8 +18,73 @@ import '../../providers/crypto_provider.dart';
 import '../../theme/app_spacing.dart';
 import 'crypto_widgets.dart';
 
-/// Shows a new recovery key once (after setup or recovery): the user must
-/// confirm they saved it before going on.
+/// Right after setup: proposes to create a recovery key, the only way back
+/// in if the passkey is lost. "Later" goes to the app (it can be created
+/// from Settings → Security).
+class RecoveryKeyOfferScreen extends ConsumerStatefulWidget {
+  const RecoveryKeyOfferScreen({super.key});
+
+  @override
+  ConsumerState<RecoveryKeyOfferScreen> createState() =>
+      _RecoveryKeyOfferScreenState();
+}
+
+class _RecoveryKeyOfferScreenState
+    extends ConsumerState<RecoveryKeyOfferScreen> {
+  bool _busy = false;
+  String? _error;
+
+  Future<void> _create() async {
+    if (_busy) return;
+    final l10n = context.l10n;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await ref.read(cryptoProvider.notifier).createFirstRecoveryKey();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = cryptoErrorMessage(l10n, e, wrongKey: l10n.commonGenericError);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return CryptoScaffold(
+      icon: Icons.key_outlined,
+      title: l10n.cryptoRecoveryOfferTitle,
+      message: l10n.cryptoRecoveryOfferBody,
+      showSignOut: false,
+      children: [
+        if (_error != null) CryptoErrorText(_error!),
+        CryptoSubmitButton(
+          label: l10n.cryptoRecoveryOfferCreate,
+          onPressed: _create,
+          busy: _busy,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        TextButton(
+          onPressed:
+              _busy
+                  ? null
+                  : () =>
+                      ref
+                          .read(cryptoProvider.notifier)
+                          .acknowledgeRecoveryKey(),
+          child: Text(l10n.cryptoRecoveryOfferLater),
+        ),
+      ],
+    );
+  }
+}
+
+/// Shows a new recovery key once: the user must confirm they saved it
+/// before going on.
 class RecoveryKeyScreen extends ConsumerWidget {
   const RecoveryKeyScreen({super.key, required this.recoveryKey});
 
