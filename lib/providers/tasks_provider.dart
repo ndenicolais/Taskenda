@@ -236,6 +236,25 @@ class TasksNotifier extends Notifier<List<TaskModel>>
     return next;
   }
 
+  /// Splits the occurrence on [day] off the recurring task [id]: the series
+  /// leaves it out (moving on to the next one if it was the current) and
+  /// [single] (the edited occurrence, a new task) takes its place. One
+  /// batched write; reminders of both rescheduled.
+  Future<void> splitOccurrence(String id, DateTime day, TaskModel single) {
+    final series = withCurrentSharing(
+      state.firstWhere((t) => t.id == id).withoutOccurrence(day),
+    );
+    _syncReminder(series).ignore();
+    _syncReminder(single).ignore();
+    return mutate(
+      (current) => [single, for (final t in current) t.id == id ? series : t],
+      () => commitInChunks([
+        (WriteBatch b) => writeItem(b, series),
+        (WriteBatch b) => writeItem(b, single),
+      ]),
+    );
+  }
+
   Future<void> restoreFromTrash(String id) async {
     final updated = state
         .firstWhere((t) => t.id == id)

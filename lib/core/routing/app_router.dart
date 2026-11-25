@@ -90,6 +90,16 @@ class EventDetailsArgs {
   final DateTime? occurrence;
 }
 
+/// Arguments of [AppRoutes.task] from the pencil of a task opened on a day
+/// of the calendar: the occurrence tapped, so the changes to a recurring
+/// task can apply to that occurrence only.
+class TaskEditorArgs {
+  const TaskEditorArgs(this.task, {this.occurrence});
+
+  final TaskModel task;
+  final DateTime? occurrence;
+}
+
 /// Arguments of [AppRoutes.event] from the pencil of an event opened on a
 /// day of the calendar: the occurrence tapped, so the changes to a
 /// recurring event can apply to that occurrence only.
@@ -184,6 +194,8 @@ abstract final class AppRouter {
         ),
       AppRoutes.task when args is TaskModel =>
         (_) => TaskEditorScreen(task: args),
+      AppRoutes.task when args is TaskEditorArgs =>
+        (_) => TaskEditorScreen(task: args.task, occurrence: args.occurrence),
       AppRoutes.event when args is CalendarEventModel =>
         (_) => CalendarEventEditorScreen(event: args),
       AppRoutes.event when args is EventEditorArgs =>
@@ -332,8 +344,19 @@ abstract final class AppNav {
 
   /// The pencil of the task details: the editor takes the details' place,
   /// so saving (or back) returns straight to the list it was opened from.
-  static Future<void> editTask(BuildContext context, TaskModel task) =>
-      Navigator.pushReplacementNamed(context, AppRoutes.task, arguments: task);
+  /// [occurrence] is the day the details were opened from in the calendar.
+  static Future<void> editTask(
+    BuildContext context,
+    TaskModel task, {
+    DateTime? occurrence,
+  }) => Navigator.pushReplacementNamed(
+    context,
+    AppRoutes.task,
+    arguments:
+        occurrence == null
+            ? task
+            : TaskEditorArgs(task, occurrence: occurrence),
+  );
 
   /// The pencil of the event details, like [editTask]. [occurrence] is the
   /// day the details were opened from in the calendar.

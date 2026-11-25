@@ -8,6 +8,8 @@
 // Contact: ndn21dev@gmail.com
 // GitHub: https://github.com/ndenicolais
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,8 +38,14 @@ import 'task_info_section.dart';
 import 'task_subtasks_section.dart';
 
 class TaskEditorScreen extends ConsumerStatefulWidget {
-  const TaskEditorScreen({super.key, required this.task});
+  const TaskEditorScreen({super.key, required this.task, this.occurrence});
   final TaskModel task;
+
+  /// The day the task was opened from in the calendar. A saved recurring
+  /// task is edited as that occurrence (the current one without a day) and,
+  /// on leaving with changes, asks whether they apply to it only or to it
+  /// and all the following ones.
+  final DateTime? occurrence;
 
   @override
   ConsumerState<TaskEditorScreen> createState() => _TaskEditorScreenState();
@@ -56,12 +64,35 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
   String _lastTitle = '';
   String _lastDescription = '';
 
+  /// Due date of the occurrence being edited, or null when the editor works
+  /// on the task as a whole (new or not recurring).
+  DateTime? _occurrenceDue;
+
+  /// The occurrence as opened, to tell whether anything was changed.
+  String _occurrenceBaseline = '';
+
+  /// Set while the "this task / this and following" choice is open.
+  bool _choosingScope = false;
+
   @override
   void initState() {
     super.initState();
     _task = widget.task;
     // Verifichiamo se il task esiste già nel provider
     _isNew = ref.read(tasksProvider).every((t) => t.id != _task.id);
+    if (!_isNew && _task.isRecurring) {
+      final due = _task.dueDate!;
+      final day = widget.occurrence ?? due;
+      _occurrenceDue = DateTime(
+        day.year,
+        day.month,
+        day.day,
+        due.hour,
+        due.minute,
+      );
+      _task = _task.copyWith(dueDate: _occurrenceDue);
+      _occurrenceBaseline = _contentKey(_task);
+    }
 
     _titleController = TextEditingController(text: _task.title);
     _descriptionController = TextEditingController(text: _task.description);
@@ -177,15 +208,91 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
     );
   }
 
+  /// [_task] with the text fields as typed.
+  TaskModel _edited() => _task.copyWith(
+    title: _titleController.text.trim(),
+    description: _descriptionController.text.trim(),
+  );
+
+  /// What [t] stores, apart from the modification time.
+  static String _contentKey(TaskModel t) =>
+      jsonEncode(t.copyWith(updatedAt: DateTime(2000)).toJson());
+
+  /// [t], edited as the occurrence due on [_occurrenceDue], back on the
+  /// series: a date moved there moves the series due date by as many days.
+  TaskModel _asSeries(TaskModel t) {
+    final occ = _occurrenceDue;
+    final due = t.dueDate;
+    final first = widget.task.dueDate;
+    if (occ == null || due == null || first == null) return t;
+    final days =
+        DateTime.utc(
+          due.year,
+          due.month,
+          due.day,
+        ).difference(DateTime.utc(occ.year, occ.month, occ.day)).inDays;
+    return t.copyWith(
+      dueDate: DateTime(
+        first.year,
+        first.month,
+        first.day + days,
+        due.hour,
+        due.minute,
+      ),
+    );
+  }
+
+  /// Leaving the editor of a recurring task: unchanged it just closes, with
+  /// changes it asks whether they apply to this occurrence only (split off
+  /// as a task of its own) or to it and the following ones. Cancelling stays
+  /// in the editor.
+  Future<void> _closeOccurrence() async {
+    if (_choosingScope || _softDeleted) return;
+    final edited = _edited();
+    var scope = TaskDeleteScope.all;
+    if (_contentKey(edited) == _occurrenceBaseline) {
+      _softDeleted = true; // Nothing changed: nothing to save.
+    } else if (edited.isRecurring &&
+        edited.recurrence == widget.task.recurrence) {
+      _choosingScope = true;
+      final picked = await showRecurringTaskEditDialog(context);
+      _choosingScope = false;
+      if (picked == null || !mounted) return;
+      scope = picked;
+    }
+    // A changed (or removed) recurrence is about the series: no question.
+    if (!_softDeleted) {
+      if (scope == TaskDeleteScope.thisOccurrence) {
+        notifyOnError(
+          ref
+              .read(tasksProvider.notifier)
+              .splitOccurrence(
+                widget.task.id,
+                _occurrenceDue!,
+                edited.asStandaloneCopy(),
+              ),
+          context,
+        );
+      } else {
+        _save();
+        final saved = _asSeries(_task);
+        final notifications = NotificationService.instance;
+        notifications
+            .cancelNotification(NotificationService.idForTask(saved.id))
+            .then((_) => notifications.scheduleTaskReminder(saved))
+            .ignore();
+      }
+      _softDeleted = true; // Saved here: not again on pop.
+    }
+    Navigator.pop(context);
+  }
+
   void _save() {
     if (_softDeleted) return;
     if (_isNew && _isEmpty()) return;
 
-    final updated = _task.copyWith(
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      updatedAt: DateTime.now(),
-    );
+    final edited = _edited().copyWith(updatedAt: DateTime.now());
+    final updated = _asSeries(edited);
 
     final Future<void> pending;
     if (_isNew) {
@@ -198,10 +305,29 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
       pending = ref.read(tasksProvider.notifier).updateTask(updated);
     }
     notifyOnError(pending, context);
-    setState(() => _task = updated);
+    // An occurrence stays shown as such; what was saved is its new baseline.
+    setState(() => _task = edited);
+    if (_occurrenceDue != null) _occurrenceBaseline = _contentKey(edited);
   }
 
   Future<void> _confirmDelete() async {
+    final occurrence = _occurrenceDue;
+    if (occurrence != null) {
+      // The task as stored: unsaved edits are dropped with the delete.
+      final stored = ref
+          .read(tasksProvider)
+          .firstWhere((t) => t.id == widget.task.id, orElse: () => widget.task);
+      final scope = await askTaskDeleteScope(
+        context,
+        stored,
+        message: context.l10n.tasksDeleteTaskConfirm,
+      );
+      if (scope == null || !mounted) return;
+      _softDeleted = true;
+      deleteTaskWithUndo(context, ref, stored, scope, occurrence: occurrence);
+      Navigator.pop(context);
+      return;
+    }
     // A never-saved task has no series to keep: plain confirm only.
     final current = _task.copyWith(
       title: _titleController.text.trim(),
@@ -267,6 +393,8 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
             : previous.copyWith(dueDate: due);
     setState(() => _task = updated);
     if (updated.dueDate == previous.dueDate) return;
+    // A recurring task's occurrence is saved on leaving, after the choice.
+    if (_occurrenceDue != null) return;
     _save();
     final notifications = NotificationService.instance;
     notifications
@@ -381,8 +509,14 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      // A recurring task asks before leaving with changes.
+      canPop: _occurrenceDue == null,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) _save();
+        if (didPop) {
+          _save();
+        } else {
+          _closeOccurrence();
+        }
       },
       child: Scaffold(
         appBar: TaskEditorAppBar(
@@ -402,7 +536,7 @@ class _TaskEditorScreenState extends ConsumerState<TaskEditorScreen> {
           },
           onShare: _shareTask,
           // Back saves too (PopScope): this is the explicit way.
-          onSave: () => Navigator.pop(context),
+          onSave: () => Navigator.maybePop(context),
         ),
         body: Column(
           children: [

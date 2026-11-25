@@ -111,6 +111,18 @@ class TaskModel with Shareable<TaskModel> {
     );
   }
 
+  /// A new, non-recurring copy of this task (another id, not shared): an
+  /// occurrence edited on its own, split off the series.
+  TaskModel asStandaloneCopy() {
+    final now = DateTime.now().toIso8601String();
+    return TaskModel.fromJson({
+      ...toJson(),
+      'id': const Uuid().v4(),
+      'createdAt': now,
+      'updatedAt': now,
+    }).copyWith(recurrence: RecurrenceType.none, recurrenceExceptions: []);
+  }
+
   TaskModel copyWith({
     String? title,
     String? description,

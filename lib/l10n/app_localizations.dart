@@ -1526,17 +1526,23 @@ abstract class AppLocalizations {
   /// **'Elimina task ricorrente'**
   String get tasksDeleteRecurringTitle;
 
-  /// No description provided for @tasksDeleteThisOccurrence.
+  /// No description provided for @tasksEditRecurringTitle.
+  ///
+  /// In it, this message translates to:
+  /// **'Modifica task ricorrente'**
+  String get tasksEditRecurringTitle;
+
+  /// No description provided for @tasksRecurringThisOccurrence.
   ///
   /// In it, this message translates to:
   /// **'Solo questo task'**
-  String get tasksDeleteThisOccurrence;
+  String get tasksRecurringThisOccurrence;
 
-  /// No description provided for @tasksDeleteAllOccurrences.
+  /// No description provided for @tasksRecurringAllOccurrences.
   ///
   /// In it, this message translates to:
   /// **'Questo e tutti i successivi'**
-  String get tasksDeleteAllOccurrences;
+  String get tasksRecurringAllOccurrences;
 
   /// No description provided for @tasksOccurrenceDeleted.
   ///

@@ -17,8 +17,8 @@ import '../../utils/notification_service.dart';
 import '../../widgets/shared/app_dialogs.dart';
 import '../../widgets/shared/error_feedback.dart';
 
-/// What deleting a task removes: for a recurring task, only the current
-/// occurrence or the task with all its following occurrences.
+/// What deleting or editing a recurring task applies to: only one
+/// occurrence, or the task with all its following occurrences.
 enum TaskDeleteScope { thisOccurrence, all }
 
 /// Asks how to delete [task]. A recurring task offers "only this task" or
@@ -32,7 +32,12 @@ Future<TaskDeleteScope?> askTaskDeleteScope(
   if (task.isRecurring) {
     return showDialog<TaskDeleteScope>(
       context: context,
-      builder: (_) => const _RecurringTaskDeleteDialog(),
+      builder:
+          (context) => _RecurringTaskScopeDialog(
+            title: context.l10n.tasksDeleteRecurringTitle,
+            confirmLabel: context.l10n.commonDelete,
+            destructive: true,
+          ),
     );
   }
   final confirmed = await showAppConfirmDialog(
@@ -88,16 +93,36 @@ Future<void> _rescheduleReminder(TaskModel task) async {
   await notifications.scheduleTaskReminder(task, askPermission: false);
 }
 
-class _RecurringTaskDeleteDialog extends StatefulWidget {
-  const _RecurringTaskDeleteDialog();
+/// Asks whether the changes made to a recurring task apply to the opened
+/// occurrence only (split off as a task of its own) or to it and all the
+/// following ones. Null when cancelled.
+Future<TaskDeleteScope?> showRecurringTaskEditDialog(BuildContext context) =>
+    showDialog<TaskDeleteScope>(
+      context: context,
+      builder:
+          (context) => _RecurringTaskScopeDialog(
+            title: context.l10n.tasksEditRecurringTitle,
+            confirmLabel: context.l10n.commonSave,
+          ),
+    );
+
+class _RecurringTaskScopeDialog extends StatefulWidget {
+  const _RecurringTaskScopeDialog({
+    required this.title,
+    required this.confirmLabel,
+    this.destructive = false,
+  });
+
+  final String title;
+  final String confirmLabel;
+  final bool destructive;
 
   @override
-  State<_RecurringTaskDeleteDialog> createState() =>
-      _RecurringTaskDeleteDialogState();
+  State<_RecurringTaskScopeDialog> createState() =>
+      _RecurringTaskScopeDialogState();
 }
 
-class _RecurringTaskDeleteDialogState
-    extends State<_RecurringTaskDeleteDialog> {
+class _RecurringTaskScopeDialogState extends State<_RecurringTaskScopeDialog> {
   TaskDeleteScope _scope = TaskDeleteScope.thisOccurrence;
 
   @override
@@ -105,7 +130,7 @@ class _RecurringTaskDeleteDialogState
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     return AlertDialog(
-      title: Text(l10n.tasksDeleteRecurringTitle),
+      title: Text(widget.title),
       contentPadding: const EdgeInsets.only(top: 16, bottom: 8),
       content: RadioGroup<TaskDeleteScope>(
         groupValue: _scope,
@@ -116,11 +141,11 @@ class _RecurringTaskDeleteDialogState
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<TaskDeleteScope>(
-              title: Text(l10n.tasksDeleteThisOccurrence),
+              title: Text(l10n.tasksRecurringThisOccurrence),
               value: TaskDeleteScope.thisOccurrence,
             ),
             RadioListTile<TaskDeleteScope>(
-              title: Text(l10n.tasksDeleteAllOccurrences),
+              title: Text(l10n.tasksRecurringAllOccurrences),
               value: TaskDeleteScope.all,
             ),
           ],
@@ -132,12 +157,15 @@ class _RecurringTaskDeleteDialogState
           child: Text(l10n.commonCancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: cs.error,
-            foregroundColor: cs.onError,
-          ),
+          style:
+              widget.destructive
+                  ? FilledButton.styleFrom(
+                    backgroundColor: cs.error,
+                    foregroundColor: cs.onError,
+                  )
+                  : null,
           onPressed: () => Navigator.pop(context, _scope),
-          child: Text(l10n.commonDelete),
+          child: Text(widget.confirmLabel),
         ),
       ],
     );

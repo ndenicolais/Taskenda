@@ -131,7 +131,12 @@ class _TaskDetailsScreenState extends ConsumerState<TaskDetailsScreen> {
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             tooltip: l10n.commonEdit,
-            onPressed: () => AppNav.editTask(context, task),
+            onPressed:
+                () => AppNav.editTask(
+                  context,
+                  task,
+                  occurrence: widget.occurrence,
+                ),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),

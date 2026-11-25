@@ -768,10 +768,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get tasksDeleteRecurringTitle => 'Elimina task ricorrente';
 
   @override
-  String get tasksDeleteThisOccurrence => 'Solo questo task';
+  String get tasksEditRecurringTitle => 'Modifica task ricorrente';
 
   @override
-  String get tasksDeleteAllOccurrences => 'Questo e tutti i successivi';
+  String get tasksRecurringThisOccurrence => 'Solo questo task';
+
+  @override
+  String get tasksRecurringAllOccurrences => 'Questo e tutti i successivi';
 
   @override
   String get tasksOccurrenceDeleted =>
