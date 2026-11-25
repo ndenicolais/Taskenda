@@ -436,7 +436,7 @@ The screens (`SettingsScreen`, `BackupDataScreen`) handle dialogs, file pickers 
 
 ### 5.10 Shared behavior
 
-- **Drawer** (`AppDrawer`, `NavScaffold`): Calendar, Tasks, Notes, Labels, Shared, Archive, Trash, Statistics, Settings and sign out (same order in the wide-layout rail). Export opens from Settings → Backup and data → Notes, Info from Settings → Info.
+- **Drawer** (`AppDrawer`, `NavScaffold`): Calendar, Tasks, Notes, Labels, Shared, Archive, Trash, Statistics, Settings and sign out (same order in the wide-layout rail). Sections other than home are routes pushed over the root (and so is the start section): at sign-out the `currentUidProvider` listener in `NotesApp` pops back to the first route through the `MaterialApp` `navigatorKey`, so the login screen isn't left under them. Export opens from Settings → Backup and data → Notes, Info from Settings → Info.
 - **Undo**: trash and archive actions show a snackbar with Undo (`notifyWithUndo`), which still works after the editor pops.
 - **Errors**: fire-and-forget writes go through `notifyOnError`, which shows an error snackbar if the write fails.
 - **Sync status**: `SyncStatusListener` (in `MaterialApp.builder`) shows a banner while writes are queued offline and a snackbar if the server later rejects one.

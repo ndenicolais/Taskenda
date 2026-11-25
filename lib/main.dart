@@ -67,6 +67,8 @@ Future<void> _start() async {
 class NotesApp extends ConsumerWidget {
   const NotesApp({super.key});
 
+  static final _navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
@@ -100,6 +102,9 @@ class NotesApp extends ConsumerWidget {
       } else if (previous != null && previous.isNotEmpty) {
         settings.stop();
         reminders.cancelAll();
+        // Signed out: drop the sections pushed over the root (drawer, start
+        // section), or they would stay on top of the login screen.
+        _navigatorKey.currentState?.popUntil((route) => route.isFirst);
       }
     });
     // Keep the user's email → uid entry current, so other users can share
@@ -113,6 +118,7 @@ class NotesApp extends ConsumerWidget {
     });
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       title: 'Taskenda',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
